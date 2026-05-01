@@ -1,12 +1,44 @@
+from __future__ import annotations
+
+from dataclasses import dataclass
+from datetime import UTC, datetime
+from typing import Any
+
 from workers import Response, WorkerEntrypoint
 
 
+@dataclass(frozen=True)
+class ScheduledEventInfo:
+    cron: str
+    scheduled_time: datetime | None = None
+
+    @classmethod
+    def from_event(cls, event: Any) -> ScheduledEventInfo:
+        timestamp = getattr(event, "scheduledTime", None)
+        scheduled_time = None
+        if timestamp is not None:
+            scheduled_time = datetime.fromtimestamp(int(timestamp) / 1000, UTC)
+        return cls(cron=str(event.cron), scheduled_time=scheduled_time)
+
+
+@dataclass(frozen=True)
+class ScheduledRunResult:
+    cron: str
+    message: str
+
+
 class ScheduledJob:
-    async def run(self, cron: str) -> str:
-        return f"ran scheduled job for {cron}"
+    async def run(self, event: ScheduledEventInfo) -> ScheduledRunResult:
+        return ScheduledRunResult(
+            cron=event.cron,
+            message=f"ran scheduled job for {event.cron}",
+        )
+
 
 class Default(WorkerEntrypoint):
-    async def fetch(self, request):
+    async def fetch(self, request: Any) -> Response:
         return Response("scheduled worker is alive")
-    async def scheduled(self, event, env, ctx):
-        print(await ScheduledJob().run(str(event.cron)))
+
+    async def scheduled(self, event: Any, env: Any, ctx: Any) -> None:
+        result = await ScheduledJob().run(ScheduledEventInfo.from_event(event))
+        print(result.message)

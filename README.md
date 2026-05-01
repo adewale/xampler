@@ -57,6 +57,7 @@ See:
 - [`docs/top-10-improvement-plan.md`](docs/top-10-improvement-plan.md)
 - [`docs/primitive-test-realism.md`](docs/primitive-test-realism.md)
 - [`docs/pythonic-tooling.md`](docs/pythonic-tooling.md)
+- [`docs/cloudflare-best-practices-alignment.md`](docs/cloudflare-best-practices-alignment.md)
 - [`docs/cloudflare-primitives-pythonic-scores.md`](docs/cloudflare-primitives-pythonic-scores.md)
 - [`docs/example-rubric-scores.md`](docs/example-rubric-scores.md)
 - [`docs/examples-status-and-pythonicness.md`](docs/examples-status-and-pythonicness.md)
@@ -80,13 +81,13 @@ Coverage and Pythonic API scores are out of 10. Test realism is out of 5; see [`
 | Tier 1 — Gold standard | R2 object storage | 8.5 | 9.25 | 4 |
 | Tier 1 — Gold standard | Workers KV | 8.0 | 8.8 | 4 |
 | Tier 1 — Gold standard | Durable Objects | 7.0 | 8.6 | 4 |
-| Tier 2 — Strong local examples | Workers Assets | 7.2 | 8.9 | 3 |
-| Tier 2 — Strong local examples | D1 database | 7.1 | 8.7 | 3 |
-| Tier 2 — Strong local examples | FastAPI / ASGI | 6.0 | 8.0 | 3 |
-| Tier 2 — Strong local examples | Binary responses / Pillow | 6.0 | 8.0 | 3 |
-| Tier 3 — Runnable, needs deeper primitive verification | Queues | 7.8 | 8.5 | 2 |
-| Tier 3 — Runnable, needs deeper primitive verification | Cron Triggers | 6.0 | 8.0 | 2 |
-| Tier 3 — Runnable, needs deeper primitive verification | HTMLRewriter | 4.5 | 7.75 | 2 |
+| Tier 1 — Gold standard | Workers Assets | 7.4 | 9.0 | 4 |
+| Tier 1 — Gold standard | D1 database | 7.5 | 8.9 | 4 |
+| Tier 1 — Gold standard | Binary responses / Pillow | 6.5 | 8.4 | 4 |
+| Tier 1 — Gold standard | Cron Triggers | 6.5 | 8.5 | 4 |
+| Tier 1 — Gold standard | HTMLRewriter | 5.5 | 8.3 | 4 |
+| Tier 1 — Gold standard | Queues | 8.1 | 8.7 | 4 |
+| Tier 1 — Gold standard | FastAPI / ASGI | 6.0 | 8.0 | 3 |
 | Tier 4 — High API promise, low realism | Workers AI | 5.5 | 8.25 | 1 |
 | Tier 4 — High API promise, low realism | Vectorize | 7.2 | 8.25 | 1 |
 | Tier 4 — High API promise, low realism | Service Bindings / RPC | 6.0 | 8.0 | 1 |

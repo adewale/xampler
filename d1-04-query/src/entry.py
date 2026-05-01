@@ -81,6 +81,14 @@ class Default(WorkerEntrypoint):
                 status=200 if quote else 404,
             )
 
+        if url.path == "/explain":
+            author = parse_qs(url.query).get("author", ["PEP 20"])[0]
+            plan = await db.statement(
+                "EXPLAIN QUERY PLAN SELECT quote, author "
+                "FROM quotes INDEXED BY idx_quotes_author WHERE author = ?"
+            ).all(author)
+            return json_response({"plan": plan})
+
         quote = await db.statement(
             "SELECT quote, author FROM quotes ORDER BY RANDOM() LIMIT 1"
         ).one_as(Quote)

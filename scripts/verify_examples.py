@@ -28,9 +28,11 @@ class Check:
     method: str = "GET"
     body: bytes | None = None
     expected_body: bytes | None = None
+    expected_prefix: bytes | None = None
     contains: str | None = None
     status: int = 200
     headers: dict[str, str] = field(default_factory=dict)
+    response_headers: dict[str, str] = field(default_factory=dict)
 
 
 @dataclass(frozen=True)
@@ -93,6 +95,7 @@ EXAMPLES = {
         [
             Check("/", contains="PEP 20"),
             Check("/by-author?author=PEP%2020", contains="Readability"),
+            Check("/explain?author=PEP%2020", contains="idx_quotes_author"),
         ],
         needs_setup=(
             "The verifier initializes local D1 with db_init.sql before starting the Worker."
@@ -132,7 +135,10 @@ EXAMPLES = {
     ),
     "scheduled-08-cron": Example(
         "scheduled-08-cron",
-        [Check("/", contains="scheduled worker is alive")],
+        [
+            Check("/", contains="scheduled worker is alive"),
+            Check("/cdn-cgi/handler/scheduled", status=200),
+        ],
     ),
     "queues-16-producer-consumer": Example(
         "queues-16-producer-consumer",
@@ -146,6 +152,7 @@ EXAMPLES = {
                 status=202,
                 contains="resize",
             ),
+            Check("/dev/process-sample", method="POST", contains='"processed": 1'),
         ],
         needs_setup=(
             "Local Wrangler queues accept producer sends; deployed consumers need a real queue."
@@ -167,7 +174,14 @@ EXAMPLES = {
     ),
     "images-12-generation": Example(
         "images-12-generation",
-        [Check("/", status=200)],
+        [
+            Check(
+                "/",
+                status=200,
+                expected_prefix=b"\x89PNG\r\n\x1a\n",
+                response_headers={"content-type": "image/png"},
+            )
+        ],
     ),
     "service-bindings-13-rpc-py": Example(
         "service-bindings-13-rpc/py",
@@ -258,10 +272,12 @@ def run_check(port: int, check: Check) -> None:
     try:
         with urllib.request.urlopen(request, timeout=20) as response:
             status = response.status
+            response_headers = response.headers
             body_bytes = response.read()
             body = body_bytes.decode("utf-8", errors="replace")
     except urllib.error.HTTPError as exc:
         status = exc.code
+        response_headers = exc.headers
         body_bytes = exc.read()
         body = body_bytes.decode("utf-8", errors="replace")
 
@@ -271,6 +287,14 @@ def run_check(port: int, check: Check) -> None:
         raise AssertionError(f"{check.path}: did not find {check.contains!r} in {body!r}")
     if check.expected_body is not None and body_bytes != check.expected_body:
         raise AssertionError(f"{check.path}: downloaded body did not match expected bytes")
+    if check.expected_prefix is not None and not body_bytes.startswith(check.expected_prefix):
+        raise AssertionError(f"{check.path}: body did not start with expected bytes")
+    for name, expected in check.response_headers.items():
+        actual = response_headers.get(name, "")
+        if expected.lower() not in actual.lower():
+            raise AssertionError(
+                f"{check.path}: expected {name} to contain {expected!r}, got {actual!r}"
+            )
 
 
 if __name__ == "__main__":

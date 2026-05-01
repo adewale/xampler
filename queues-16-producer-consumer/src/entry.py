@@ -2,6 +2,7 @@ from __future__ import annotations
 
 from dataclasses import asdict, dataclass
 from typing import Any
+from urllib.parse import urlparse
 
 from cfboundary.ffi import to_js, to_py
 from workers import Response, WorkerEntrypoint  # type: ignore[import-not-found]
@@ -93,7 +94,8 @@ class QueueConsumer:
 
 class Default(WorkerEntrypoint):
     async def fetch(self, request: Any) -> Response:
-        if request.method == "POST":
+        path = urlparse(str(request.url)).path
+        if request.method == "POST" and path == "/jobs":
             data = to_py(await request.json())
             job = QueueJob(
                 kind=str(data.get("kind", "demo")),
@@ -101,7 +103,33 @@ class Default(WorkerEntrypoint):
             )
             await QueueService(self.env.JOBS).send(job)
             return Response.json({"queued": asdict(job)}, status=202)
+        if request.method == "POST" and path == "/dev/process-sample":
+            result = await QueueConsumer().process_batch(
+                FakeQueueBatch([asdict(QueueJob("demo", {"source": "verifier"}))])
+            )
+            return Response.json(asdict(result))
         return Response("POST JSON to /jobs to enqueue a message.\n")
 
     async def queue(self, batch: Any, env: Any, ctx: Any) -> None:
         await QueueConsumer().process_batch(batch)
+
+
+class FakeQueueMessage:
+    """Local verifier stand-in with the same ack/retry methods as Queue messages."""
+
+    def __init__(self, body: dict[str, Any]):
+        self.body = body
+        self.attempts = 0
+        self.acked = False
+        self.retried = False
+
+    def ack(self) -> None:
+        self.acked = True
+
+    def retry(self, options: Any) -> None:
+        self.retried = True
+
+
+class FakeQueueBatch:
+    def __init__(self, bodies: list[dict[str, Any]]):
+        self.messages = [FakeQueueMessage(body) for body in bodies]
