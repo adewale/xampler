@@ -139,6 +139,23 @@ curl -X PUT 'http://localhost:8787/simple/hello.txt' \
 curl 'http://localhost:8787/simple/hello.txt'
 ```
 
+## Upload and download the included JPEG fixture
+
+This example includes `fixtures/BreakingThe35.jpeg` so the first R2 example demonstrates a real binary file upload/download, not just strings.
+
+```bash
+curl -X PUT 'http://localhost:8787/objects/images/BreakingThe35.jpeg' \
+  -H 'content-type: image/jpeg' \
+  --data-binary @fixtures/BreakingThe35.jpeg
+
+curl 'http://localhost:8787/objects/images/BreakingThe35.jpeg/stream' \
+  -o /tmp/BreakingThe35-from-r2.jpeg
+
+cmp fixtures/BreakingThe35.jpeg /tmp/BreakingThe35-from-r2.jpeg
+```
+
+If `cmp` prints nothing, the downloaded file matches the uploaded fixture exactly.
+
 ## Try metadata, checksum, and storage class
 
 ```bash

@@ -27,6 +27,7 @@ class Check:
     path: str
     method: str = "GET"
     body: bytes | None = None
+    expected_body: bytes | None = None
     contains: str | None = None
     status: int = 200
     headers: dict[str, str] = field(default_factory=dict)
@@ -50,6 +51,17 @@ EXAMPLES = {
             Check("/", contains="R2 from Python Workers"),
             Check("/simple/verify.txt", method="PUT", body=b"hello r2", status=201),
             Check("/simple/verify.txt", contains="hello r2"),
+            Check(
+                "/objects/images/BreakingThe35.jpeg",
+                method="PUT",
+                body=(Path("r2-01") / "fixtures" / "BreakingThe35.jpeg").read_bytes(),
+                headers={"content-type": "image/jpeg"},
+                status=201,
+            ),
+            Check(
+                "/objects/images/BreakingThe35.jpeg/stream",
+                expected_body=(Path("r2-01") / "fixtures" / "BreakingThe35.jpeg").read_bytes(),
+            ),
         ],
     ),
     "kv-02-binding": Example(
@@ -189,15 +201,19 @@ def run_check(port: int, check: Check) -> None:
     try:
         with urllib.request.urlopen(request, timeout=20) as response:
             status = response.status
-            body = response.read().decode("utf-8", errors="replace")
+            body_bytes = response.read()
+            body = body_bytes.decode("utf-8", errors="replace")
     except urllib.error.HTTPError as exc:
         status = exc.code
-        body = exc.read().decode("utf-8", errors="replace")
+        body_bytes = exc.read()
+        body = body_bytes.decode("utf-8", errors="replace")
 
     if status != check.status:
         raise AssertionError(f"{check.path}: expected {check.status}, got {status}: {body}")
     if check.contains is not None and check.contains not in body:
         raise AssertionError(f"{check.path}: did not find {check.contains!r} in {body!r}")
+    if check.expected_body is not None and body_bytes != check.expected_body:
+        raise AssertionError(f"{check.path}: downloaded body did not match expected bytes")
 
 
 if __name__ == "__main__":
