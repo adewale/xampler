@@ -42,6 +42,7 @@ See:
 - [`docs/pythonic-rubric.md`](docs/pythonic-rubric.md)
 - [`docs/cloudflare-python-api-shape.md`](docs/cloudflare-python-api-shape.md)
 - [`docs/s3-python-library-research.md`](docs/s3-python-library-research.md)
+- [`docs/api-iteration-log.md`](docs/api-iteration-log.md)
 - [`docs/example-rubric-scores.md`](docs/example-rubric-scores.md)
 - [`docs/examples-status-and-pythonicness.md`](docs/examples-status-and-pythonicness.md)
 - [`docs/executable-examples.md`](docs/executable-examples.md)
