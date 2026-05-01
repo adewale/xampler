@@ -52,6 +52,7 @@ See:
 - [`docs/s3-python-library-research.md`](docs/s3-python-library-research.md)
 - [`docs/api-iteration-log.md`](docs/api-iteration-log.md)
 - [`docs/primitives-api-surface.md`](docs/primitives-api-surface.md)
+- [`docs/primitive-test-realism.md`](docs/primitive-test-realism.md)
 - [`docs/cloudflare-primitives-pythonic-scores.md`](docs/cloudflare-primitives-pythonic-scores.md)
 - [`docs/example-rubric-scores.md`](docs/example-rubric-scores.md)
 - [`docs/examples-status-and-pythonicness.md`](docs/examples-status-and-pythonicness.md)
