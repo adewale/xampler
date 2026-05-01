@@ -83,7 +83,7 @@ EXAMPLES = {
     ),
     "assets-06-static-assets": Example(
         "assets-06-static-assets",
-        [Check("/", contains="Dynamic Python route")],
+        [Check("/", contains="Served by Workers Assets")],
     ),
     "durable-objects-07-counter": Example(
         "durable-objects-07-counter",

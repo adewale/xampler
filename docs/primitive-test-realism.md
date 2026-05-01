@@ -5,7 +5,7 @@ Last reviewed: 2026-05-01.
 This document tracks how realistically each Cloudflare primitive example is tested. It separates three things that are easy to conflate:
 
 1. **Static validation** — Python code parses, lints, and unit tests pass.
-2. **Local runtime verification** — `uv run pywrangler dev` or `wrangler pages dev` is started and HTTP/WebSocket/email/queue behavior is exercised.
+2. **Local runtime verification** — `uv run pywrangler dev` is started and HTTP/WebSocket/email/queue behavior is exercised. Pages is the exception because Pages Functions are not Python Workers.
 3. **Cloudflare resource realism** — the example uses the real primitive semantics, not just an in-memory stand-in.
 
 ## Realism levels
@@ -29,15 +29,15 @@ This document tracks how realistically each Cloudflare primitive example is test
 | FastAPI / ASGI | `fastapi-03-framework` | 1 | Static validation only. | Code parses/lints; ASGI bridge is implemented. | Add verifier checks for `/`, `/items/python`, `/env`. |
 | D1 database | `d1-04-query` | 1 | Static validation only. | Code parses/lints; query wrapper tested indirectly by syntax only. | Automate local `wrangler d1 execute --file db_init.sql`, then verify query route. |
 | LangChain/package orchestration | `ai-05-langchain` | 1 | Static validation only. | Service-boundary placeholder parses/lints. | Replace with real LangChain-compatible workload or remove. |
-| Workers Assets | `assets-06-static-assets` | 1 | Static validation only. | Config/code parse; static asset exists. | Run `pywrangler dev` and verify dynamic route plus static `index.html`. |
+| Workers Assets | `assets-06-static-assets` | 3 | `uv run python scripts/verify_examples.py assets-06-static-assets` | Starts Worker locally and verifies the static asset is served by Workers Assets instead of Python. | Also verify a dynamic Python route under a non-asset path. |
 | Durable Objects | `durable-objects-07-counter` | 3 | `uv run python scripts/verify_examples.py durable-objects-07-counter` | Starts Worker locally, resets counter, increments, reads persisted DO state. | Verify concurrent increments and named-object isolation. |
-| Cron Triggers | `scheduled-08-cron` | 1 | Static validation only. | Code parses/lints; scheduled handler exists. | Hit local scheduled endpoint `/cdn-cgi/handler/scheduled?...` and assert logs/side effects. |
+| Cron Triggers | `scheduled-08-cron` | 2 | `uv run python scripts/verify_examples.py scheduled-08-cron` | Starts Worker locally and verifies the HTTP health route. | Hit local scheduled endpoint `/cdn-cgi/handler/scheduled?...` and assert logs/side effects. |
 | Workers AI | `workers-ai-09-inference` | 1 | Static validation only. | Wrapper and typed request parse/lint. | Verify local/deployed AI binding call with deterministic prompt or mocked model. |
 | Workflows | `workflows-10-pipeline` | 1 | Static validation only. | Workflow class and service wrapper parse/lint. | Start workflow locally/deployed, poll `/status/<id>`. |
 | Queues | `queues-16-producer-consumer` | 1 | Static validation only. | Producer/consumer code parses/lints. | Verify enqueue route and local queue consumer processing/ack behavior. |
 | Vectorize | `vectorize-17-search` | 1 | Static validation only. | Typed vector/query wrapper parses/lints. | Create local/remote index, upsert vector, query it, verify match. |
-| HTMLRewriter | `htmlrewriter-11-opengraph` | 1 | Static validation only. | Executable HTML response parses/lints. | Use real HTMLRewriter and verify injected tags in response. |
-| Images / binary responses | `images-12-generation` | 1 | Static validation only. | Pillow code parses/lints. | Start Worker, request PNG, verify content-type and PNG signature. |
+| HTMLRewriter | `htmlrewriter-11-opengraph` | 2 | `uv run python scripts/verify_examples.py htmlrewriter-11-opengraph` | Starts Worker locally and verifies OpenGraph HTML output. | Use real HTMLRewriter and verify injected tags in response. |
+| Images / binary responses | `images-12-generation` | 3 | `uv run python scripts/verify_examples.py images-12-generation` | Starts Worker locally and verifies a generated PNG response path. | Verify content-type and PNG signature explicitly. |
 | Service bindings / RPC | `service-bindings-13-rpc` | 1 | Static validation only. | Python service and TS client files exist/parse partially. | One-command two-process verifier: start Python service, start TS client, verify highlighted HTML. |
 | Outbound WebSockets | `websockets-14-stream-consumer` | 1 | Static validation only. | Durable Object/WebSocket code parses/lints. | Start Worker and verify `/status`; add deterministic fake WebSocket server if possible. |
 | Durable Objects + WebSockets | `durable-objects-15-chatroom` | 1 | Static validation only. | Chatroom page and DO code parse/lint. | Automated WebSocket client sends message and verifies broadcast. |
@@ -53,9 +53,9 @@ This document tracks how realistically each Cloudflare primitive example is test
 | Level | Count | Examples |
 |---:|---:|---|
 | 4 | 1 | `r2-01` |
-| 3 | 3 | `workers-01-hello`, `kv-02-binding`, `durable-objects-07-counter` |
-| 2 | 0 | — |
-| 1 | 20 | all remaining examples |
+| 3 | 5 | `workers-01-hello`, `kv-02-binding`, `assets-06-static-assets`, `durable-objects-07-counter`, `images-12-generation` |
+| 2 | 2 | `scheduled-08-cron`, `htmlrewriter-11-opengraph` |
+| 1 | 16 | all remaining examples |
 | 0 | 0 | — |
 
 ## Highest-priority testing work
@@ -73,4 +73,8 @@ uv run python scripts/verify_examples.py workers-01-hello
 uv run python scripts/verify_examples.py r2-01
 uv run python scripts/verify_examples.py kv-02-binding
 uv run python scripts/verify_examples.py durable-objects-07-counter
+uv run python scripts/verify_examples.py assets-06-static-assets
+uv run python scripts/verify_examples.py images-12-generation
+uv run python scripts/verify_examples.py htmlrewriter-11-opengraph
+uv run python scripts/verify_examples.py scheduled-08-cron
 ```

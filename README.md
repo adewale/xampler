@@ -53,6 +53,7 @@ See:
 - [`docs/api-iteration-log.md`](docs/api-iteration-log.md)
 - [`docs/primitives-api-surface.md`](docs/primitives-api-surface.md)
 - [`docs/primitive-test-realism.md`](docs/primitive-test-realism.md)
+- [`docs/pythonic-tooling.md`](docs/pythonic-tooling.md)
 - [`docs/cloudflare-primitives-pythonic-scores.md`](docs/cloudflare-primitives-pythonic-scores.md)
 - [`docs/example-rubric-scores.md`](docs/example-rubric-scores.md)
 - [`docs/examples-status-and-pythonicness.md`](docs/examples-status-and-pythonicness.md)
@@ -74,21 +75,21 @@ Coverage and Pythonic API scores are out of 10. Test realism is out of 5; see [`
 | Primitive | Coverage / 10 | Pythonic API / 10 | Test Realism / 5 |
 |---|---:|---:|---:|
 | R2 object storage | 8.5 | 9.25 | 4 |
-| Workers Assets | 7.0 | 8.75 | 1 |
+| Workers Assets | 7.0 | 8.75 | 3 |
 | Workers KV | 7.5 | 8.5 | 3 |
 | D1 database | 6.5 | 8.25 | 1 |
 | Durable Objects | 6.5 | 8.25 | 3 |
 | Workers AI | 5.5 | 8.25 | 1 |
 | Queues | 7.5 | 8.25 | 1 |
 | FastAPI / ASGI | 6.0 | 8.0 | 1 |
-| Cron Triggers | 6.0 | 8.0 | 1 |
-| Binary responses / Pillow | 6.0 | 8.0 | 1 |
+| Cron Triggers | 6.0 | 8.0 | 2 |
+| Binary responses / Pillow | 6.0 | 8.0 | 3 |
 | Service Bindings / RPC | 6.0 | 8.0 | 1 |
 | Durable Objects + WebSockets | 7.0 | 8.0 | 1 |
 | Vectorize | 7.0 | 8.0 | 1 |
 | Pages | 5.0 | 8.0 | 1 |
 | Workflows | 6.5 | 7.75 | 1 |
-| HTMLRewriter | 4.5 | 7.75 | 1 |
+| HTMLRewriter | 4.5 | 7.75 | 2 |
 | Outbound WebSockets | 6.5 | 7.75 | 1 |
 | Browser Rendering | 5.0 | 7.75 | 1 |
 | Email Workers | 5.5 | 7.75 | 1 |
@@ -99,10 +100,9 @@ Coverage and Pythonic API scores are out of 10. Test realism is out of 5; see [`
 
 ## Requirements
 
-- Node.js and npm
-- Wrangler (`npx wrangler@latest ...` is used in the examples)
 - Python 3.13+
-- `uv` for local Python checks/tests
+- `uv` for dependency management, local Worker runs, checks, and tests
+- Node.js available on PATH because Wrangler is a JavaScript tool under the hood
 - A Cloudflare account for deployed resources
 
 Python Workers are configured with the `python_workers` compatibility flag.
@@ -117,7 +117,7 @@ uv run ruff check .
 uv run pytest -q
 ```
 
-Run and verify an example locally with Wrangler:
+Run and verify an example locally with `uv` + `pywrangler`:
 
 ```bash
 uv run python scripts/verify_examples.py --list

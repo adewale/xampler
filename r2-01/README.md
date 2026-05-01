@@ -119,13 +119,14 @@ Create an R2 bucket once:
 npx wrangler@latest r2 bucket create xampler-r2-demo
 ```
 
-Install dependencies and run locally:
+Run locally with Python tooling:
 
 ```bash
-cd 01-r2
-npm install
-npx wrangler@latest dev
+cd r2-01
+uv run pywrangler dev
 ```
+
+You do not need to run `npm install` for this Python example. `pywrangler` invokes Wrangler for you.
 
 By default, Wrangler local development uses local R2 storage. Use a remote binding if you intentionally want local development to operate on a real bucket.
 

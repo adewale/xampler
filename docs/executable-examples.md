@@ -18,9 +18,13 @@ Run one example and perform HTTP checks:
 uv run python scripts/verify_examples.py workers-01-hello
 uv run python scripts/verify_examples.py r2-01
 uv run python scripts/verify_examples.py durable-objects-07-counter
+uv run python scripts/verify_examples.py assets-06-static-assets
+uv run python scripts/verify_examples.py images-12-generation
+uv run python scripts/verify_examples.py htmlrewriter-11-opengraph
+uv run python scripts/verify_examples.py scheduled-08-cron
 ```
 
-The verifier starts `npx wrangler dev`, waits for the local server, sends requests, checks status/body expectations, and shuts Wrangler down.
+The verifier starts `uv run pywrangler dev`, waits for the local server, sends requests, checks status/body expectations, and shuts Wrangler down. `pywrangler` may call Wrangler internally, but users do not need an npm workflow for Python examples.
 
 ## Validation performed locally
 
@@ -48,9 +52,13 @@ uv run python scripts/verify_examples.py workers-01-hello
 uv run python scripts/verify_examples.py r2-01
 uv run python scripts/verify_examples.py kv-02-binding
 uv run python scripts/verify_examples.py durable-objects-07-counter
+uv run python scripts/verify_examples.py assets-06-static-assets
+uv run python scripts/verify_examples.py images-12-generation
+uv run python scripts/verify_examples.py htmlrewriter-11-opengraph
+uv run python scripts/verify_examples.py scheduled-08-cron
 ```
 
-Verified results included successful HTTP checks for Worker responses, R2 put/get, KV put/get, and Durable Object counter reset/increment/read.
+Verified results included successful HTTP checks for Worker responses, R2 put/get and JPEG byte comparison, KV put/get, Durable Object counter reset/increment/read, static asset serving, generated image response, OpenGraph HTML output, and scheduled Worker health.
 
 ## Literate programming style
 
