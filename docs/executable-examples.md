@@ -21,6 +21,7 @@ uv run python scripts/verify_examples.py fastapi-03-framework
 uv run python scripts/verify_examples.py d1-04-query
 uv run python scripts/verify_examples.py durable-objects-07-counter
 uv run python scripts/verify_examples.py assets-06-static-assets
+uv run python scripts/verify_examples.py queues-16-producer-consumer
 uv run python scripts/verify_examples.py images-12-generation
 uv run python scripts/verify_examples.py htmlrewriter-11-opengraph
 uv run python scripts/verify_examples.py scheduled-08-cron
@@ -57,12 +58,13 @@ uv run python scripts/verify_examples.py fastapi-03-framework
 uv run python scripts/verify_examples.py d1-04-query
 uv run python scripts/verify_examples.py durable-objects-07-counter
 uv run python scripts/verify_examples.py assets-06-static-assets
+uv run python scripts/verify_examples.py queues-16-producer-consumer
 uv run python scripts/verify_examples.py images-12-generation
 uv run python scripts/verify_examples.py htmlrewriter-11-opengraph
 uv run python scripts/verify_examples.py scheduled-08-cron
 ```
 
-Verified results included successful HTTP checks for Worker responses, R2 put/get and JPEG byte comparison, KV put/get, FastAPI ASGI routing, D1 local setup plus seeded-row query, Durable Object counter reset/increment/read, static asset serving, generated image response, OpenGraph HTML output, and scheduled Worker health.
+Verified results included successful HTTP checks for Worker responses, R2 put/get and JPEG byte comparison, KV text/JSON/list/delete, FastAPI ASGI routing, D1 local setup plus seeded and parameter-bound queries, Durable Object counter isolation, static asset plus dynamic route serving, queue producer enqueue, generated image response, OpenGraph HTML output, and scheduled Worker health.
 
 ## Literate programming style
 

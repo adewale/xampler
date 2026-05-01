@@ -27,13 +27,13 @@ The goal is to improve three metrics together:
 |---:|---|---:|---:|---:|---|
 | 1 | Workers | 6.0 | 8.0 | 3 | Add shared `response()`/`json_response()` helper and request parsing helper used by all examples. |
 | 2 | R2 | 8.5 | 9.25 | 4 | Verify multipart upload locally and add object-handle docs for all advanced options. |
-| 3 | D1 | 6.8 | 8.5 | 3 | Add write/query mutation route, index usage, retries, and remote/deployed D1 verification. |
-| 4 | KV | 7.5 | 8.5 | 3 | Verify JSON, delete, list, and `iter_keys()`; add metadata/expiration docs. |
-| 5 | Queues | 7.5 | 8.25 | 1 | Add local enqueue verification and consumer processing harness; document ack/retry patterns. |
+| 3 | D1 | 7.1 | 8.7 | 3 | Add write/query mutation route, index usage, retries, and remote/deployed D1 verification. |
+| 4 | KV | 8.0 | 8.8 | 4 | Add metadata/expiration docs and TTL verification. |
+| 5 | Queues | 7.8 | 8.5 | 2 | Add consumer processing harness for ack/retry/batch verification. |
 | 6 | Workers AI | 5.5 | 8.25 | 1 | Add typed response model and a deterministic smoke path for a small inference. |
 | 7 | Vectorize | 7.0 | 8.0 | 1 | Add `VectorMatch`/`VectorQueryResult`, batch helper, and upsert/query verification. |
-| 8 | Durable Objects | 6.5 | 8.25 | 3 | Add typed `DurableObjectRef`, verify named-object isolation and concurrent increments. |
-| 9 | Assets / Pages | 6.0 | 8.4 | 3/1 | Assets: verify dynamic route plus static route. Pages: add Pages dev verifier. |
+| 8 | Durable Objects | 7.0 | 8.6 | 4 | Verify concurrent increments, alarms, and hibernation patterns. |
+| 9 | Assets / Pages | 7.2 | 8.9 | 3/1 | Assets: add cache/header assertions. Pages: add Pages dev verifier. |
 | 10 | Cron Triggers | 6.0 | 8.0 | 2 | Verify local scheduled endpoint and record an observable side effect. |
 
 ## Pythonic API improvements by primitive
@@ -88,7 +88,7 @@ quote = await stmt.one_as(Quote)
 
 ### KV
 
-Current: `KVNamespace`, `KVKey`, `iter_keys()`.
+Current: `KVNamespace`, `KVKey`, `KVListResult`, `list()`, and `iter_keys()`; verifier covers text, JSON, list, delete, and missing-key behavior.
 
 Next:
 
@@ -99,11 +99,11 @@ async for key in kv.iter_keys(prefix="session:"):
     await key.delete()
 ```
 
-Verify JSON/list/delete paths.
+Next verification target: TTL/expiration and metadata behavior.
 
 ### Queues
 
-Current: `QueueService`, `QueueJob`, `QueueConsumer`.
+Current: `QueueService`, `QueueJob`, `QueueSendOptions`, `QueueMessage`, `QueueBatchResult`, and `QueueConsumer`; verifier covers producer enqueue.
 
 Make more Pythonic:
 
@@ -152,7 +152,7 @@ Add result dataclasses.
 
 ### Durable Objects
 
-Current: named counter wrapper.
+Current: named counter wrapper plus typed `CounterRef`; verifier covers two named counters and isolation.
 
 Make more Pythonic:
 
@@ -171,6 +171,7 @@ Assets API should remain mostly configuration-first:
 ```py
 # No Python API needed for static files.
 # The Pythonic move is to avoid waking Python.
+# Dynamic paths such as /api/status still route to the Worker.
 ```
 
 Pages is not Python-native today, so score should depend on clarity and tooling honesty rather than Python API wrappers.

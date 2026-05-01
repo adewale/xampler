@@ -11,12 +11,12 @@ Sorted by Pythonic score, highest first.
 | Primitive | Example | Coverage | Pythonic API | API surface exposed in this repo | Main missing pieces |
 |---|---|---:|---:|---|---|
 | R2 object storage | `r2-01` | 8.5 | 9.25 | `R2Bucket`, `R2ObjectRef`, `R2Object`, `R2HttpMetadata`, `R2Range`, `R2Conditional`, `R2ListResult`, `R2MultipartUpload`; `object()`, `read_*`, `write_*`, `exists`, `stat`, `iter_objects`, multipart `async with`, `.raw`. | Presigned URLs/S3 API, public buckets, CORS, lifecycle rules, event notifications. |
-| Workers Assets | `assets-06-static-assets` | 7.0 | 8.75 | Direct static asset serving through Wrangler `assets`; Python only handles dynamic route. | More deployment/cache examples. |
-| Workers KV | `kv-02-binding` | 7.5 | 8.5 | `KVNamespace`, `KVKey`, `KVListResult`; `key()`, `read_text`, `write_text`, `read_json`, `write_json`, `exists`, `delete`, `list`, `iter_keys`, platform aliases `get_*`/`put_*`. | Metadata returns, cache TTL docs, bulk patterns, stronger list verifier. |
-| D1 database | `d1-04-query` | 6.8 | 8.5 | `D1Database`, `D1Statement`, `statement()`, `all`, `one`, `one_as`, typed `Quote`, D1 null conversion. | Migrations, batch/transaction examples, automated local DB setup. |
-| Durable Objects | `durable-objects-07-counter` | 6.5 | 8.25 | `Counter`, `CounterNamespace.named()`, named object routing, storage-backed counter. | Typed stub/ref, alarms, transactions, storage SQL, hibernation in isolated example. |
+| Workers Assets | `assets-06-static-assets` | 7.2 | 8.9 | Direct static asset serving through Wrangler `assets`; Python only handles dynamic `/api/status` route. | Cache/header assertions, SPA/not-found routing examples. |
+| Workers KV | `kv-02-binding` | 8.0 | 8.8 | `KVNamespace`, `KVKey`, `KVListResult`; `key()`, `read_text`, `write_text`, `read_json`, `write_json`, `exists`, `delete`, `list`, `iter_keys`, platform aliases `get_*`/`put_*`; verifier covers text, JSON, list, delete. | Metadata returns, cache TTL docs, bulk patterns, deployed namespace verification. |
+| D1 database | `d1-04-query` | 7.1 | 8.7 | `D1Database`, `D1Statement`, `statement()`, `all`, `one`, `one_as`, typed `Quote`, parameter binding, D1 null conversion. | Migrations, batch/transaction examples, retry helpers, write/mutation route. |
+| Durable Objects | `durable-objects-07-counter` | 7.0 | 8.6 | `Counter`, `CounterNamespace.named()`, typed `CounterRef`, named object routing, storage-backed counter, named-object isolation verification. | Concurrent increments, alarms, transactions, storage SQL, hibernation in isolated example. |
 | Workers AI | `workers-ai-09-inference` | 5.5 | 8.25 | `AIService.generate_text()`, `TextGenerationRequest`. | Model catalog helpers, typed responses, image/audio/embedding tasks, verified runtime check. |
-| Queues | `queues-16-producer-consumer` | 7.5 | 8.25 | `QueueService`, `QueueJob`, `QueueConsumer`; `send_json`, `send_many`, per-message ack/retry with backoff. | Pull consumer API, dead-letter queues, local `/process-now` verifier, multiple queues. |
+| Queues | `queues-16-producer-consumer` | 7.8 | 8.5 | `QueueService`, `QueueJob`, `QueueSendOptions`, `QueueMessage`, `QueueBatchResult`, `QueueConsumer`; `send`, `send_json`, `send_many`, per-message ack/retry with backoff; producer route is verified. | Consumer processing verifier, dead-letter queues, multiple queues. |
 | FastAPI / ASGI | `fastapi-03-framework` | 6.0 | 8.0 | Normal `FastAPI` app, ASGI bridge in `Default.fetch`, env access through ASGI scope. | Larger routing, middleware, error handling, package compatibility notes. |
 | Cron Triggers | `scheduled-08-cron` | 6.0 | 8.0 | `ScheduledJob.run()`, `scheduled()` handler. | Typed event wrapper, local scheduled verification, persistence/observability example. |
 | Binary responses / Pillow | `images-12-generation` | 6.0 | 8.0 | Pillow-generated PNG and binary `Response`. | Query param validation, Cloudflare Images API, caching, R2 output. |
@@ -36,7 +36,7 @@ Sorted by Pythonic score, highest first.
 
 ## Aggregate view
 
-- Average coverage: **6.1 / 10**
+- Average coverage: **6.2 / 10**
 - Average Pythonic API score: **8.1 / 10**
 
 The API design is generally ahead of the feature coverage. That is intentional for now: the examples establish the Pythonic shape, then each primitive can be made more comprehensive and verified over time.

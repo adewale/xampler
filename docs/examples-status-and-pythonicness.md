@@ -18,13 +18,14 @@ Scores use [`docs/pythonic-rubric.md`](pythonic-rubric.md). They consider readab
 |---|---|---|---|---:|---|
 | `workers-01-hello` | Workers request/response | Verified | `uv run python scripts/verify_examples.py workers-01-hello` | 8.0 | Tiny, readable, and executable. Limited API surface. |
 | `r2-01` | R2 object storage | Verified | `uv run python scripts/verify_examples.py r2-01` | 9.25 | Strongest API: `bucket.object(key)`, `read_text`, `write_bytes`, typed metadata/options, `async for`, multipart `async with`, `.raw` escape hatch, real R2 local verification. |
-| `kv-02-binding` | Workers KV | Verified | `uv run python scripts/verify_examples.py kv-02-binding` | 8.5 | Good service/resource shape with `KVNamespace` and `KVKey`; text/JSON helpers and local KV verification. Needs expiration/cache metadata docs. |
+| `kv-02-binding` | Workers KV | Verified | `uv run python scripts/verify_examples.py kv-02-binding` | 8.8 | Strong service/resource shape with `KVNamespace` and `KVKey`; verifier covers text, JSON, list, delete, and missing-key behavior. Needs expiration/cache metadata docs. |
 | `fastapi-03-framework` | FastAPI on Workers | Verified | `uv run python scripts/verify_examples.py fastapi-03-framework` | 8.0 | Uses real ASGI bridge, keeps FastAPI routes ordinary, and verifies local routing. Needs `/env` and template/dependency route coverage. |
-| `d1-04-query` | D1 | Verified | `uv run python scripts/verify_examples.py d1-04-query` | 8.5 | Verifier initializes local D1 with `db_init.sql`, starts the Worker, and checks the seeded PEP 20 row through `D1Statement.one_as`. Needs transactions/retries/index examples. |
+| `d1-04-query` | D1 | Verified | `uv run python scripts/verify_examples.py d1-04-query` | 8.7 | Verifier initializes local D1 with `db_init.sql`, starts the Worker, checks the seeded PEP 20 row, and verifies a parameter-bound query through `D1Statement.one_as`. Needs transactions/retries/index examples. |
 | `ai-05-langchain` | Python package / LangChain boundary | Needs work | none yet | 6.75 | Service boundary shape is useful, but it does not yet exercise a real LangChain chain in Workers. |
-| `assets-06-static-assets` | Workers Assets | Runnable | `uv run python scripts/verify_examples.py assets-06-static-assets` | 8.75 | Teaches the Pythonic/platform-correct approach: static assets should bypass Python. Needs smoke verification. |
-| `durable-objects-07-counter` | Durable Objects | Verified | `uv run python scripts/verify_examples.py durable-objects-07-counter` | 8.25 | Real named Durable Object, reset/increment/read verified. Good literate comments. Could add a richer typed stub wrapper. |
+| `assets-06-static-assets` | Workers Assets | Verified | `uv run python scripts/verify_examples.py assets-06-static-assets` | 8.9 | Teaches the Pythonic/platform-correct approach: static assets bypass Python while `/api/status` wakes the Worker only for dynamic work. |
+| `durable-objects-07-counter` | Durable Objects | Verified | `uv run python scripts/verify_examples.py durable-objects-07-counter` | 8.6 | Real named Durable Object, typed `CounterRef`, reset/increment/read verified across two isolated names. Good literate comments. Needs concurrent increment checks. |
 | `scheduled-08-cron` | Cron triggers | Runnable | `uv run python scripts/verify_examples.py scheduled-08-cron` | 8.0 | Real scheduled handler and job object. Needs local scheduled endpoint verification. |
+| `queues-16-producer-consumer` | Queues | Verified producer | `uv run python scripts/verify_examples.py queues-16-producer-consumer` | 8.5 | Real producer/consumer code with typed `QueueJob`, `QueueSendOptions`, `QueueMessage`, `QueueBatchResult`, and ack/retry handling. Producer route is locally verified; consumer processing still needs a harness. |
 | `workers-ai-09-inference` | Workers AI | Runnable with runtime support | verifier listed | 8.25 | Typed request dataclass and `AIService`. Needs verified local/deployed AI run and typed response model. |
 | `workflows-10-pipeline` | Workflows | Runnable with runtime support | verifier listed | 7.75 | Real workflow entrypoint and `/start`/`/status`. Needs verified workflow run and `WorkflowInstance` handle. |
 | `htmlrewriter-11-opengraph` | HTMLRewriter | Runnable | verifier listed | 7.75 | Has metadata model and executable response, but should use real `HTMLRewriter` boundary instead of prebuilt HTML. |
@@ -45,6 +46,7 @@ uv run python scripts/verify_examples.py fastapi-03-framework
 uv run python scripts/verify_examples.py d1-04-query
 uv run python scripts/verify_examples.py durable-objects-07-counter
 uv run python scripts/verify_examples.py assets-06-static-assets
+uv run python scripts/verify_examples.py queues-16-producer-consumer
 uv run python scripts/verify_examples.py images-12-generation
 uv run python scripts/verify_examples.py htmlrewriter-11-opengraph
 uv run python scripts/verify_examples.py scheduled-08-cron
@@ -62,9 +64,9 @@ uv run python scripts/verify_examples.py scheduled-08-cron
 ## Priority iteration backlog
 
 1. Add automated smoke verification for every Runnable example.
-2. Add `KVNamespace.iter_keys()` and route verification for KV listing.
+2. Add KV TTL/expiration and metadata verification.
 3. Add D1 transactions/retries/index examples now that setup automation exists.
-4. Add `WorkflowInstance` and `DurableObjectRef` typed handles.
+4. Add queue consumer ack/retry verification beyond producer enqueue.
 5. Replace `htmlrewriter-11-opengraph` simplified HTML with real HTMLRewriter usage.
 6. Add deterministic WebSocket verification for the chatroom.
 7. Turn `ai-05-langchain` into a real working LangChain-compatible example or drop it from the verified set.

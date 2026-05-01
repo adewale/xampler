@@ -75,31 +75,31 @@ The short version:
 
 Coverage and Pythonic API scores are out of 10. Test realism is out of 5; see [`docs/primitive-test-realism.md`](docs/primitive-test-realism.md).
 
-| Primitive | Coverage / 10 | Pythonic API / 10 | Test Realism / 5 |
-|---|---:|---:|---:|
-| R2 object storage | 8.5 | 9.25 | 4 |
-| Workers Assets | 7.0 | 8.75 | 3 |
-| Workers KV | 7.5 | 8.5 | 3 |
-| D1 database | 6.8 | 8.5 | 3 |
-| Durable Objects | 6.5 | 8.25 | 3 |
-| Workers AI | 5.5 | 8.25 | 1 |
-| Queues | 7.5 | 8.25 | 1 |
-| FastAPI / ASGI | 6.0 | 8.0 | 3 |
-| Cron Triggers | 6.0 | 8.0 | 2 |
-| Binary responses / Pillow | 6.0 | 8.0 | 3 |
-| Service Bindings / RPC | 6.0 | 8.0 | 1 |
-| Durable Objects + WebSockets | 7.0 | 8.0 | 1 |
-| Vectorize | 7.2 | 8.25 | 1 |
-| Pages | 5.0 | 8.0 | 1 |
-| Workflows | 6.5 | 7.75 | 1 |
-| HTMLRewriter | 4.5 | 7.75 | 2 |
-| Outbound WebSockets | 6.5 | 7.75 | 1 |
-| Browser Rendering | 5.0 | 7.75 | 1 |
-| Email Workers | 5.5 | 7.75 | 1 |
-| AI Gateway | 5.0 | 7.75 | 1 |
-| R2 Data Catalog | 5.0 | 7.75 | 1 |
-| R2 SQL | 4.5 | 7.5 | 1 |
-| LangChain/package orchestration | 3.0 | 6.75 | 1 |
+| Tier | Primitive | Coverage / 10 | Pythonic API / 10 | Test Realism / 5 |
+|---|---|---:|---:|---:|
+| Tier 1 — Gold standard | R2 object storage | 8.5 | 9.25 | 4 |
+| Tier 1 — Gold standard | Workers KV | 8.0 | 8.8 | 4 |
+| Tier 1 — Gold standard | Durable Objects | 7.0 | 8.6 | 4 |
+| Tier 2 — Strong local examples | Workers Assets | 7.2 | 8.9 | 3 |
+| Tier 2 — Strong local examples | D1 database | 7.1 | 8.7 | 3 |
+| Tier 2 — Strong local examples | FastAPI / ASGI | 6.0 | 8.0 | 3 |
+| Tier 2 — Strong local examples | Binary responses / Pillow | 6.0 | 8.0 | 3 |
+| Tier 3 — Runnable, needs deeper primitive verification | Queues | 7.8 | 8.5 | 2 |
+| Tier 3 — Runnable, needs deeper primitive verification | Cron Triggers | 6.0 | 8.0 | 2 |
+| Tier 3 — Runnable, needs deeper primitive verification | HTMLRewriter | 4.5 | 7.75 | 2 |
+| Tier 4 — High API promise, low realism | Workers AI | 5.5 | 8.25 | 1 |
+| Tier 4 — High API promise, low realism | Vectorize | 7.2 | 8.25 | 1 |
+| Tier 4 — High API promise, low realism | Service Bindings / RPC | 6.0 | 8.0 | 1 |
+| Tier 4 — High API promise, low realism | Durable Objects + WebSockets | 7.0 | 8.0 | 1 |
+| Tier 4 — High API promise, low realism | Pages | 5.0 | 8.0 | 1 |
+| Tier 4 — High API promise, low realism | Workflows | 6.5 | 7.75 | 1 |
+| Tier 4 — High API promise, low realism | Outbound WebSockets | 6.5 | 7.75 | 1 |
+| Tier 4 — High API promise, low realism | Browser Rendering | 5.0 | 7.75 | 1 |
+| Tier 4 — High API promise, low realism | Email Workers | 5.5 | 7.75 | 1 |
+| Tier 4 — High API promise, low realism | AI Gateway | 5.0 | 7.75 | 1 |
+| Tier 4 — High API promise, low realism | R2 Data Catalog | 5.0 | 7.75 | 1 |
+| Tier 4 — High API promise, low realism | R2 SQL | 4.5 | 7.5 | 1 |
+| Tier 5 — Rework candidate | LangChain/package orchestration | 3.0 | 6.75 | 1 |
 
 ## Requirements
 

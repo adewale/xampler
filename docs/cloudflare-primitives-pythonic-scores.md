@@ -8,14 +8,15 @@ This scores the **API surface we currently expose in the examples**, not Cloudfl
 |---|---|---:|---|---|
 | Workers request/response | `workers-01-hello` | 8.0 | Thin `WorkerEntrypoint`, localized response helper. | Shared response module; richer request parsing helper. |
 | R2 object storage | `r2-01` | 9.25 | `R2Bucket`, `R2ObjectRef`, typed metadata/options, `read_*`/`write_*`, `iter_objects`, multipart `async with`, `.raw`. | More route tests; full object-handle docs for every advanced option. |
-| Workers KV | `kv-02-binding` | 8.5 | `KVNamespace`, `KVKey`, text/JSON helpers, `exists`, `delete`, `iter_keys`. | Metadata/cache/expiration result modeling; verifier for listing. |
+| Workers KV | `kv-02-binding` | 8.8 | `KVNamespace`, `KVKey`, text/JSON helpers, `exists`, `delete`, `list`, `iter_keys`; verifier covers text, JSON, list, delete. | Metadata/cache/expiration result modeling; deployed namespace verification. |
 | FastAPI / ASGI on Workers | `fastapi-03-framework` | 8.0 | Ordinary FastAPI app plus small ASGI adapter in `fetch`. | More Pyodide/package compatibility guidance. |
-| D1 database | `d1-04-query` | 8.5 | `D1Database`, `D1Statement`, `statement`, `all`, `one`, `one_as`, typed row dataclass, D1 null conversion. | Migrations helper, transactions/batches, retry helpers. |
+| D1 database | `d1-04-query` | 8.7 | `D1Database`, `D1Statement`, `statement`, `all`, `one`, `one_as`, typed row dataclass, parameter binding, D1 null conversion. | Migrations helper, transactions/batches, retry helpers. |
 | Python package / LangChain boundary | `ai-05-langchain` | 6.75 | Service boundary shape around package orchestration. | Needs a real verified LangChain-compatible workload or replacement. |
-| Workers Assets | `assets-06-static-assets` | 8.75 | Teaches bypassing Python for static assets; dynamic route remains tiny. | More asset routing/config verification. |
-| Durable Objects | `durable-objects-07-counter` | 8.25 | Named Durable Object counter, namespace wrapper, verified reset/increment/read. | Typed Durable Object ref/stub abstraction; storage wrapper. |
+| Workers Assets | `assets-06-static-assets` | 8.9 | Teaches bypassing Python for static assets; dynamic `/api/status` route remains tiny. | Cache/header assertions and SPA/not-found routing examples. |
+| Durable Objects | `durable-objects-07-counter` | 8.6 | Named Durable Object counter, namespace wrapper, typed `CounterRef`, verified reset/increment/read across isolated names. | Concurrent increment checks; storage wrapper. |
 | Cron triggers | `scheduled-08-cron` | 8.0 | `ScheduledJob` service object and scheduled handler. | Typed scheduled event wrapper; verifier for scheduled endpoint. |
 | Workers AI | `workers-ai-09-inference` | 8.25 | `AIService`, typed request dataclass, native dict response. | Typed response models; model-specific helpers; verified AI runtime check. |
+| Queues | `queues-16-producer-consumer` | 8.5 | `QueueService`, `QueueJob`, `QueueSendOptions`, `QueueMessage`, `QueueBatchResult`, and explicit ack/retry handling. | Consumer processing verifier; dead-letter queue example. |
 | Workflows | `workflows-10-pipeline` | 7.75 | Workflow entrypoint, `WorkflowService.start/status`, durable steps. | `WorkflowInstance` handle; verified status flow; richer typed event payloads. |
 | HTMLRewriter | `htmlrewriter-11-opengraph` | 7.75 | Metadata dataclass and executable HTML response shape. | Real `HTMLRewriter` wrapper with element handlers and JS boundary notes. |
 | Binary responses / Pillow | `images-12-generation` | 8.0 | Simple Pillow PNG generation and binary response. | Typed query params, validation, cache/R2 integration. |
@@ -25,13 +26,13 @@ This scores the **API surface we currently expose in the examples**, not Cloudfl
 
 ## Current average
 
-Current average across these API surfaces: **8.1 / 10**.
+Current average across these API surfaces: **8.2 / 10**.
 
 ## Highest-scoring surfaces
 
 1. **R2 — 9.25/10**: best layered API: friendly object handles, platform vocabulary, typed options, iteration, context manager lifecycle, escape hatch.
-2. **Workers Assets — 8.75/10**: Pythonic because it avoids unnecessary Python work.
-3. **KV — 8.5/10**: good key-handle model, JSON/text helpers, async key iteration.
+2. **Workers Assets — 8.9/10**: Pythonic because it avoids unnecessary Python work.
+3. **KV — 8.8/10**: good key-handle model, JSON/text helpers, async key iteration.
 
 ## Lowest-scoring surfaces
 

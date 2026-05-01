@@ -25,16 +25,16 @@ This document tracks how realistically each Cloudflare primitive example is test
 |---|---|---:|---|---|---|
 | Workers request/response | `workers-01-hello` | 3 | `uv run python scripts/verify_examples.py workers-01-hello` | Starts Python Worker locally and checks HTTP response body. | Add multiple methods/headers/error response checks. |
 | R2 object storage | `r2-01` | 4 | `uv run python scripts/verify_examples.py r2-01` | Starts Worker locally, writes/reads text, uploads `fixtures/BreakingThe35.jpeg`, streams it back, byte-compares download. | Remote-binding/deployed R2 verification; multipart verification. |
-| Workers KV | `kv-02-binding` | 3 | `uv run python scripts/verify_examples.py kv-02-binding` | Starts Worker locally, writes text to KV, reads it back. | Verify JSON, TTL, delete, list/iteration, deployed KV namespace. |
+| Workers KV | `kv-02-binding` | 4 | `uv run python scripts/verify_examples.py kv-02-binding` | Starts Worker locally, writes/reads text, writes/reads JSON, lists keys, deletes a key, and verifies a missing-key 404. | Verify TTL/expiration behavior and deployed KV namespace. |
 | FastAPI / ASGI | `fastapi-03-framework` | 3 | `uv run python scripts/verify_examples.py fastapi-03-framework` | Starts Worker locally through the ASGI bridge and verifies `/` plus `/items/python`. | Add `/env` verification and a template/dependency route like the official example. |
-| D1 database | `d1-04-query` | 3 | `uv run python scripts/verify_examples.py d1-04-query` | Initializes local D1 with `db_init.sql`, starts the Worker locally, and verifies a seeded row is read from D1. | Add write/query mutation route, index usage, retry guidance, and remote/deployed D1 verification. |
+| D1 database | `d1-04-query` | 3 | `uv run python scripts/verify_examples.py d1-04-query` | Initializes local D1 with `db_init.sql`, starts the Worker locally, verifies a seeded row, and verifies a parameter-bound `WHERE author = ?` query. | Add write/query mutation route, index usage, retry guidance, and remote/deployed D1 verification. |
 | LangChain/package orchestration | `ai-05-langchain` | 1 | Static validation only. | Service-boundary placeholder parses/lints. | Replace with real LangChain-compatible workload or remove. |
-| Workers Assets | `assets-06-static-assets` | 3 | `uv run python scripts/verify_examples.py assets-06-static-assets` | Starts Worker locally and verifies the static asset is served by Workers Assets instead of Python. | Also verify a dynamic Python route under a non-asset path. |
-| Durable Objects | `durable-objects-07-counter` | 3 | `uv run python scripts/verify_examples.py durable-objects-07-counter` | Starts Worker locally, resets counter, increments, reads persisted DO state. | Verify concurrent increments and named-object isolation. |
+| Workers Assets | `assets-06-static-assets` | 3 | `uv run python scripts/verify_examples.py assets-06-static-assets` | Starts Worker locally, verifies the static asset is served by Workers Assets instead of Python, and verifies a dynamic Python route under `/api/status`. | Add cache/header assertions and SPA/not-found routing examples. |
+| Durable Objects | `durable-objects-07-counter` | 4 | `uv run python scripts/verify_examples.py durable-objects-07-counter` | Starts Worker locally, resets two named counters, increments them independently, and verifies persisted state plus named-object isolation. | Verify concurrent increments, alarms, and WebSocket hibernation patterns. |
 | Cron Triggers | `scheduled-08-cron` | 2 | `uv run python scripts/verify_examples.py scheduled-08-cron` | Starts Worker locally and verifies the HTTP health route. | Hit local scheduled endpoint `/cdn-cgi/handler/scheduled?...` and assert logs/side effects. |
 | Workers AI | `workers-ai-09-inference` | 1 | Static validation only. | Wrapper and typed request parse/lint. | Verify local/deployed AI binding call with deterministic prompt or mocked model. |
 | Workflows | `workflows-10-pipeline` | 1 | Static validation only. | Workflow class and service wrapper parse/lint. | Start workflow locally/deployed, poll `/status/<id>`. |
-| Queues | `queues-16-producer-consumer` | 1 | Static validation only. | Producer/consumer code parses/lints. | Verify enqueue route and local queue consumer processing/ack behavior. |
+| Queues | `queues-16-producer-consumer` | 2 | `uv run python scripts/verify_examples.py queues-16-producer-consumer` | Starts Worker locally and verifies the producer route accepts and enqueues a typed JSON job. | Verify local queue consumer processing, ack, retry, and batch behavior. |
 | Vectorize | `vectorize-17-search` | 1 | Static validation only. | Typed vector/query wrapper parses/lints. | Create local/remote index, upsert vector, query it, verify match. |
 | HTMLRewriter | `htmlrewriter-11-opengraph` | 2 | `uv run python scripts/verify_examples.py htmlrewriter-11-opengraph` | Starts Worker locally and verifies OpenGraph HTML output. | Use real HTMLRewriter and verify injected tags in response. |
 | Images / binary responses | `images-12-generation` | 3 | `uv run python scripts/verify_examples.py images-12-generation` | Starts Worker locally and verifies a generated PNG response path. | Verify content-type and PNG signature explicitly. |
@@ -52,10 +52,10 @@ This document tracks how realistically each Cloudflare primitive example is test
 
 | Level | Count | Examples |
 |---:|---:|---|
-| 4 | 1 | `r2-01` |
-| 3 | 7 | `workers-01-hello`, `kv-02-binding`, `fastapi-03-framework`, `d1-04-query`, `assets-06-static-assets`, `durable-objects-07-counter`, `images-12-generation` |
-| 2 | 2 | `scheduled-08-cron`, `htmlrewriter-11-opengraph` |
-| 1 | 14 | all remaining examples |
+| 4 | 3 | `r2-01`, `kv-02-binding`, `durable-objects-07-counter` |
+| 3 | 5 | `workers-01-hello`, `fastapi-03-framework`, `d1-04-query`, `assets-06-static-assets`, `images-12-generation` |
+| 2 | 3 | `scheduled-08-cron`, `htmlrewriter-11-opengraph`, `queues-16-producer-consumer` |
+| 1 | 13 | all remaining examples |
 | 0 | 0 | — |
 
 ## Highest-priority testing work
@@ -76,6 +76,7 @@ uv run python scripts/verify_examples.py durable-objects-07-counter
 uv run python scripts/verify_examples.py fastapi-03-framework
 uv run python scripts/verify_examples.py d1-04-query
 uv run python scripts/verify_examples.py assets-06-static-assets
+uv run python scripts/verify_examples.py queues-16-producer-consumer
 uv run python scripts/verify_examples.py images-12-generation
 uv run python scripts/verify_examples.py htmlrewriter-11-opengraph
 uv run python scripts/verify_examples.py scheduled-08-cron

@@ -70,6 +70,17 @@ EXAMPLES = {
         [
             Check("/text/verify", method="PUT", body=b"hello kv", status=201),
             Check("/text/verify", contains="hello kv"),
+            Check(
+                "/json/profile",
+                method="PUT",
+                body=b'{"name":"Ada","language":"Python"}',
+                headers={"content-type": "application/json"},
+                status=201,
+            ),
+            Check("/json/profile", contains="Python"),
+            Check("/keys", contains="verify"),
+            Check("/keys/verify", method="DELETE", contains="deleted"),
+            Check("/text/verify", status=404, contains="not found"),
         ],
         needs_setup="Wrangler accepts placeholder KV ids for local dev; replace id before deploy.",
     ),
@@ -79,7 +90,10 @@ EXAMPLES = {
     ),
     "d1-04-query": Example(
         "d1-04-query",
-        [Check("/", contains="PEP 20")],
+        [
+            Check("/", contains="PEP 20"),
+            Check("/by-author?author=PEP%2020", contains="Readability"),
+        ],
         needs_setup=(
             "The verifier initializes local D1 with db_init.sql before starting the Worker."
         ),
@@ -99,19 +113,43 @@ EXAMPLES = {
     ),
     "assets-06-static-assets": Example(
         "assets-06-static-assets",
-        [Check("/", contains="Served by Workers Assets")],
+        [
+            Check("/", contains="Served by Workers Assets"),
+            Check("/api/status", contains="Dynamic Python route"),
+        ],
     ),
     "durable-objects-07-counter": Example(
         "durable-objects-07-counter",
         [
             Check("/demo/reset", contains="0"),
+            Check("/other/reset", contains="0"),
             Check("/demo/increment", contains="1"),
-            Check("/demo", contains="1"),
+            Check("/demo/increment", contains="2"),
+            Check("/other/increment", contains="1"),
+            Check("/demo", contains="2"),
+            Check("/other", contains="1"),
         ],
     ),
     "scheduled-08-cron": Example(
         "scheduled-08-cron",
         [Check("/", contains="scheduled worker is alive")],
+    ),
+    "queues-16-producer-consumer": Example(
+        "queues-16-producer-consumer",
+        [
+            Check("/", contains="POST JSON"),
+            Check(
+                "/jobs",
+                method="POST",
+                body=b'{"kind":"resize","payload":{"image":"r2://demo/input.jpg"}}',
+                headers={"content-type": "application/json"},
+                status=202,
+                contains="resize",
+            ),
+        ],
+        needs_setup=(
+            "Local Wrangler queues accept producer sends; deployed consumers need a real queue."
+        ),
     ),
     "workers-ai-09-inference": Example(
         "workers-ai-09-inference",
