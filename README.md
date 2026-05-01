@@ -52,6 +52,8 @@ See:
 - [`docs/s3-python-library-research.md`](docs/s3-python-library-research.md)
 - [`docs/api-iteration-log.md`](docs/api-iteration-log.md)
 - [`docs/primitives-api-surface.md`](docs/primitives-api-surface.md)
+- [`docs/python-design-patterns.md`](docs/python-design-patterns.md)
+- [`docs/top-10-improvement-plan.md`](docs/top-10-improvement-plan.md)
 - [`docs/primitive-test-realism.md`](docs/primitive-test-realism.md)
 - [`docs/pythonic-tooling.md`](docs/pythonic-tooling.md)
 - [`docs/cloudflare-primitives-pythonic-scores.md`](docs/cloudflare-primitives-pythonic-scores.md)
@@ -77,7 +79,7 @@ Coverage and Pythonic API scores are out of 10. Test realism is out of 5; see [`
 | R2 object storage | 8.5 | 9.25 | 4 |
 | Workers Assets | 7.0 | 8.75 | 3 |
 | Workers KV | 7.5 | 8.5 | 3 |
-| D1 database | 6.5 | 8.25 | 1 |
+| D1 database | 6.8 | 8.5 | 1 |
 | Durable Objects | 6.5 | 8.25 | 3 |
 | Workers AI | 5.5 | 8.25 | 1 |
 | Queues | 7.5 | 8.25 | 1 |
@@ -86,7 +88,7 @@ Coverage and Pythonic API scores are out of 10. Test realism is out of 5; see [`
 | Binary responses / Pillow | 6.0 | 8.0 | 3 |
 | Service Bindings / RPC | 6.0 | 8.0 | 1 |
 | Durable Objects + WebSockets | 7.0 | 8.0 | 1 |
-| Vectorize | 7.0 | 8.0 | 1 |
+| Vectorize | 7.2 | 8.25 | 1 |
 | Pages | 5.0 | 8.0 | 1 |
 | Workflows | 6.5 | 7.75 | 1 |
 | HTMLRewriter | 4.5 | 7.75 | 2 |

@@ -13,7 +13,7 @@ Sorted by Pythonic score, highest first.
 | R2 object storage | `r2-01` | 8.5 | 9.25 | `R2Bucket`, `R2ObjectRef`, `R2Object`, `R2HttpMetadata`, `R2Range`, `R2Conditional`, `R2ListResult`, `R2MultipartUpload`; `object()`, `read_*`, `write_*`, `exists`, `stat`, `iter_objects`, multipart `async with`, `.raw`. | Presigned URLs/S3 API, public buckets, CORS, lifecycle rules, event notifications. |
 | Workers Assets | `assets-06-static-assets` | 7.0 | 8.75 | Direct static asset serving through Wrangler `assets`; Python only handles dynamic route. | More deployment/cache examples. |
 | Workers KV | `kv-02-binding` | 7.5 | 8.5 | `KVNamespace`, `KVKey`, `KVListResult`; `key()`, `read_text`, `write_text`, `read_json`, `write_json`, `exists`, `delete`, `list`, `iter_keys`, platform aliases `get_*`/`put_*`. | Metadata returns, cache TTL docs, bulk patterns, stronger list verifier. |
-| D1 database | `d1-04-query` | 6.5 | 8.25 | `D1Database.query`, `query_one`, typed `Quote`, D1 null conversion. | `D1Statement`, migrations, prepared statement handle, batch/transaction examples. |
+| D1 database | `d1-04-query` | 6.8 | 8.5 | `D1Database`, `D1Statement`, `statement()`, `all`, `one`, `one_as`, typed `Quote`, D1 null conversion. | Migrations, batch/transaction examples, automated local DB setup. |
 | Durable Objects | `durable-objects-07-counter` | 6.5 | 8.25 | `Counter`, `CounterNamespace.named()`, named object routing, storage-backed counter. | Typed stub/ref, alarms, transactions, storage SQL, hibernation in isolated example. |
 | Workers AI | `workers-ai-09-inference` | 5.5 | 8.25 | `AIService.generate_text()`, `TextGenerationRequest`. | Model catalog helpers, typed responses, image/audio/embedding tasks, verified runtime check. |
 | Queues | `queues-16-producer-consumer` | 7.5 | 8.25 | `QueueService`, `QueueJob`, `QueueConsumer`; `send_json`, `send_many`, per-message ack/retry with backoff. | Pull consumer API, dead-letter queues, local `/process-now` verifier, multiple queues. |
@@ -22,7 +22,7 @@ Sorted by Pythonic score, highest first.
 | Binary responses / Pillow | `images-12-generation` | 6.0 | 8.0 | Pillow-generated PNG and binary `Response`. | Query param validation, Cloudflare Images API, caching, R2 output. |
 | Service Bindings / RPC | `service-bindings-13-rpc` | 6.0 | 8.0 | Python RPC `highlight_code`, TypeScript client binding. | One-command two-worker verifier, typed request/response models, auth/error patterns. |
 | Durable Objects + WebSockets | `durable-objects-15-chatroom` | 7.0 | 8.0 | `ChatRoom`, WebSocketPair, room routing, hibernation API, browser client, message history. | Automated WebSocket verifier, `ChatSession`, persistence across restarts. |
-| Vectorize | `vectorize-17-search` | 7.0 | 8.0 | `VectorIndex`, `Vector`, `VectorQuery`; `upsert`, `query`, `get`, `delete`, `describe`; typed query options. | Metadata index management, `query_by_id`, batching helper, deterministic local verification. |
+| Vectorize | `vectorize-17-search` | 7.2 | 8.25 | `VectorIndex`, `Vector`, `VectorQuery`, `VectorMatch`, `VectorQueryResult`; `upsert`, `search`, `query`, `get`, `delete`, `describe`; typed query/results. | Metadata index management, `query_by_id`, batching helper, deterministic local verification. |
 | Pages | `pages-23-functions` | 5.0 | 8.0 | Static `public/`, file-based Pages Function `functions/api/hello.ts`, Pages mental model. | Python-specific Pages Functions are not supported; more routing/middleware examples. |
 | Workflows | `workflows-10-pipeline` | 6.5 | 7.75 | `Pipeline` workflow, `WorkflowService.start`, `status`, named durable steps. | `WorkflowInstance` handle, typed event payloads, verified full status flow. |
 | HTMLRewriter | `htmlrewriter-11-opengraph` | 4.5 | 7.75 | `OpenGraphPage` metadata model and executable HTML output. | Real `HTMLRewriter` wrapper and element handlers. |
@@ -37,7 +37,7 @@ Sorted by Pythonic score, highest first.
 ## Aggregate view
 
 - Average coverage: **6.1 / 10**
-- Average Pythonic API score: **8.0 / 10**
+- Average Pythonic API score: **8.1 / 10**
 
 The API design is generally ahead of the feature coverage. That is intentional for now: the examples establish the Pythonic shape, then each primitive can be made more comprehensive and verified over time.
 

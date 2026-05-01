@@ -18,6 +18,19 @@ class Vector:
     metadata: dict[str, Any] | None = None
 
 
+@dataclass(frozen=True)
+class VectorMatch:
+    id: str
+    score: float
+    metadata: dict[str, Any] | None = None
+    values: list[float] | None = None
+
+
+@dataclass(frozen=True)
+class VectorQueryResult:
+    matches: list[VectorMatch]
+
+
 @dataclass(frozen=True, kw_only=True)
 class VectorQuery:
     values: list[float]
@@ -38,14 +51,30 @@ class VectorQuery:
 
 
 class VectorIndex:
+    """Pythonic service wrapper for a Vectorize index."""
+
     def __init__(self, raw: Any):
         self.raw = raw
 
     async def upsert(self, vectors: list[Vector]) -> Any:
         return to_py(await self.raw.upsert(to_js([asdict(v) for v in vectors])))
 
-    async def query(self, query: VectorQuery) -> Any:
-        return to_py(await self.raw.query(to_js(query.values), to_js(query.options())))
+    async def search(self, values: list[float], *, top_k: int = 5) -> VectorQueryResult:
+        return await self.query(VectorQuery(values=values, top_k=top_k))
+
+    async def query(self, query: VectorQuery) -> VectorQueryResult:
+        data = to_py(await self.raw.query(to_js(query.values), to_js(query.options())))
+        return VectorQueryResult(
+            matches=[
+                VectorMatch(
+                    id=str(match["id"]),
+                    score=float(match["score"]),
+                    metadata=match.get("metadata"),
+                    values=match.get("values"),
+                )
+                for match in data.get("matches", [])
+            ]
+        )
 
     async def get(self, ids: list[str]) -> Any:
         return to_py(await self.raw.getByIds(to_js(ids)))
@@ -69,5 +98,6 @@ class Default(WorkerEntrypoint):
             return Response.json(await index.upsert([vector]))
         if request.method == "POST" and path == "/query":
             data = to_py(await request.json())
-            return Response.json(await index.query(VectorQuery(**data)))
+            result = await index.query(VectorQuery(**data))
+            return Response.json(asdict(result))
         return Response("Use /describe, POST /upsert, or POST /query.\n")
