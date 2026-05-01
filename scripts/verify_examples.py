@@ -252,6 +252,30 @@ EXAMPLES = {
         needs_setup="Pages Functions are TypeScript today; verifier uses Wrangler Pages dev.",
         dev_command=["uv", "run", "pywrangler", "pages", "dev", "public", "--port"],
     ),
+    "hvsc-24-ai-data-search": Example(
+        "hvsc-24-ai-data-search",
+        [
+            Check("/", contains="HVSC AI/data pipeline"),
+            Check("/ingest-fixture", method="POST", contains="HVSC #84"),
+            Check("/search?q=sid", contains="HVSC #84"),
+        ],
+        needs_setup=(
+            "Initializes local D1 and uses deterministic AI/vector logic over HVSC metadata."
+        ),
+        setup_commands=[
+            [
+                "uv",
+                "run",
+                "pywrangler",
+                "d1",
+                "execute",
+                "xampler-hvsc",
+                "--local",
+                "--file",
+                "db_init.sql",
+            ]
+        ],
+    ),
 }
 
 

@@ -37,6 +37,7 @@ d1-04-query/
 | [`r2-sql-21-query/`](r2-sql-21-query) | R2 SQL | SQL query client wrapper. |
 | [`r2-data-catalog-22-iceberg/`](r2-data-catalog-22-iceberg) | R2 Data Catalog | Iceberg REST namespace/table client. |
 | [`pages-23-functions/`](pages-23-functions) | Pages | Static Pages project with file-based Function. |
+| [`hvsc-24-ai-data-search/`](hvsc-24-ai-data-search) | AI/data app | HVSC release ingestion through R2, D1, Queues, Workers AI/Vectorize seams, and search. |
 | [`htmlrewriter-11-opengraph/`](htmlrewriter-11-opengraph) | HTMLRewriter | OpenGraph metadata model and edge HTML response shape. |
 | [`images-12-generation/`](images-12-generation) | Python packages / binary responses | Pillow image generation from a Worker. |
 | [`service-bindings-13-rpc/`](service-bindings-13-rpc) | Service bindings / RPC | Python RPC service shape with TypeScript client scaffold. |
@@ -95,6 +96,7 @@ Coverage and Pythonic API scores are out of 10. Test realism is out of 5; see [`
 | Tier 1 — Gold standard | Pages | 6.0 | 8.4 | 4 |
 | Tier 1 — Gold standard | Workflows | 7.2 | 8.5 | 4 |
 | Tier 1 — Gold standard | R2 SQL | 6.5 | 8.4 | 4 |
+| Tier 1 — Gold standard | HVSC AI/data app | 8.0 | 8.7 | 4 |
 | Tier 4 — High API promise, low realism | Service Bindings / RPC | 6.0 | 8.0 | 1 |
 | Tier 4 — High API promise, low realism | Outbound WebSockets | 6.5 | 7.75 | 1 |
 | Tier 4 — High API promise, low realism | Browser Rendering | 5.0 | 7.75 | 1 |

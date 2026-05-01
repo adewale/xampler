@@ -47,12 +47,13 @@ This document tracks how realistically each Cloudflare primitive example is test
 | R2 SQL | `r2-sql-21-query` | 4 | `uv run python scripts/verify_examples.py r2-sql-21-query` | Starts Worker locally and verifies safe read-only query shaping, automatic `LIMIT`, and `EXPLAIN` via deterministic `/demo`; real route keeps REST API path. | Verify against real R2 SQL endpoint with `SHOW DATABASES` and sample query. |
 | R2 Data Catalog | `r2-data-catalog-22-iceberg` | 1 | Static validation only. | Iceberg REST client parses/lints. | Verify namespace/table listing against real catalog; add PyIceberg client example. |
 | Pages | `pages-23-functions` | 4 | `uv run python scripts/verify_examples.py pages-23-functions` | Starts `uv run pywrangler pages dev public`, verifies static `/`, and verifies file-routed `/api/hello?name=Python`. | Add middleware/not-found examples and deployed Pages verification. |
+| AI/data app | `hvsc-24-ai-data-search` | 4 | `uv run python scripts/verify_examples.py hvsc-24-ai-data-search` | Initializes local D1, ingests HVSC release metadata, writes raw JSON to R2, stores searchable metadata in D1, sends a queue job, and searches through deterministic AI/vector seams. | Remote verification for Workers AI and Vectorize; use a larger HVSC metadata sample. |
 
 ## Current realism summary
 
 | Level | Count | Examples |
 |---:|---:|---|
-| 4 | 14 | `r2-01`, `kv-02-binding`, `d1-04-query`, `durable-objects-07-counter`, `scheduled-08-cron`, `queues-16-producer-consumer`, `workers-ai-09-inference`, `workflows-10-pipeline`, `vectorize-17-search`, `durable-objects-15-chatroom`, `pages-23-functions`, `r2-sql-21-query`, `htmlrewriter-11-opengraph`, `images-12-generation` |
+| 4 | 15 | `r2-01`, `kv-02-binding`, `d1-04-query`, `durable-objects-07-counter`, `scheduled-08-cron`, `queues-16-producer-consumer`, `workers-ai-09-inference`, `workflows-10-pipeline`, `vectorize-17-search`, `durable-objects-15-chatroom`, `pages-23-functions`, `r2-sql-21-query`, `hvsc-24-ai-data-search`, `htmlrewriter-11-opengraph`, `images-12-generation` |
 | 3 | 2 | `workers-01-hello`, `fastapi-03-framework` |
 | 2 | 0 | — |
 | 1 | 7 | all remaining examples |
@@ -86,4 +87,5 @@ uv run python scripts/verify_examples.py vectorize-17-search
 uv run python scripts/verify_examples.py durable-objects-15-chatroom
 uv run python scripts/verify_examples.py pages-23-functions
 uv run python scripts/verify_examples.py r2-sql-21-query
+uv run python scripts/verify_examples.py hvsc-24-ai-data-search
 ```

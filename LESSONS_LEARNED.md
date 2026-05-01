@@ -141,7 +141,13 @@ Cloudflare has explicit best-practice sections for some primitives, including Wo
 
 Lesson: best-practice support should be tracked per primitive, not assumed globally.
 
-## 14. Scoring must be actionable
+## 14. Complex examples expose composability gaps
+
+The `hvsc-24-ai-data-search` example combines HVSC release metadata, R2, D1, Queues, Workers AI and Vectorize seams. It showed that each primitive wrapper needs typed inputs and outputs that compose with the next wrapper.
+
+Lesson: keep the small examples focused, but regularly build one end-to-end app to discover missing API affordances.
+
+## 15. Scoring must be actionable
 
 Scores are useful only when they lead to concrete next steps.
 

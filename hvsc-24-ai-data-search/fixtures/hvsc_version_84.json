@@ -1,0 +1,12 @@
+{
+  "version": 84,
+  "source": "https://www.hvsc.c64.org/api/v1/version/7z",
+  "update": {
+    "requiredVersion": 83,
+    "url": "https://boswme.home.xs4all.nl/HVSC/HVSC_Update_84.7z"
+  },
+  "complete": {
+    "url": "https://boswme.home.xs4all.nl/HVSC/HVSC_84-all-of-them.7z"
+  },
+  "description": "High Voltage SID Collection release metadata for Commodore 64 SID music."
+}
