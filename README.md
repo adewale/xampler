@@ -67,6 +67,36 @@ The short version:
 5. Use `async for` for pagination/streams and `async with` for lifecycles.
 6. Keep `.raw` as an explicit escape hatch.
 
+## Primitive metrics
+
+Coverage and Pythonic API scores are out of 10. Test realism is out of 5; see [`docs/primitive-test-realism.md`](docs/primitive-test-realism.md).
+
+| Primitive | Coverage / 10 | Pythonic API / 10 | Test Realism / 5 |
+|---|---:|---:|---:|
+| R2 object storage | 8.5 | 9.25 | 4 |
+| Workers Assets | 7.0 | 8.75 | 1 |
+| Workers KV | 7.5 | 8.5 | 3 |
+| D1 database | 6.5 | 8.25 | 1 |
+| Durable Objects | 6.5 | 8.25 | 3 |
+| Workers AI | 5.5 | 8.25 | 1 |
+| Queues | 7.5 | 8.25 | 1 |
+| FastAPI / ASGI | 6.0 | 8.0 | 1 |
+| Cron Triggers | 6.0 | 8.0 | 1 |
+| Binary responses / Pillow | 6.0 | 8.0 | 1 |
+| Service Bindings / RPC | 6.0 | 8.0 | 1 |
+| Durable Objects + WebSockets | 7.0 | 8.0 | 1 |
+| Vectorize | 7.0 | 8.0 | 1 |
+| Pages | 5.0 | 8.0 | 1 |
+| Workflows | 6.5 | 7.75 | 1 |
+| HTMLRewriter | 4.5 | 7.75 | 1 |
+| Outbound WebSockets | 6.5 | 7.75 | 1 |
+| Browser Rendering | 5.0 | 7.75 | 1 |
+| Email Workers | 5.5 | 7.75 | 1 |
+| AI Gateway | 5.0 | 7.75 | 1 |
+| R2 Data Catalog | 5.0 | 7.75 | 1 |
+| R2 SQL | 4.5 | 7.5 | 1 |
+| LangChain/package orchestration | 3.0 | 6.75 | 1 |
+
 ## Requirements
 
 - Node.js and npm
