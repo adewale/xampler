@@ -1,0 +1,12 @@
+{
+  "name": "xampler-ai-05-langchain",
+  "private": true,
+  "scripts": {
+    "dev": "uv run pywrangler dev",
+    "deploy": "uv run pywrangler deploy",
+    "start": "uv run pywrangler dev"
+  },
+  "devDependencies": {
+    "wrangler": "latest"
+  }
+}

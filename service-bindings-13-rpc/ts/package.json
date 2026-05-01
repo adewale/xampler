@@ -1,0 +1,1 @@
+{"name":"xampler-service-bindings-13-rpc-ts","private":true,"scripts":{"dev":"wrangler dev"},"devDependencies":{"wrangler":"latest","typescript":"latest"}}

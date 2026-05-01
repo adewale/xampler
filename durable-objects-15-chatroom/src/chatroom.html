@@ -1,0 +1,23 @@
+<!doctype html>
+<html lang="en">
+  <head><meta charset="utf-8"><title>Python Workers Chatroom</title></head>
+  <body>
+    <h1>Python Workers Chatroom</h1>
+    <input id="name" placeholder="name" value="Pythonista">
+    <input id="text" placeholder="message">
+    <button id="send">Send</button>
+    <pre id="log"></pre>
+    <script>
+      const room = location.hash.slice(1) || 'lobby';
+      const ws = new WebSocket(`${location.origin.replace('http', 'ws')}/room/${room}`);
+      const log = document.querySelector('#log');
+      ws.onmessage = event => { log.textContent += event.data + '\n'; };
+      document.querySelector('#send').onclick = () => {
+        ws.send(JSON.stringify({
+          username: document.querySelector('#name').value,
+          text: document.querySelector('#text').value
+        }));
+      };
+    </script>
+  </body>
+</html>

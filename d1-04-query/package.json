@@ -1,0 +1,12 @@
+{
+  "name": "xampler-d1-04-query",
+  "private": true,
+  "scripts": {
+    "dev": "uv run pywrangler dev",
+    "deploy": "uv run pywrangler deploy",
+    "start": "uv run pywrangler dev"
+  },
+  "devDependencies": {
+    "wrangler": "latest"
+  }
+}

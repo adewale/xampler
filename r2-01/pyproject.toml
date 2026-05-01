@@ -1,0 +1,14 @@
+[project]
+name = "xampler-01-r2"
+version = "0.1.0"
+description = "R2 from Python Workers using cfboundary"
+requires-python = ">=3.12"
+dependencies = [
+    "cfboundary @ git+https://github.com/adewale/cfboundary@v0.1.10",
+]
+
+[dependency-groups]
+dev = [
+    "workers-py",
+    "workers-runtime-sdk",
+]

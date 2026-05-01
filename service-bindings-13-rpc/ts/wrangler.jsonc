@@ -1,0 +1,9 @@
+{
+  "$schema": "node_modules/wrangler/config-schema.json",
+  "name": "xampler-service-bindings-13-rpc-ts",
+  "main": "src/index.ts",
+  "compatibility_date": "2026-05-01",
+  "services": [
+    {"binding": "PYTHON_RPC", "service": "xampler-service-bindings-13-rpc-py"}
+  ]
+}

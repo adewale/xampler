@@ -1,0 +1,23 @@
+[project]
+name = "xampler"
+version = "0.1.0"
+description = "Python Workers examples using cfboundary"
+requires-python = ">=3.12"
+dependencies = [
+    "cfboundary @ git+https://github.com/adewale/cfboundary@v0.1.10",
+]
+
+[dependency-groups]
+dev = [
+    "pytest>=8.3",
+    "pytest-asyncio>=0.24",
+    "ruff>=0.8",
+]
+
+[tool.ruff]
+exclude = ["**/python_modules/**", "**/.venv-workers/**"]
+line-length = 100
+target-version = "py312"
+
+[tool.ruff.lint]
+select = ["E", "F", "I", "UP", "B", "SIM"]
