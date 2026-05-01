@@ -13,13 +13,39 @@ from workers import Response, WorkerEntrypoint  # type: ignore[import-not-found]
 class R2SqlQuery:
     sql: str
 
+    def safe_sql(self) -> str:
+        statement = self.sql.strip().rstrip(";")
+        lowered = statement.lower()
+        forbidden = (" insert ", " update ", " delete ", " create ", " drop ", " alter ", " join ")
+        padded = f" {lowered} "
+        allowed = lowered.startswith(("select", "show", "explain"))
+        if not allowed:
+            raise ValueError(
+                "R2 SQL examples only allow read-only SELECT, SHOW, or EXPLAIN statements"
+            )
+        if any(token in padded for token in forbidden):
+            raise ValueError(
+                "R2 SQL is read-only and single-table; "
+                "mutating statements and JOINs are unsupported"
+            )
+        if lowered.startswith("select") and " limit " not in padded:
+            statement = f"{statement} LIMIT 100"
+        return statement
+
+
+@dataclass(frozen=True)
+class R2SqlResult:
+    sql: str
+    data: dict[str, Any]
+
 
 class R2SqlClient:
     def __init__(self, *, account_id: str, token: str):
         self.url = f"https://api.cloudflare.com/client/v4/accounts/{account_id}/r2/sql/query"
         self.token = token
 
-    async def query(self, query: R2SqlQuery) -> dict[str, Any]:
+    async def query(self, query: R2SqlQuery) -> R2SqlResult:
+        sql = query.safe_sql()
         response = await js.fetch(
             self.url,
             to_js({
@@ -28,15 +54,42 @@ class R2SqlClient:
                     "authorization": f"Bearer {self.token}",
                     "content-type": "application/json",
                 },
-                "body": json.dumps({"sql": query.sql}),
+                "body": json.dumps({"sql": sql}),
             }),
         )
-        return to_py(await response.json())
+        return R2SqlResult(sql=sql, data=to_py(await response.json()))
+
+    async def explain(self, query: R2SqlQuery) -> R2SqlResult:
+        return await self.query(R2SqlQuery(f"EXPLAIN {query.safe_sql()}"))
+
+
+class DemoR2SqlClient:
+    async def query(self, query: R2SqlQuery) -> R2SqlResult:
+        sql = query.safe_sql()
+        return R2SqlResult(sql=sql, data={"rows": [{"bucket": "demo", "objects": 3}]})
+
+    async def explain(self, query: R2SqlQuery) -> R2SqlResult:
+        sql = f"EXPLAIN {query.safe_sql()}"
+        return R2SqlResult(sql=sql, data={"plan": "single-table scan with LIMIT"})
 
 
 class Default(WorkerEntrypoint):
     async def fetch(self, request: Any) -> Response:
+        url = str(request.url)
+        if request.method == "GET" and url.endswith("/"):
+            return Response("POST SQL to /demo locally or / with real R2 SQL credentials.\n")
+
         body = to_py(await request.json()) if request.method == "POST" else {}
-        sql = body.get("sql", "SHOW DATABASES")
+        query = R2SqlQuery(str(body.get("sql", "SHOW DATABASES")))
+
+        if url.endswith("/demo"):
+            return Response.json((await DemoR2SqlClient().query(query)).__dict__)
+        if url.endswith("/demo/explain"):
+            return Response.json((await DemoR2SqlClient().explain(query)).__dict__)
+
         client = R2SqlClient(account_id=str(self.env.ACCOUNT_ID), token=str(self.env.CF_API_TOKEN))
-        return Response.json(await client.query(R2SqlQuery(sql)))
+        try:
+            result = await client.query(query)
+        except ValueError as exc:
+            return Response.json({"error": str(exc)}, status=400)
+        return Response.json(result.__dict__)

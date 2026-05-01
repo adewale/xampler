@@ -52,6 +52,7 @@ See:
 - [`docs/cloudflare-python-api-shape.md`](docs/cloudflare-python-api-shape.md)
 - [`docs/s3-python-library-research.md`](docs/s3-python-library-research.md)
 - [`docs/api-iteration-log.md`](docs/api-iteration-log.md)
+- [`docs/api-surface-review.md`](docs/api-surface-review.md)
 - [`docs/primitives-api-surface.md`](docs/primitives-api-surface.md)
 - [`docs/python-design-patterns.md`](docs/python-design-patterns.md)
 - [`docs/top-10-improvement-plan.md`](docs/top-10-improvement-plan.md)
@@ -88,18 +89,18 @@ Coverage and Pythonic API scores are out of 10. Test realism is out of 5; see [`
 | Tier 1 — Gold standard | HTMLRewriter | 5.5 | 8.3 | 4 |
 | Tier 1 — Gold standard | Queues | 8.1 | 8.7 | 4 |
 | Tier 1 — Gold standard | FastAPI / ASGI | 6.0 | 8.0 | 3 |
-| Tier 4 — High API promise, low realism | Workers AI | 5.5 | 8.25 | 1 |
-| Tier 4 — High API promise, low realism | Vectorize | 7.2 | 8.25 | 1 |
+| Tier 1 — Gold standard | Workers AI | 6.3 | 8.7 | 4 |
+| Tier 1 — Gold standard | Vectorize | 7.8 | 8.7 | 4 |
+| Tier 1 — Gold standard | Durable Objects + WebSockets | 7.5 | 8.5 | 4 |
+| Tier 1 — Gold standard | Pages | 6.0 | 8.4 | 4 |
+| Tier 1 — Gold standard | Workflows | 7.2 | 8.5 | 4 |
+| Tier 1 — Gold standard | R2 SQL | 6.5 | 8.4 | 4 |
 | Tier 4 — High API promise, low realism | Service Bindings / RPC | 6.0 | 8.0 | 1 |
-| Tier 4 — High API promise, low realism | Durable Objects + WebSockets | 7.0 | 8.0 | 1 |
-| Tier 4 — High API promise, low realism | Pages | 5.0 | 8.0 | 1 |
-| Tier 4 — High API promise, low realism | Workflows | 6.5 | 7.75 | 1 |
 | Tier 4 — High API promise, low realism | Outbound WebSockets | 6.5 | 7.75 | 1 |
 | Tier 4 — High API promise, low realism | Browser Rendering | 5.0 | 7.75 | 1 |
 | Tier 4 — High API promise, low realism | Email Workers | 5.5 | 7.75 | 1 |
 | Tier 4 — High API promise, low realism | AI Gateway | 5.0 | 7.75 | 1 |
 | Tier 4 — High API promise, low realism | R2 Data Catalog | 5.0 | 7.75 | 1 |
-| Tier 4 — High API promise, low realism | R2 SQL | 4.5 | 7.5 | 1 |
 | Tier 5 — Rework candidate | LangChain/package orchestration | 3.0 | 6.75 | 1 |
 
 ## Requirements

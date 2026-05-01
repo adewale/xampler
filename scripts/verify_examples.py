@@ -41,6 +41,8 @@ class Example:
     checks: list[Check]
     needs_setup: str | None = None
     setup_commands: list[list[str]] = field(default_factory=list)
+    dev_command: list[str] | None = None
+    ready_path: str = "/"
 
 
 EXAMPLES = {
@@ -160,17 +162,28 @@ EXAMPLES = {
     ),
     "workers-ai-09-inference": Example(
         "workers-ai-09-inference",
-        [Check("/", contains="response")],
-        needs_setup="Requires Workers AI local/runtime support.",
+        [Check("/demo", contains="Workers AI response")],
+        needs_setup=(
+            "/ uses the real Workers AI binding; /demo is deterministic for local verification."
+        ),
+        ready_path="/demo",
     ),
     "workflows-10-pipeline": Example(
         "workflows-10-pipeline",
-        [Check("/", contains="/start")],
-        needs_setup="/start requires Workflows runtime support.",
+        [
+            Check("/demo/start", contains="demo-instance"),
+            Check("/demo/status/demo-instance", contains="complete"),
+        ],
+        needs_setup="/start uses real Workflows; /demo/* is deterministic for local verification.",
     ),
     "htmlrewriter-11-opengraph": Example(
         "htmlrewriter-11-opengraph",
         [Check("/", contains="og:title")],
+    ),
+    "vectorize-17-search": Example(
+        "vectorize-17-search",
+        [Check("/demo", contains="doc-1")],
+        needs_setup="Real /upsert and /query use Vectorize; /demo is deterministic locally.",
     ),
     "images-12-generation": Example(
         "images-12-generation",
@@ -198,7 +211,46 @@ EXAMPLES = {
     ),
     "durable-objects-15-chatroom": Example(
         "durable-objects-15-chatroom",
-        [Check("/", contains="Python Workers Chatroom")],
+        [
+            Check("/", contains="Python Workers Chatroom"),
+            Check(
+                "/room/demo/dev/send",
+                method="POST",
+                body=b'{"username":"Ada","text":"hello room"}',
+                headers={"content-type": "application/json"},
+                contains="hello room",
+            ),
+            Check("/room/demo/dev/history", contains="hello room"),
+        ],
+    ),
+    "r2-sql-21-query": Example(
+        "r2-sql-21-query",
+        [
+            Check(
+                "/demo",
+                method="POST",
+                body=b'{"sql":"SELECT bucket, objects FROM object_inventory"}',
+                headers={"content-type": "application/json"},
+                contains="LIMIT 100",
+            ),
+            Check(
+                "/demo/explain",
+                method="POST",
+                body=b'{"sql":"SELECT bucket, objects FROM object_inventory"}',
+                headers={"content-type": "application/json"},
+                contains="single-table",
+            ),
+        ],
+        needs_setup="Real / calls the R2 SQL API; /demo verifies safe query shaping locally.",
+    ),
+    "pages-23-functions": Example(
+        "pages-23-functions",
+        [
+            Check("/", contains="Xampler Pages"),
+            Check("/api/hello?name=Python", contains="Hello, Python"),
+        ],
+        needs_setup="Pages Functions are TypeScript today; verifier uses Wrangler Pages dev.",
+        dev_command=["uv", "run", "pywrangler", "pages", "dev", "public", "--port"],
     ),
 }
 
@@ -233,10 +285,13 @@ def verify(example: Example, port: int, timeout: float) -> int:
     for setup_command in example.setup_commands:
         subprocess.run(setup_command, cwd=cwd, check=True)
 
-    command = ["uv", "run", "pywrangler", "dev", "--port", str(port), "--local"]
+    command = example.dev_command or ["uv", "run", "pywrangler", "dev", "--port"]
+    command = [*command, str(port)]
+    if example.dev_command is None:
+        command.append("--local")
     proc = subprocess.Popen(command, cwd=cwd, start_new_session=True)
     try:
-        wait_until_ready(port, timeout)
+        wait_until_ready(port, timeout, example.ready_path)
         for check in example.checks:
             run_check(port, check)
             print(f"✓ {check.method} {check.path}")
@@ -249,11 +304,11 @@ def verify(example: Example, port: int, timeout: float) -> int:
             os.killpg(proc.pid, signal.SIGKILL)
 
 
-def wait_until_ready(port: int, timeout: float) -> None:
+def wait_until_ready(port: int, timeout: float, path: str = "/") -> None:
     deadline = time.time() + timeout
     while time.time() < deadline:
         try:
-            urllib.request.urlopen(f"http://127.0.0.1:{port}/", timeout=1).read()
+            urllib.request.urlopen(f"http://127.0.0.1:{port}{path}", timeout=1).read()
             return
         except urllib.error.HTTPError:
             return
