@@ -11,7 +11,7 @@ Scores use [`docs/pythonic-rubric.md`](pythonic-rubric.md), including the newer 
 | `workers-01-hello` | Workers request/response | 8.0 | Very small, readable, explicit response helper. Limited because there is little API surface to model. |
 | `kv-02-binding` | Workers KV binding | 8.5 | Strong service/resource handle split: `KVNamespace` and `KVKey`; text/JSON helpers; `exists`; native values. Needs reusable shared response module and fuller metadata/cache examples. |
 | `fastapi-03-framework` | Python framework on Workers | 7.5 | Good Python-native framework shape. Thin example; needs docs on Pyodide constraints and cold start/package tradeoffs. |
-| `d1-04-query` | D1 database | 8.25 | `D1Database.query()`/`query_one()`, typed `Quote`, D1 null conversion. Needs statement object, migrations docs, and richer error handling. |
+| `d1-04-query` | D1 database | 8.5 | `D1Database`, `D1Statement`, `statement()`, `one_as(Quote)`, typed `Quote`, D1 null conversion. Needs transactions, retries, indexes, and migrations docs. |
 | `ai-05-langchain` | Python package/AI orchestration shape | 6.75 | Safer than the broken upstream example because it isolates LangChain behind a service boundary, but currently illustrative rather than full. |
 | `assets-06-static-assets` | Workers Assets | 8.75 | Very Pythonic because it teaches what *not* to do: do not wake Python for static files. Minimal code, strong platform fit. |
 | `durable-objects-07-counter` | Durable Objects | 7.75 | Clear counter object. Needs Pythonic storage wrapper, typed methods, and more explicit state/lifecycle docs. |

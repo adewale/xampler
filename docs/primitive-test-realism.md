@@ -26,8 +26,8 @@ This document tracks how realistically each Cloudflare primitive example is test
 | Workers request/response | `workers-01-hello` | 3 | `uv run python scripts/verify_examples.py workers-01-hello` | Starts Python Worker locally and checks HTTP response body. | Add multiple methods/headers/error response checks. |
 | R2 object storage | `r2-01` | 4 | `uv run python scripts/verify_examples.py r2-01` | Starts Worker locally, writes/reads text, uploads `fixtures/BreakingThe35.jpeg`, streams it back, byte-compares download. | Remote-binding/deployed R2 verification; multipart verification. |
 | Workers KV | `kv-02-binding` | 3 | `uv run python scripts/verify_examples.py kv-02-binding` | Starts Worker locally, writes text to KV, reads it back. | Verify JSON, TTL, delete, list/iteration, deployed KV namespace. |
-| FastAPI / ASGI | `fastapi-03-framework` | 1 | Static validation only. | Code parses/lints; ASGI bridge is implemented. | Add verifier checks for `/`, `/items/python`, `/env`. |
-| D1 database | `d1-04-query` | 1 | Static validation only. | Code parses/lints; query wrapper tested indirectly by syntax only. | Automate local `wrangler d1 execute --file db_init.sql`, then verify query route. |
+| FastAPI / ASGI | `fastapi-03-framework` | 3 | `uv run python scripts/verify_examples.py fastapi-03-framework` | Starts Worker locally through the ASGI bridge and verifies `/` plus `/items/python`. | Add `/env` verification and a template/dependency route like the official example. |
+| D1 database | `d1-04-query` | 3 | `uv run python scripts/verify_examples.py d1-04-query` | Initializes local D1 with `db_init.sql`, starts the Worker locally, and verifies a seeded row is read from D1. | Add write/query mutation route, index usage, retry guidance, and remote/deployed D1 verification. |
 | LangChain/package orchestration | `ai-05-langchain` | 1 | Static validation only. | Service-boundary placeholder parses/lints. | Replace with real LangChain-compatible workload or remove. |
 | Workers Assets | `assets-06-static-assets` | 3 | `uv run python scripts/verify_examples.py assets-06-static-assets` | Starts Worker locally and verifies the static asset is served by Workers Assets instead of Python. | Also verify a dynamic Python route under a non-asset path. |
 | Durable Objects | `durable-objects-07-counter` | 3 | `uv run python scripts/verify_examples.py durable-objects-07-counter` | Starts Worker locally, resets counter, increments, reads persisted DO state. | Verify concurrent increments and named-object isolation. |
@@ -53,9 +53,9 @@ This document tracks how realistically each Cloudflare primitive example is test
 | Level | Count | Examples |
 |---:|---:|---|
 | 4 | 1 | `r2-01` |
-| 3 | 5 | `workers-01-hello`, `kv-02-binding`, `assets-06-static-assets`, `durable-objects-07-counter`, `images-12-generation` |
+| 3 | 7 | `workers-01-hello`, `kv-02-binding`, `fastapi-03-framework`, `d1-04-query`, `assets-06-static-assets`, `durable-objects-07-counter`, `images-12-generation` |
 | 2 | 2 | `scheduled-08-cron`, `htmlrewriter-11-opengraph` |
-| 1 | 16 | all remaining examples |
+| 1 | 14 | all remaining examples |
 | 0 | 0 | — |
 
 ## Highest-priority testing work
@@ -73,6 +73,8 @@ uv run python scripts/verify_examples.py workers-01-hello
 uv run python scripts/verify_examples.py r2-01
 uv run python scripts/verify_examples.py kv-02-binding
 uv run python scripts/verify_examples.py durable-objects-07-counter
+uv run python scripts/verify_examples.py fastapi-03-framework
+uv run python scripts/verify_examples.py d1-04-query
 uv run python scripts/verify_examples.py assets-06-static-assets
 uv run python scripts/verify_examples.py images-12-generation
 uv run python scripts/verify_examples.py htmlrewriter-11-opengraph

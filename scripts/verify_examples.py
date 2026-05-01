@@ -1,10 +1,10 @@
 #!/usr/bin/env python3
 """Run local smoke checks for examples.
 
-This script is intentionally boring: it starts `npx wrangler dev`, waits for the
-local server, performs HTTP checks, and shuts Wrangler down. The examples should
-be verifiable the same way the official Cloudflare examples are verifiable: run a
-Worker and make requests against it.
+This script is intentionally boring: it runs any local setup commands, starts
+`uv run pywrangler dev`, waits for the local server, performs HTTP checks, and
+shuts Wrangler down. The examples should be verifiable the same way the official
+Cloudflare examples are verifiable: run a Worker and make requests against it.
 """
 
 from __future__ import annotations
@@ -38,6 +38,7 @@ class Example:
     name: str
     checks: list[Check]
     needs_setup: str | None = None
+    setup_commands: list[list[str]] = field(default_factory=list)
 
 
 EXAMPLES = {
@@ -78,8 +79,23 @@ EXAMPLES = {
     ),
     "d1-04-query": Example(
         "d1-04-query",
-        [Check("/", contains="quote")],
-        needs_setup="Run: npx wrangler d1 execute xampler-d1 --local --file db_init.sql",
+        [Check("/", contains="PEP 20")],
+        needs_setup=(
+            "The verifier initializes local D1 with db_init.sql before starting the Worker."
+        ),
+        setup_commands=[
+            [
+                "uv",
+                "run",
+                "pywrangler",
+                "d1",
+                "execute",
+                "xampler-d1",
+                "--local",
+                "--file",
+                "db_init.sql",
+            ]
+        ],
     ),
     "assets-06-static-assets": Example(
         "assets-06-static-assets",
@@ -162,6 +178,9 @@ def main() -> int:
 
 def verify(example: Example, port: int, timeout: float) -> int:
     cwd = Path(example.name)
+    for setup_command in example.setup_commands:
+        subprocess.run(setup_command, cwd=cwd, check=True)
+
     command = ["uv", "run", "pywrangler", "dev", "--port", str(port), "--local"]
     proc = subprocess.Popen(command, cwd=cwd, start_new_session=True)
     try:

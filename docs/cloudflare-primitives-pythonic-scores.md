@@ -10,7 +10,7 @@ This scores the **API surface we currently expose in the examples**, not Cloudfl
 | R2 object storage | `r2-01` | 9.25 | `R2Bucket`, `R2ObjectRef`, typed metadata/options, `read_*`/`write_*`, `iter_objects`, multipart `async with`, `.raw`. | More route tests; full object-handle docs for every advanced option. |
 | Workers KV | `kv-02-binding` | 8.5 | `KVNamespace`, `KVKey`, text/JSON helpers, `exists`, `delete`, `iter_keys`. | Metadata/cache/expiration result modeling; verifier for listing. |
 | FastAPI / ASGI on Workers | `fastapi-03-framework` | 8.0 | Ordinary FastAPI app plus small ASGI adapter in `fetch`. | More Pyodide/package compatibility guidance. |
-| D1 database | `d1-04-query` | 8.25 | `D1Database.query`, `query_one`, typed row dataclass, D1 null conversion. | `D1Statement`, migrations helper, typed row factory, transactions/batches. |
+| D1 database | `d1-04-query` | 8.5 | `D1Database`, `D1Statement`, `statement`, `all`, `one`, `one_as`, typed row dataclass, D1 null conversion. | Migrations helper, transactions/batches, retry helpers. |
 | Python package / LangChain boundary | `ai-05-langchain` | 6.75 | Service boundary shape around package orchestration. | Needs a real verified LangChain-compatible workload or replacement. |
 | Workers Assets | `assets-06-static-assets` | 8.75 | Teaches bypassing Python for static assets; dynamic route remains tiny. | More asset routing/config verification. |
 | Durable Objects | `durable-objects-07-counter` | 8.25 | Named Durable Object counter, namespace wrapper, verified reset/increment/read. | Typed Durable Object ref/stub abstraction; storage wrapper. |

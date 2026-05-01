@@ -27,7 +27,7 @@ The goal is to improve three metrics together:
 |---:|---|---:|---:|---:|---|
 | 1 | Workers | 6.0 | 8.0 | 3 | Add shared `response()`/`json_response()` helper and request parsing helper used by all examples. |
 | 2 | R2 | 8.5 | 9.25 | 4 | Verify multipart upload locally and add object-handle docs for all advanced options. |
-| 3 | D1 | 6.5 | 8.25 | 1 | Add `D1Statement` handle, automate local DB setup, verify query route. |
+| 3 | D1 | 6.8 | 8.5 | 3 | Add write/query mutation route, index usage, retries, and remote/deployed D1 verification. |
 | 4 | KV | 7.5 | 8.5 | 3 | Verify JSON, delete, list, and `iter_keys()`; add metadata/expiration docs. |
 | 5 | Queues | 7.5 | 8.25 | 1 | Add local enqueue verification and consumer processing harness; document ack/retry patterns. |
 | 6 | Workers AI | 5.5 | 8.25 | 1 | Add typed response model and a deterministic smoke path for a small inference. |
@@ -70,7 +70,7 @@ Next: multipart verifier and presigned/S3-compatible companion example.
 
 ### D1
 
-Current: `D1Database.query()` and `query_one()`.
+Current: `D1Database.query()`, `query_one()`, and `D1Statement`.
 
 Make more Pythonic with statement handles:
 
@@ -80,7 +80,7 @@ row = await stmt.one(user_id)
 rows = await stmt.all(active=True)
 ```
 
-Also add row dataclass factories:
+The example now verifies local D1 setup with `db_init.sql` before starting the Worker. Continue expanding row dataclass factories:
 
 ```py
 quote = await stmt.one_as(Quote)

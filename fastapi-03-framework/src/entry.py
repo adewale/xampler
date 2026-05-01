@@ -12,21 +12,21 @@ app = FastAPI(title="Xampler FastAPI Worker")
 
 
 @app.get("/")
-def home() -> dict[str, str]:
+async def home() -> dict[str, str]:
     """A normal FastAPI route running at the edge."""
 
     return {"message": "Hello from FastAPI on Workers", "next": "/items/python"}
 
 
 @app.get("/items/{item_id}")
-def get_item(item_id: str) -> dict[str, str]:
+async def get_item(item_id: str) -> dict[str, str]:
     """Path parameters work the same way they do in regular FastAPI apps."""
 
     return {"item_id": item_id}
 
 
 @app.get("/env")
-def get_env(request: Request) -> dict[str, str]:
+async def get_env(request: Request) -> dict[str, str]:
     """FastAPI can still access the Workers environment through ASGI scope."""
 
     env = request.scope["env"]

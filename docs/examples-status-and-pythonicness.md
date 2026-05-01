@@ -19,8 +19,8 @@ Scores use [`docs/pythonic-rubric.md`](pythonic-rubric.md). They consider readab
 | `workers-01-hello` | Workers request/response | Verified | `uv run python scripts/verify_examples.py workers-01-hello` | 8.0 | Tiny, readable, and executable. Limited API surface. |
 | `r2-01` | R2 object storage | Verified | `uv run python scripts/verify_examples.py r2-01` | 9.25 | Strongest API: `bucket.object(key)`, `read_text`, `write_bytes`, typed metadata/options, `async for`, multipart `async with`, `.raw` escape hatch, real R2 local verification. |
 | `kv-02-binding` | Workers KV | Verified | `uv run python scripts/verify_examples.py kv-02-binding` | 8.5 | Good service/resource shape with `KVNamespace` and `KVKey`; text/JSON helpers and local KV verification. Needs expiration/cache metadata docs. |
-| `fastapi-03-framework` | FastAPI on Workers | Runnable | `uv run python scripts/verify_examples.py fastapi-03-framework` | 8.0 | Uses real ASGI bridge and keeps FastAPI routes ordinary. Needs smoke verification after dependency install. |
-| `d1-04-query` | D1 | Runnable with setup | `npx wrangler d1 execute xampler-d1 --local --file db_init.sql` then verifier | 8.25 | Real D1 query wrapper and typed row. Needs automatic setup in verifier and richer statement/transaction helpers. |
+| `fastapi-03-framework` | FastAPI on Workers | Verified | `uv run python scripts/verify_examples.py fastapi-03-framework` | 8.0 | Uses real ASGI bridge, keeps FastAPI routes ordinary, and verifies local routing. Needs `/env` and template/dependency route coverage. |
+| `d1-04-query` | D1 | Verified | `uv run python scripts/verify_examples.py d1-04-query` | 8.5 | Verifier initializes local D1 with `db_init.sql`, starts the Worker, and checks the seeded PEP 20 row through `D1Statement.one_as`. Needs transactions/retries/index examples. |
 | `ai-05-langchain` | Python package / LangChain boundary | Needs work | none yet | 6.75 | Service boundary shape is useful, but it does not yet exercise a real LangChain chain in Workers. |
 | `assets-06-static-assets` | Workers Assets | Runnable | `uv run python scripts/verify_examples.py assets-06-static-assets` | 8.75 | Teaches the Pythonic/platform-correct approach: static assets should bypass Python. Needs smoke verification. |
 | `durable-objects-07-counter` | Durable Objects | Verified | `uv run python scripts/verify_examples.py durable-objects-07-counter` | 8.25 | Real named Durable Object, reset/increment/read verified. Good literate comments. Could add a richer typed stub wrapper. |
@@ -41,7 +41,13 @@ The following have been run and passed in this workspace:
 uv run python scripts/verify_examples.py workers-01-hello
 uv run python scripts/verify_examples.py r2-01
 uv run python scripts/verify_examples.py kv-02-binding
+uv run python scripts/verify_examples.py fastapi-03-framework
+uv run python scripts/verify_examples.py d1-04-query
 uv run python scripts/verify_examples.py durable-objects-07-counter
+uv run python scripts/verify_examples.py assets-06-static-assets
+uv run python scripts/verify_examples.py images-12-generation
+uv run python scripts/verify_examples.py htmlrewriter-11-opengraph
+uv run python scripts/verify_examples.py scheduled-08-cron
 ```
 
 ## Pythonic themes that are working
@@ -57,7 +63,7 @@ uv run python scripts/verify_examples.py durable-objects-07-counter
 
 1. Add automated smoke verification for every Runnable example.
 2. Add `KVNamespace.iter_keys()` and route verification for KV listing.
-3. Add D1 setup automation to `scripts/verify_examples.py`.
+3. Add D1 transactions/retries/index examples now that setup automation exists.
 4. Add `WorkflowInstance` and `DurableObjectRef` typed handles.
 5. Replace `htmlrewriter-11-opengraph` simplified HTML with real HTMLRewriter usage.
 6. Add deterministic WebSocket verification for the chatroom.

@@ -11,10 +11,10 @@ A good example is not just code that looks right. It must run under the same loc
 What changed:
 
 - Added `scripts/verify_examples.py`.
-- Verified `workers-01-hello`, `r2-01`, `kv-02-binding`, `durable-objects-07-counter`, `assets-06-static-assets`, `images-12-generation`, `htmlrewriter-11-opengraph`, and `scheduled-08-cron` at different realism levels.
+- Verified `workers-01-hello`, `r2-01`, `kv-02-binding`, `fastapi-03-framework`, `d1-04-query`, `durable-objects-07-counter`, `assets-06-static-assets`, `images-12-generation`, `htmlrewriter-11-opengraph`, and `scheduled-08-cron` at different realism levels.
 - Added `docs/primitive-test-realism.md` to make test depth visible.
 
-Lesson: every new example should ship with a verifier path, even if the first verifier is shallow.
+Lesson: every new example should ship with a verifier path, even if the first verifier is shallow. If the official Cloudflare example requires local setup, our verifier should automate that setup instead of merely documenting it.
 
 ## 2. `pywrangler` is the right user-facing tool for Python examples
 
