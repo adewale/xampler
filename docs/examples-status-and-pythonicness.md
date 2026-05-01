@@ -16,22 +16,22 @@ Scores use [`docs/pythonic-rubric.md`](pythonic-rubric.md). They consider readab
 
 | Example | Primitive | Status | Verified command | Pythonic score | Why |
 |---|---|---|---|---:|---|
-| `workers-01-hello` | Workers request/response | Verified | `uv run python scripts/verify_examples.py workers-01-hello` | 3.2 | Tiny, readable, and executable. Limited API surface. |
-| `r2-01` | R2 object storage | Verified | `uv run python scripts/verify_examples.py r2-01` | 3.7 | Strongest API: `bucket.object(key)`, `read_text`, `write_bytes`, typed metadata/options, `async for`, multipart `async with`, `.raw` escape hatch, real R2 local verification. |
-| `kv-02-binding` | Workers KV | Verified | `uv run python scripts/verify_examples.py kv-02-binding` | 3.4 | Good service/resource shape with `KVNamespace` and `KVKey`; text/JSON helpers and local KV verification. Needs expiration/cache metadata docs. |
-| `fastapi-03-framework` | FastAPI on Workers | Runnable | `uv run python scripts/verify_examples.py fastapi-03-framework` | 3.2 | Uses real ASGI bridge and keeps FastAPI routes ordinary. Needs smoke verification after dependency install. |
-| `d1-04-query` | D1 | Runnable with setup | `npx wrangler d1 execute xampler-d1 --local --file db_init.sql` then verifier | 3.3 | Real D1 query wrapper and typed row. Needs automatic setup in verifier and richer statement/transaction helpers. |
-| `ai-05-langchain` | Python package / LangChain boundary | Needs work | none yet | 2.7 | Service boundary shape is useful, but it does not yet exercise a real LangChain chain in Workers. |
-| `assets-06-static-assets` | Workers Assets | Runnable | `uv run python scripts/verify_examples.py assets-06-static-assets` | 3.5 | Teaches the Pythonic/platform-correct approach: static assets should bypass Python. Needs smoke verification. |
-| `durable-objects-07-counter` | Durable Objects | Verified | `uv run python scripts/verify_examples.py durable-objects-07-counter` | 3.3 | Real named Durable Object, reset/increment/read verified. Good literate comments. Could add a richer typed stub wrapper. |
-| `scheduled-08-cron` | Cron triggers | Runnable | `uv run python scripts/verify_examples.py scheduled-08-cron` | 3.2 | Real scheduled handler and job object. Needs local scheduled endpoint verification. |
-| `workers-ai-09-inference` | Workers AI | Runnable with runtime support | verifier listed | 3.3 | Typed request dataclass and `AIService`. Needs verified local/deployed AI run and typed response model. |
-| `workflows-10-pipeline` | Workflows | Runnable with runtime support | verifier listed | 3.1 | Real workflow entrypoint and `/start`/`/status`. Needs verified workflow run and `WorkflowInstance` handle. |
-| `htmlrewriter-11-opengraph` | HTMLRewriter | Runnable | verifier listed | 3.1 | Has metadata model and executable response, but should use real `HTMLRewriter` boundary instead of prebuilt HTML. |
-| `images-12-generation` | Pillow / binary response | Runnable | verifier listed | 3.2 | Real Pillow-generated PNG. Needs typed query parameters and cache/R2 integration. |
-| `service-bindings-13-rpc` | Service bindings / RPC | Runnable with two processes | manual two-worker run | 3.2 | Python RPC service plus TS client config. Needs one-command verifier for both services. |
-| `websockets-14-stream-consumer` | Outbound WebSockets + Durable Objects | Runnable with network | verifier listed | 3.1 | Real outbound WebSocket consumer, alarm reconnect, Pyodide proxy explanation. Needs deterministic local test. |
-| `durable-objects-15-chatroom` | Durable Objects + WebSockets | Runnable/browser-verifiable | verifier listed for page | 3.2 | Real chatroom page and DO WebSocket room. Needs automated WebSocket client verification. |
+| `workers-01-hello` | Workers request/response | Verified | `uv run python scripts/verify_examples.py workers-01-hello` | 8.0 | Tiny, readable, and executable. Limited API surface. |
+| `r2-01` | R2 object storage | Verified | `uv run python scripts/verify_examples.py r2-01` | 9.25 | Strongest API: `bucket.object(key)`, `read_text`, `write_bytes`, typed metadata/options, `async for`, multipart `async with`, `.raw` escape hatch, real R2 local verification. |
+| `kv-02-binding` | Workers KV | Verified | `uv run python scripts/verify_examples.py kv-02-binding` | 8.5 | Good service/resource shape with `KVNamespace` and `KVKey`; text/JSON helpers and local KV verification. Needs expiration/cache metadata docs. |
+| `fastapi-03-framework` | FastAPI on Workers | Runnable | `uv run python scripts/verify_examples.py fastapi-03-framework` | 8.0 | Uses real ASGI bridge and keeps FastAPI routes ordinary. Needs smoke verification after dependency install. |
+| `d1-04-query` | D1 | Runnable with setup | `npx wrangler d1 execute xampler-d1 --local --file db_init.sql` then verifier | 8.25 | Real D1 query wrapper and typed row. Needs automatic setup in verifier and richer statement/transaction helpers. |
+| `ai-05-langchain` | Python package / LangChain boundary | Needs work | none yet | 6.75 | Service boundary shape is useful, but it does not yet exercise a real LangChain chain in Workers. |
+| `assets-06-static-assets` | Workers Assets | Runnable | `uv run python scripts/verify_examples.py assets-06-static-assets` | 8.75 | Teaches the Pythonic/platform-correct approach: static assets should bypass Python. Needs smoke verification. |
+| `durable-objects-07-counter` | Durable Objects | Verified | `uv run python scripts/verify_examples.py durable-objects-07-counter` | 8.25 | Real named Durable Object, reset/increment/read verified. Good literate comments. Could add a richer typed stub wrapper. |
+| `scheduled-08-cron` | Cron triggers | Runnable | `uv run python scripts/verify_examples.py scheduled-08-cron` | 8.0 | Real scheduled handler and job object. Needs local scheduled endpoint verification. |
+| `workers-ai-09-inference` | Workers AI | Runnable with runtime support | verifier listed | 8.25 | Typed request dataclass and `AIService`. Needs verified local/deployed AI run and typed response model. |
+| `workflows-10-pipeline` | Workflows | Runnable with runtime support | verifier listed | 7.75 | Real workflow entrypoint and `/start`/`/status`. Needs verified workflow run and `WorkflowInstance` handle. |
+| `htmlrewriter-11-opengraph` | HTMLRewriter | Runnable | verifier listed | 7.75 | Has metadata model and executable response, but should use real `HTMLRewriter` boundary instead of prebuilt HTML. |
+| `images-12-generation` | Pillow / binary response | Runnable | verifier listed | 8.0 | Real Pillow-generated PNG. Needs typed query parameters and cache/R2 integration. |
+| `service-bindings-13-rpc` | Service bindings / RPC | Runnable with two processes | manual two-worker run | 8.0 | Python RPC service plus TS client config. Needs one-command verifier for both services. |
+| `websockets-14-stream-consumer` | Outbound WebSockets + Durable Objects | Runnable with network | verifier listed | 7.75 | Real outbound WebSocket consumer, alarm reconnect, Pyodide proxy explanation. Needs deterministic local test. |
+| `durable-objects-15-chatroom` | Durable Objects + WebSockets | Runnable/browser-verifiable | verifier listed for page | 8.0 | Real chatroom page and DO WebSocket room. Needs automated WebSocket client verification. |
 
 ## Current verified set
 

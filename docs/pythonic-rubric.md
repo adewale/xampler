@@ -47,15 +47,16 @@ For this project, **Pythonic** means:
 
 ## Scoring
 
-Score each criterion from 0 to 4:
+Score each criterion from **0 to 10**:
 
 - **0 — Not present**: Works against Python expectations or is missing entirely.
-- **1 — Weak**: Mostly a direct runtime/API translation with little Python design.
-- **2 — Adequate**: Understandable Python, but with notable rough edges.
-- **3 — Strong**: Idiomatic, clear, and useful for Python developers.
-- **4 — Excellent**: Feels native to Python and teaches the platform cleanly.
+- **1–2 — Very weak**: Mostly raw JavaScript/platform API translated into Python syntax.
+- **3–4 — Weak**: Understandable, but not yet idiomatic or well layered.
+- **5–6 — Adequate**: Usable Python with notable rough edges or missing teaching affordances.
+- **7–8 — Strong**: Idiomatic, clear, typed where helpful, and useful for Python developers.
+- **9–10 — Excellent**: Feels native to Python while teaching the Cloudflare platform accurately.
 
-A strong example should generally average **3+** and have no critical criterion below **2**.
+A strong example should generally average **7.5+** and have no critical criterion below **5**.
 
 ## Criteria
 
@@ -155,8 +156,8 @@ Python grounding: PEP 20's balance of simplicity, explicitness, and practicality
 
 | Average | Meaning |
 |---:|---|
-| 3.5–4.0 | Excellent Pythonic example. Feels native while teaching the platform accurately. |
-| 3.0–3.4 | Strong. Good example with minor polish opportunities. |
-| 2.0–2.9 | Adequate. Understandable, but still feels like translated JS or has rough edges. |
-| 1.0–1.9 | Weak. Significant Python ergonomics or teaching issues. |
-| 0–0.9 | Not Pythonic. Likely confusing for the target audience. |
+| 9.0–10.0 | Excellent Pythonic example. Feels native while teaching the platform accurately. |
+| 7.5–8.9 | Strong. Good example with minor polish opportunities. |
+| 5.0–7.4 | Adequate. Understandable, but still feels like translated JS or has rough edges. |
+| 2.5–4.9 | Weak. Significant Python ergonomics or teaching issues. |
+| 0.0–2.4 | Not Pythonic. Likely confusing for the target audience. |

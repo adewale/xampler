@@ -6,8 +6,8 @@ Last reviewed: 2026-05-01. Python anchor: **Python 3.13**.
 
 ## Summary
 
-Current Pythonic score: **3.3 / 4.0**
-Current R2 feature thoroughness score: **3.2 / 4.0**
+Current Pythonic score: **8.25 / 10.0**
+Current R2 feature thoroughness score: **8.0 / 10.0**
 
 The example is strongly Pythonic in its core design: it introduces a small `R2Bucket` façade, uses dataclasses for Python-native metadata and options, normalizes missing JavaScript values to `None`, separates small-object helpers from streaming paths, and keeps most `cfboundary` usage inside the boundary layer.
 

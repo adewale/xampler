@@ -25,16 +25,16 @@ Scores use the project rubric in [`docs/pythonic-rubric.md`](pythonic-rubric.md)
 
 | Library | Pythonic score | Strengths | Tradeoffs |
 |---|---:|---|---|
-| boto3 | 2.7 / 4 | Stable, comprehensive, familiar; exposes resources, paginators, waiters, transfer helpers. | Service-shaped API, many dictionaries, CamelCase AWS parameters, `ClientError` parsing, mixed client/resource abstractions. |
-| botocore | 2.0 / 4 | Precise low-level generated API; strong configuration/retry machinery. | Not intended to feel Pythonic; mirrors AWS service models. |
-| aiobotocore | 2.6 / 4 | Brings botocore to asyncio; close to underlying AWS docs. | Async but still botocore-shaped; context management is good but ergonomics remain low-level. |
-| aioboto3 | 3.0 / 4 | Familiar boto3 surface with async context managers; good fit for async apps. | Inherits boto3’s service-shaped API and dictionaries. |
-| s3fs / fsspec | 3.6 / 4 | Excellent Pythonic abstraction: file-like API, URLs, globbing, filesystem semantics, integrations with pandas/Dask. | Filesystem metaphor can hide object-store semantics; not ideal for every R2 feature like metadata or conditionals. |
-| smart_open | 3.7 / 4 | Very Pythonic: `open()` mental model, streaming, compression support, simple common path. | Intentionally narrow; not a full object-storage management API. |
-| minio-py | 3.1 / 4 | Clear explicit object-store client, typed-ish result objects, S3-compatible without AWS heaviness. | Java-inspired method names in places; still object-store/API shaped. |
-| django-storages | 3.4 / 4 | Fits Django’s `Storage` interface; users rarely touch S3 details. | Pythonic only inside Django; hides platform details and exposes fewer advanced S3/R2 features. |
-| cloudpathlib | 3.8 / 4 | Strongly Pythonic: `pathlib`-like paths, intuitive operations, local caching, nice ergonomics. | Path abstraction can imply folders/files more strongly than object storage actually supports. |
-| moto | 3.5 / 4 | Great developer ergonomics for tests; decorators/context managers make AWS tests feel local. | Mock fidelity can lag real services; not a runtime API. |
+| boto3 | 6.75 / 10 | Stable, comprehensive, familiar; exposes resources, paginators, waiters, transfer helpers. | Service-shaped API, many dictionaries, CamelCase AWS parameters, `ClientError` parsing, mixed client/resource abstractions. |
+| botocore | 5.0 / 10 | Precise low-level generated API; strong configuration/retry machinery. | Not intended to feel Pythonic; mirrors AWS service models. |
+| aiobotocore | 6.5 / 10 | Brings botocore to asyncio; close to underlying AWS docs. | Async but still botocore-shaped; context management is good but ergonomics remain low-level. |
+| aioboto3 | 7.5 / 10 | Familiar boto3 surface with async context managers; good fit for async apps. | Inherits boto3’s service-shaped API and dictionaries. |
+| s3fs / fsspec | 9.0 / 10 | Excellent Pythonic abstraction: file-like API, URLs, globbing, filesystem semantics, integrations with pandas/Dask. | Filesystem metaphor can hide object-store semantics; not ideal for every R2 feature like metadata or conditionals. |
+| smart_open | 9.25 / 10 | Very Pythonic: `open()` mental model, streaming, compression support, simple common path. | Intentionally narrow; not a full object-storage management API. |
+| minio-py | 7.75 / 10 | Clear explicit object-store client, typed-ish result objects, S3-compatible without AWS heaviness. | Java-inspired method names in places; still object-store/API shaped. |
+| django-storages | 8.5 / 10 | Fits Django’s `Storage` interface; users rarely touch S3 details. | Pythonic only inside Django; hides platform details and exposes fewer advanced S3/R2 features. |
+| cloudpathlib | 9.5 / 10 | Strongly Pythonic: `pathlib`-like paths, intuitive operations, local caching, nice ergonomics. | Path abstraction can imply folders/files more strongly than object storage actually supports. |
+| moto | 8.75 / 10 | Great developer ergonomics for tests; decorators/context managers make AWS tests feel local. | Mock fidelity can lag real services; not a runtime API. |
 
 ## What these libraries know about being Pythonic
 

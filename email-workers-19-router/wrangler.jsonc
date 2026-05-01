@@ -1,0 +1,9 @@
+{
+  "$schema": "node_modules/wrangler/config-schema.json",
+  "name": "xampler-email-workers-19-router",
+  "main": "src/entry.py",
+  "compatibility_date": "2026-05-01",
+  "compatibility_flags": ["python_workers"],
+  "send_email": [{"name": "EMAIL"}],
+  "vars": {"FORWARD_TO": "inbox@example.com"}
+}

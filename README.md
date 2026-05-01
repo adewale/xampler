@@ -29,6 +29,14 @@ d1-04-query/
 | [`scheduled-08-cron/`](scheduled-08-cron) | Cron triggers | Scheduled handler with job service object. |
 | [`workers-ai-09-inference/`](workers-ai-09-inference) | Workers AI | Typed request dataclass and AI service wrapper. |
 | [`workflows-10-pipeline/`](workflows-10-pipeline) | Workflows | Workflow entrypoint and instance creation. |
+| [`queues-16-producer-consumer/`](queues-16-producer-consumer) | Queues | Producer/consumer wrapper, typed jobs, ack/retry. |
+| [`vectorize-17-search/`](vectorize-17-search) | Vectorize | Typed vectors, upsert, query, get, delete, describe. |
+| [`browser-rendering-18-screenshot/`](browser-rendering-18-screenshot) | Browser Rendering | REST screenshot client from a Python Worker. |
+| [`email-workers-19-router/`](email-workers-19-router) | Email Workers | Inspect, reject, and forward incoming email. |
+| [`ai-gateway-20-universal/`](ai-gateway-20-universal) | AI Gateway | OpenAI-compatible chat through AI Gateway. |
+| [`r2-sql-21-query/`](r2-sql-21-query) | R2 SQL | SQL query client wrapper. |
+| [`r2-data-catalog-22-iceberg/`](r2-data-catalog-22-iceberg) | R2 Data Catalog | Iceberg REST namespace/table client. |
+| [`pages-23-functions/`](pages-23-functions) | Pages | Static Pages project with file-based Function. |
 | [`htmlrewriter-11-opengraph/`](htmlrewriter-11-opengraph) | HTMLRewriter | OpenGraph metadata model and edge HTML response shape. |
 | [`images-12-generation/`](images-12-generation) | Python packages / binary responses | Pillow image generation from a Worker. |
 | [`service-bindings-13-rpc/`](service-bindings-13-rpc) | Service bindings / RPC | Python RPC service shape with TypeScript client scaffold. |
@@ -43,6 +51,8 @@ See:
 - [`docs/cloudflare-python-api-shape.md`](docs/cloudflare-python-api-shape.md)
 - [`docs/s3-python-library-research.md`](docs/s3-python-library-research.md)
 - [`docs/api-iteration-log.md`](docs/api-iteration-log.md)
+- [`docs/primitives-api-surface.md`](docs/primitives-api-surface.md)
+- [`docs/cloudflare-primitives-pythonic-scores.md`](docs/cloudflare-primitives-pythonic-scores.md)
 - [`docs/example-rubric-scores.md`](docs/example-rubric-scores.md)
 - [`docs/examples-status-and-pythonicness.md`](docs/examples-status-and-pythonicness.md)
 - [`docs/executable-examples.md`](docs/executable-examples.md)
