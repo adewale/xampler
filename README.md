@@ -47,6 +47,7 @@ d1-04-query/
 
 See:
 
+- [`LESSONS_LEARNED.md`](LESSONS_LEARNED.md)
 - [`docs/pythonic-rubric.md`](docs/pythonic-rubric.md)
 - [`docs/cloudflare-python-api-shape.md`](docs/cloudflare-python-api-shape.md)
 - [`docs/s3-python-library-research.md`](docs/s3-python-library-research.md)
