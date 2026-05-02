@@ -28,7 +28,7 @@ This document tracks how realistically each Cloudflare primitive example is test
 | Workers KV | `kv-02-binding` | 4 | `uv run python scripts/verify_examples.py kv-02-binding` | Starts Worker locally, writes/reads text, writes/reads JSON, lists keys, deletes a key, and verifies a missing-key 404. | Verify TTL/expiration behavior and deployed KV namespace. |
 | FastAPI / ASGI | `fastapi-03-framework` | 3 | `uv run python scripts/verify_examples.py fastapi-03-framework` | Starts Worker locally through the ASGI bridge and verifies `/` plus `/items/python`. | Add `/env` verification and a template/dependency route like the official example. |
 | D1 database | `d1-04-query` | 4 | `uv run python scripts/verify_examples.py d1-04-query` | Initializes local D1 with `db_init.sql`, creates an index, runs `PRAGMA optimize`, starts the Worker, verifies a seeded row, verifies bound query, and checks an `EXPLAIN QUERY PLAN` route for index use. | Add write/query mutation route, retry guidance, and remote/deployed D1 verification. |
-| LangChain/package orchestration | `ai-05-langchain` | 1 | Static validation only. | Service-boundary placeholder parses/lints. | Replace with real LangChain-compatible workload or remove. |
+| LangChain/package orchestration | `ai-05-langchain` | 3 | `uv run python scripts/verify_examples.py ai-05-langchain` | Starts Worker locally and verifies a dependency-light LCEL-style Runnable chain with typed input/output. | Add real LangChain package compatibility when Pyodide support is sufficient. |
 | Workers Assets | `assets-06-static-assets` | 4 | `uv run python scripts/verify_examples.py assets-06-static-assets` | Starts Worker locally, verifies the static asset is served by Workers Assets instead of Python, and verifies a dynamic Python route under `/api/status`, proving static/dynamic routing separation. | Add cache/header assertions and SPA/not-found routing examples. |
 | Durable Objects | `durable-objects-07-counter` | 4 | `uv run python scripts/verify_examples.py durable-objects-07-counter` | Starts Worker locally, resets two named counters, increments them independently, and verifies persisted state plus named-object isolation. | Verify concurrent increments, alarms, and WebSocket hibernation patterns. |
 | Cron Triggers | `scheduled-08-cron` | 4 | `uv run python scripts/verify_examples.py scheduled-08-cron` | Starts Worker locally, verifies health route, hits Wrangler's local `/cdn-cgi/handler/scheduled` endpoint, and keeps job logic typed/testable via dataclasses. | Persist an observable side effect and verify it through storage/log capture. |
@@ -38,34 +38,35 @@ This document tracks how realistically each Cloudflare primitive example is test
 | Vectorize | `vectorize-17-search` | 4 | `uv run python scripts/verify_examples.py vectorize-17-search` | Starts Worker locally and verifies deterministic vector search with dimension validation, typed matches, metadata, and result ordering; real routes keep Vectorize binding paths. | Remote index verification for `/upsert`, `/query`, and `query_by_id`. |
 | HTMLRewriter | `htmlrewriter-11-opengraph` | 4 | `uv run python scripts/verify_examples.py htmlrewriter-11-opengraph` | Starts Worker locally and verifies escaped OpenGraph metadata inserted by a typed transformation wrapper. | Swap wrapper internals to a real Python-native `HTMLRewriter` when available. |
 | Images / binary responses | `images-12-generation` | 4 | `uv run python scripts/verify_examples.py images-12-generation` | Starts Worker locally and verifies content-type plus PNG signature for a deterministic Pillow-generated binary response. | Add query validation, cache headers, and optional R2 output. |
-| Service bindings / RPC | `service-bindings-13-rpc` | 1 | Static validation only. | Python service and TS client files exist/parse partially. | One-command two-process verifier: start Python service, start TS client, verify highlighted HTML. |
-| Outbound WebSockets | `websockets-14-stream-consumer` | 1 | Static validation only. | Durable Object/WebSocket code parses/lints. | Start Worker and verify `/status`; add deterministic fake WebSocket server if possible. |
+| Service bindings / RPC | `service-bindings-13-rpc` | 3 | `uv run python scripts/verify_examples.py service-bindings-13-rpc-py` | Starts the Python RPC provider locally and verifies highlighted HTML through the same method the TS service binding calls. | Full one-command two-process verifier for Python provider + TS consumer. |
+| Outbound WebSockets | `websockets-14-stream-consumer` | 3 | `uv run python scripts/verify_examples.py websockets-14-stream-consumer` | Starts Worker locally and verifies deterministic stream status; real `/status` keeps the outbound Jetstream path. | Deterministic fake WebSocket server and persisted reconnect state verification. |
 | Durable Objects + WebSockets | `durable-objects-15-chatroom` | 4 | `uv run python scripts/verify_examples.py durable-objects-15-chatroom` | Starts Worker locally, serves chat UI, routes to a room Durable Object, sends a deterministic message through the same room state path, and verifies history. | Add a true automated WebSocket client broadcast test. |
-| Browser Rendering | `browser-rendering-18-screenshot` | 1 | Static validation only. | REST client wrapper parses/lints. | Verify against real Browser Rendering API with token or provide fake endpoint mode. |
-| Email Workers | `email-workers-19-router` | 1 | Static validation only. | Email handler parses/lints. | Add local email event harness or deployed Email Routing test. |
-| AI Gateway | `ai-gateway-20-universal` | 1 | Static validation only. | Gateway client parses/lints. | Verify with test gateway/provider key; assert response shape and gateway metadata. |
+| Browser Rendering | `browser-rendering-18-screenshot` | 3 | `uv run python scripts/verify_examples.py browser-rendering-18-screenshot` | Starts Worker locally and verifies typed screenshot request/result through deterministic `/demo`; real route keeps REST API path. | Env-gated real Browser Rendering screenshot/PDF/content verification. |
+| Email Workers | `email-workers-19-router` | 3 | `uv run python scripts/verify_examples.py email-workers-19-router` | Starts Worker locally and verifies deterministic email routing policy with typed `IncomingEmail` and `EmailDecision`. | Local email event harness or deployed Email Routing test. |
+| AI Gateway | `ai-gateway-20-universal` | 3 | `uv run python scripts/verify_examples.py ai-gateway-20-universal` | Starts Worker locally and verifies OpenAI-compatible gateway response shape through deterministic `/demo`; real route keeps gateway path. | Env-gated real gateway/provider verification with metadata/cache assertions. |
 | R2 SQL | `r2-sql-21-query` | 4 | `uv run python scripts/verify_examples.py r2-sql-21-query` | Starts Worker locally and verifies safe read-only query shaping, automatic `LIMIT`, and `EXPLAIN` via deterministic `/demo`; real route keeps REST API path. | Verify against real R2 SQL endpoint with `SHOW DATABASES` and sample query. |
-| R2 Data Catalog | `r2-data-catalog-22-iceberg` | 1 | Static validation only. | Iceberg REST client parses/lints. | Verify namespace/table listing against real catalog; add PyIceberg client example. |
+| R2 Data Catalog | `r2-data-catalog-22-iceberg` | 3 | `uv run python scripts/verify_examples.py r2-data-catalog-22-iceberg` | Starts Worker locally and verifies Iceberg namespace/table-shaped responses through deterministic `/demo`; real routes keep REST catalog path. | PyIceberg client example, table creation/append/read, remote catalog verification. |
 | Pages | `pages-23-functions` | 4 | `uv run python scripts/verify_examples.py pages-23-functions` | Starts `uv run pywrangler pages dev public`, verifies static `/`, and verifies file-routed `/api/hello?name=Python`. | Add middleware/not-found examples and deployed Pages verification. |
 | AI/data app | `hvsc-24-ai-data-search` | 4.5 | `uv run python scripts/verify_examples.py hvsc-24-ai-data-search` | Initializes local D1, ingests HVSC release metadata and sample track catalog, writes raw JSON/catalog data to R2, stores searchable release/track metadata in D1, sends a queue job, verifies `jeroen` track search, and includes optional 80 MiB archive streaming/verification to local R2. | Remote verification for permanent R2 bucket, Workers AI, and Vectorize; full generated catalog import. |
+| Hyperdrive | `hyperdrive-25-postgres` | 3 | `uv run python scripts/verify_examples.py hyperdrive-25-postgres` | Starts Worker locally and verifies typed Postgres query/result shape through deterministic `/demo`; `/config` and `/query` keep Hyperdrive binding vocabulary. | Real Postgres client wiring and env-gated Hyperdrive verification. |
+| Agents SDK | `agents-26-sdk` | 3 | `uv run python scripts/verify_examples.py agents-26-sdk` | Starts Worker locally and verifies typed agent messages, tool calls, final result, and Durable Object session routing. | Direct Agents SDK interop, streaming responses, persisted human-in-the-loop state. |
 
 ## Current realism summary
 
 | Level | Count | Examples |
 |---:|---:|---|
 | 4 | 15 | `r2-01`, `kv-02-binding`, `d1-04-query`, `durable-objects-07-counter`, `scheduled-08-cron`, `queues-16-producer-consumer`, `workers-ai-09-inference`, `workflows-10-pipeline`, `vectorize-17-search`, `durable-objects-15-chatroom`, `pages-23-functions`, `r2-sql-21-query`, `hvsc-24-ai-data-search`, `htmlrewriter-11-opengraph`, `images-12-generation` |
-| 3 | 2 | `workers-01-hello`, `fastapi-03-framework` |
+| 3 | 11 | `workers-01-hello`, `fastapi-03-framework`, `ai-05-langchain`, `service-bindings-13-rpc`, `websockets-14-stream-consumer`, `browser-rendering-18-screenshot`, `email-workers-19-router`, `ai-gateway-20-universal`, `r2-data-catalog-22-iceberg`, `hyperdrive-25-postgres`, `agents-26-sdk` |
 | 2 | 0 | — |
-| 1 | 7 | all remaining examples |
+| 1 | 0 | — |
 | 0 | 0 | — |
 
 ## Highest-priority testing work
 
-1. **Make every example at least level 2**: prove the Worker or Pages project starts and responds locally.
-2. **Bring D1, Assets, Images, FastAPI, Pages to level 3 quickly**: these should be straightforward local smoke tests.
-3. **Bring Queues, Chatroom WebSockets, Service Bindings to level 3/4**: requires multi-step local harnesses.
-4. **Bring Browser Rendering, AI Gateway, R2 SQL, R2 Data Catalog to level 5**: these depend on real Cloudflare account resources and tokens.
-5. **Keep R2 at level 4+**: the JPEG byte-for-byte upload/download fixture is the current gold standard for realistic local verification.
+1. **Promote level-3 examples to level 4**: add richer deterministic local harnesses, not just single endpoint checks.
+2. **Add env-gated remote profiles** for Browser Rendering, AI Gateway, R2 SQL, R2 Data Catalog, Hyperdrive, Agents, and Email Routing.
+3. **Bring Queues, Chatroom WebSockets, and Service Bindings to level 4/5** with true multi-process or WebSocket clients.
+4. **Keep R2 at level 4+**: the JPEG byte-for-byte upload/download fixture is the current gold standard for realistic local verification.
 
 ## Verification commands currently known to pass
 
@@ -88,4 +89,13 @@ uv run python scripts/verify_examples.py durable-objects-15-chatroom
 uv run python scripts/verify_examples.py pages-23-functions
 uv run python scripts/verify_examples.py r2-sql-21-query
 uv run python scripts/verify_examples.py hvsc-24-ai-data-search
+uv run python scripts/verify_examples.py ai-05-langchain
+uv run python scripts/verify_examples.py service-bindings-13-rpc-py
+uv run python scripts/verify_examples.py websockets-14-stream-consumer
+uv run python scripts/verify_examples.py browser-rendering-18-screenshot
+uv run python scripts/verify_examples.py email-workers-19-router
+uv run python scripts/verify_examples.py ai-gateway-20-universal
+uv run python scripts/verify_examples.py r2-data-catalog-22-iceberg
+uv run python scripts/verify_examples.py hyperdrive-25-postgres
+uv run python scripts/verify_examples.py agents-26-sdk
 ```

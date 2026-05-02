@@ -1,6 +1,6 @@
 # Cloudflare Primitive API Surface
 
-Last reviewed: 2026-05-01. Scores are out of **10**.
+Last reviewed: 2026-05-02. Scores are out of **10**.
 
 Coverage scores answer: **how much of the Cloudflare primitive's useful API surface does this example demonstrate?**
 
@@ -20,20 +20,22 @@ Sorted by Pythonic score, highest first.
 | FastAPI / ASGI | `fastapi-03-framework` | 6.0 | 8.0 | Normal `FastAPI` app, ASGI bridge in `Default.fetch`, env access through ASGI scope. | Larger routing, middleware, error handling, package compatibility notes. |
 | Cron Triggers | `scheduled-08-cron` | 6.5 | 8.5 | `ScheduledEventInfo`, `ScheduledRunResult`, `ScheduledJob.run()`, `scheduled()` handler, local scheduled endpoint verification. | Persistence/observability example. |
 | Binary responses / Pillow | `images-12-generation` | 6.5 | 8.4 | Pillow-generated PNG and binary `Response`; verifier asserts PNG signature and content type. | Query param validation, Cloudflare Images API, caching, R2 output. |
-| Service Bindings / RPC | `service-bindings-13-rpc` | 6.0 | 8.0 | Python RPC `highlight_code`, TypeScript client binding. | One-command two-worker verifier, typed request/response models, auth/error patterns. |
+| Service Bindings / RPC | `service-bindings-13-rpc` | 6.8 | 8.3 | Python RPC `highlight_code`, TypeScript client binding, local provider verifier. | Full two-worker process verifier, auth/error patterns. |
 | Durable Objects + WebSockets | `durable-objects-15-chatroom` | 7.5 | 8.5 | `ChatRoom`, WebSocketPair, room routing, hibernation API, browser client, persisted message history, deterministic room-state verifier. | True automated WebSocket client broadcast verifier and `ChatSession` abstraction. |
 | Vectorize | `vectorize-17-search` | 7.8 | 8.7 | `VectorIndex`, `Vector`, `VectorQuery`, `VectorMatch`, `VectorQueryResult`; `upsert`, `search`, `query`, `query_by_id`, `get`, `delete`, `describe`; typed query/results and dimension validation. | Metadata index management, batching helper, remote Vectorize verification. |
 | Pages | `pages-23-functions` | 6.0 | 8.4 | Static `public/`, file-based Pages Function `functions/api/hello.ts`, Pages mental model, Pages dev verifier. | Python-specific Pages Functions are not supported; more routing/middleware examples. |
 | Workflows | `workflows-10-pipeline` | 7.2 | 8.5 | `Pipeline` workflow, `WorkflowService`, `WorkflowInstance`, `WorkflowStart`, `WorkflowStatus`, named durable steps, deterministic verifier. | Real Workflow runtime status verification and typed event payloads. |
 | HTMLRewriter | `htmlrewriter-11-opengraph` | 5.5 | 8.3 | `OpenGraphPage` metadata model, `OpenGraphRewriter` transformation wrapper, escaped metadata, executable HTML output. | Replace internals with real Python-native `HTMLRewriter` when available. |
-| Outbound WebSockets | `websockets-14-stream-consumer` | 6.5 | 7.75 | `StreamConsumer` Durable Object, outbound JS WebSocket, alarms, Pyodide proxy notes. | Deterministic fake stream, session wrapper, reconnect state persistence. |
-| Browser Rendering | `browser-rendering-18-screenshot` | 5.0 | 7.75 | `BrowserRendering`, `ScreenshotRequest`; REST screenshot endpoint through `fetch`. | Browser binding/Puppeteer or Playwright control, content/PDF/scrape/links/markdown. |
-| Email Workers | `email-workers-19-router` | 5.5 | 7.75 | `EmailRouter`, `IncomingEmail`; inspect, reject blocked domains, forward with `X-*` header. | Reply API, SendEmail binding, MIME parsing, deterministic email event verifier. |
-| AI Gateway | `ai-gateway-20-universal` | 5.0 | 7.75 | `AIGateway`, `ChatRequest`, `ChatMessage`; OpenAI-compatible chat through gateway. | Caching/rate-limit metadata, dynamic routing/fallbacks, provider key patterns, observability. |
-| R2 Data Catalog | `r2-data-catalog-22-iceberg` | 5.0 | 7.75 | `R2DataCatalog`; list namespaces/tables via Iceberg REST API. | PyIceberg client example, table creation, append/read, schema evolution, snapshots. |
+| Outbound WebSockets | `websockets-14-stream-consumer` | 7.0 | 8.2 | `StreamConsumer` Durable Object, outbound JS WebSocket, alarms, Pyodide proxy notes, deterministic `/demo/status`. | Richer fake stream messages, persisted reconnect state. |
+| Browser Rendering | `browser-rendering-18-screenshot` | 6.2 | 8.2 | `BrowserRendering`, `DemoBrowserRendering`, `ScreenshotRequest`, `ScreenshotResult`; REST screenshot endpoint and local demo. | Browser binding/Puppeteer or Playwright control, content/PDF/scrape/links/markdown. |
+| Email Workers | `email-workers-19-router` | 6.5 | 8.3 | `EmailRouter`, `IncomingEmail`, `EmailDecision`; inspect, reject, forward, deterministic HTTP policy verifier. | Reply API, SendEmail binding, richer MIME parsing, deployed Email Routing test. |
+| AI Gateway | `ai-gateway-20-universal` | 6.5 | 8.4 | `AIGateway`, `DemoAIGateway`, `ChatRequest`, `ChatMessage`, `ChatChoice`; OpenAI-compatible chat through gateway and deterministic local gateway shape. | Caching/rate-limit metadata, dynamic routing/fallbacks, provider key patterns, observability. |
+| R2 Data Catalog | `r2-data-catalog-22-iceberg` | 6.8 | 8.3 | `R2DataCatalog`, `DemoR2DataCatalog`, `Namespace`, `TableRef`; list namespaces/tables via Iceberg REST API and fixture verifier. | PyIceberg client example, table creation, append/read, schema evolution, snapshots. |
 | R2 SQL | `r2-sql-21-query` | 6.5 | 8.4 | `R2SqlClient`, `R2SqlQuery`, `R2SqlResult`, read-only/single-table safety checks, automatic `LIMIT`, `explain`, deterministic demo client. | Schema discovery helpers, richer query builder, real R2 SQL verification. |
 | AI/data app | `hvsc-24-ai-data-search` | 8.6 | 9.0 | `HvscPipeline`, `HvscRelease`, `Track`, `IngestJob`, `SearchResult`, R2 artifact storage, optional 80 MiB archive streaming/verification, D1 release + track metadata, Queue job, deterministic summarizer/vector search, HVSC sample catalog with Jeroen search. | Remote Workers AI/Vectorize verification, full catalog import from generated JSONL, FastAPI facade. |
-| LangChain/package orchestration | `ai-05-langchain` | 3.0 | 6.75 | `PromptService` boundary only. | Real LangChain-compatible workload or removal/replacement. |
+| LangChain/package orchestration | `ai-05-langchain` | 6.2 | 8.1 | `PromptInput`, `PromptOutput`, `PromptTemplate`, `DemoModel`, `PromptChain`, `PromptService`; dependency-light LCEL-style Runnable shape verified locally. | Add real LangChain package compatibility when Pyodide support is sufficient. |
+| Hyperdrive | `hyperdrive-25-postgres` | 6.5 | 8.4 | `HyperdriveConfig`, `PostgresQuery`, `PostgresResult`, `HyperdrivePostgres`, `DemoPostgres`; local verifier and deployed config route. | Real Postgres client wiring, transactions, pooling notes, remote Hyperdrive verifier. |
+| Agents SDK | `agents-26-sdk` | 6.8 | 8.6 | `AgentMessage`, `AgentToolCall`, `AgentRunResult`, `WeatherTool`, `DemoAgent`, `AgentSession`, Durable Object session routing. | Direct Cloudflare Agents SDK interop as Python support matures, streaming agent responses, human-in-the-loop state. |
 
 ## Aggregate view
 

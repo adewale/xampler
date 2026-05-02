@@ -21,7 +21,7 @@ Scores use [`docs/pythonic-rubric.md`](pythonic-rubric.md). They consider readab
 | `kv-02-binding` | Workers KV | Verified | `uv run python scripts/verify_examples.py kv-02-binding` | 8.8 | Strong service/resource shape with `KVNamespace` and `KVKey`; verifier covers text, JSON, list, delete, and missing-key behavior. Needs expiration/cache metadata docs. |
 | `fastapi-03-framework` | FastAPI on Workers | Verified | `uv run python scripts/verify_examples.py fastapi-03-framework` | 8.0 | Uses real ASGI bridge, keeps FastAPI routes ordinary, and verifies local routing. Needs `/env` and template/dependency route coverage. |
 | `d1-04-query` | D1 | Verified | `uv run python scripts/verify_examples.py d1-04-query` | 8.7 | Verifier initializes local D1 with `db_init.sql`, starts the Worker, checks the seeded PEP 20 row, and verifies a parameter-bound query through `D1Statement.one_as`. Needs transactions/retries/index examples. |
-| `ai-05-langchain` | Python package / LangChain boundary | Needs work | none yet | 6.75 | Service boundary shape is useful, but it does not yet exercise a real LangChain chain in Workers. |
+| `ai-05-langchain` | Python package / LangChain boundary | Verified | `uv run python scripts/verify_examples.py ai-05-langchain` | 8.1 | Typed LCEL-style Runnable chain with prompt/model/service boundary and local verification. |
 | `assets-06-static-assets` | Workers Assets | Verified | `uv run python scripts/verify_examples.py assets-06-static-assets` | 8.9 | Teaches the Pythonic/platform-correct approach: static assets bypass Python while `/api/status` wakes the Worker only for dynamic work. |
 | `durable-objects-07-counter` | Durable Objects | Verified | `uv run python scripts/verify_examples.py durable-objects-07-counter` | 8.6 | Real named Durable Object, typed `CounterRef`, reset/increment/read verified across two isolated names. Good literate comments. Needs concurrent increment checks. |
 | `scheduled-08-cron` | Cron triggers | Runnable | `uv run python scripts/verify_examples.py scheduled-08-cron` | 8.0 | Real scheduled handler and job object. Needs local scheduled endpoint verification. |
@@ -30,8 +30,8 @@ Scores use [`docs/pythonic-rubric.md`](pythonic-rubric.md). They consider readab
 | `workflows-10-pipeline` | Workflows | Runnable with runtime support | verifier listed | 7.75 | Real workflow entrypoint and `/start`/`/status`. Needs verified workflow run and `WorkflowInstance` handle. |
 | `htmlrewriter-11-opengraph` | HTMLRewriter | Runnable | verifier listed | 7.75 | Has metadata model and executable response, but should use real `HTMLRewriter` boundary instead of prebuilt HTML. |
 | `images-12-generation` | Pillow / binary response | Runnable | verifier listed | 8.0 | Real Pillow-generated PNG. Needs typed query parameters and cache/R2 integration. |
-| `service-bindings-13-rpc` | Service bindings / RPC | Runnable with two processes | manual two-worker run | 8.0 | Python RPC service plus TS client config. Needs one-command verifier for both services. |
-| `websockets-14-stream-consumer` | Outbound WebSockets + Durable Objects | Runnable with network | verifier listed | 7.75 | Real outbound WebSocket consumer, alarm reconnect, Pyodide proxy explanation. Needs deterministic local test. |
+| `service-bindings-13-rpc` | Service bindings / RPC | Verified provider | `uv run python scripts/verify_examples.py service-bindings-13-rpc-py` | 8.3 | Python RPC service plus TS client config; provider is locally verified. Needs full two-worker verifier. |
+| `websockets-14-stream-consumer` | Outbound WebSockets + Durable Objects | Verified | `uv run python scripts/verify_examples.py websockets-14-stream-consumer` | 8.2 | Real outbound WebSocket consumer plus deterministic `/demo/status` verifier. |
 | `durable-objects-15-chatroom` | Durable Objects + WebSockets | Runnable/browser-verifiable | verifier listed for page | 8.0 | Real chatroom page and DO WebSocket room. Needs automated WebSocket client verification. |
 
 ## Current verified set
@@ -50,6 +50,15 @@ uv run python scripts/verify_examples.py queues-16-producer-consumer
 uv run python scripts/verify_examples.py images-12-generation
 uv run python scripts/verify_examples.py htmlrewriter-11-opengraph
 uv run python scripts/verify_examples.py scheduled-08-cron
+uv run python scripts/verify_examples.py ai-05-langchain
+uv run python scripts/verify_examples.py service-bindings-13-rpc-py
+uv run python scripts/verify_examples.py websockets-14-stream-consumer
+uv run python scripts/verify_examples.py browser-rendering-18-screenshot
+uv run python scripts/verify_examples.py email-workers-19-router
+uv run python scripts/verify_examples.py ai-gateway-20-universal
+uv run python scripts/verify_examples.py r2-data-catalog-22-iceberg
+uv run python scripts/verify_examples.py hyperdrive-25-postgres
+uv run python scripts/verify_examples.py agents-26-sdk
 ```
 
 ## Pythonic themes that are working
@@ -63,10 +72,10 @@ uv run python scripts/verify_examples.py scheduled-08-cron
 
 ## Priority iteration backlog
 
-1. Add automated smoke verification for every Runnable example.
+1. Raise level-3 examples to richer level-4 local harnesses.
 2. Add KV TTL/expiration and metadata verification.
 3. Add D1 transactions/retries/index examples now that setup automation exists.
 4. Add queue consumer ack/retry verification beyond producer enqueue.
 5. Replace `htmlrewriter-11-opengraph` simplified HTML with real HTMLRewriter usage.
 6. Add deterministic WebSocket verification for the chatroom.
-7. Turn `ai-05-langchain` into a real working LangChain-compatible example or drop it from the verified set.
+7. Add env-gated remote verification for account-backed products.

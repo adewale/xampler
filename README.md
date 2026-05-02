@@ -38,6 +38,8 @@ d1-04-query/
 | [`r2-data-catalog-22-iceberg/`](r2-data-catalog-22-iceberg) | R2 Data Catalog | Iceberg REST namespace/table client. |
 | [`pages-23-functions/`](pages-23-functions) | Pages | Static Pages project with file-based Function. |
 | [`hvsc-24-ai-data-search/`](hvsc-24-ai-data-search) | AI/data app | HVSC release ingestion through R2, D1, Queues, Workers AI/Vectorize seams, and search. |
+| [`hyperdrive-25-postgres/`](hyperdrive-25-postgres) | Hyperdrive | Typed Postgres query shape through Hyperdrive with deterministic local transport. |
+| [`agents-26-sdk/`](agents-26-sdk) | Agents SDK | Stateful agent/session shape with tools, Durable Objects, and typed run results. |
 | [`htmlrewriter-11-opengraph/`](htmlrewriter-11-opengraph) | HTMLRewriter | OpenGraph metadata model and edge HTML response shape. |
 | [`images-12-generation/`](images-12-generation) | Python packages / binary responses | Pillow image generation from a Worker. |
 | [`service-bindings-13-rpc/`](service-bindings-13-rpc) | Service bindings / RPC | Python RPC service shape with TypeScript client scaffold. |
@@ -66,6 +68,8 @@ See:
 - [`docs/example-rubric-scores.md`](docs/example-rubric-scores.md)
 - [`docs/examples-status-and-pythonicness.md`](docs/examples-status-and-pythonicness.md)
 - [`docs/executable-examples.md`](docs/executable-examples.md)
+- [`docs/tier-1-completion-plan.md`](docs/tier-1-completion-plan.md)
+- [`docs/composite-example-backlog.md`](docs/composite-example-backlog.md)
 
 The short version:
 
@@ -99,13 +103,15 @@ Coverage and Pythonic API scores are out of 10. Test realism is out of 5; see [`
 | Tier 1 — Gold standard | Workflows | 7.2 | 8.5 | 4 |
 | Tier 1 — Gold standard | R2 SQL | 6.5 | 8.4 | 4 |
 | Tier 1 — Gold standard | HVSC AI/data app | 8.6 | 9.0 | 4.5 |
-| Tier 4 — High API promise, low realism | Service Bindings / RPC | 6.0 | 8.0 | 1 |
-| Tier 4 — High API promise, low realism | Outbound WebSockets | 6.5 | 7.75 | 1 |
-| Tier 4 — High API promise, low realism | Browser Rendering | 5.0 | 7.75 | 1 |
-| Tier 4 — High API promise, low realism | Email Workers | 5.5 | 7.75 | 1 |
-| Tier 4 — High API promise, low realism | AI Gateway | 5.0 | 7.75 | 1 |
-| Tier 4 — High API promise, low realism | R2 Data Catalog | 5.0 | 7.75 | 1 |
-| Tier 5 — Rework candidate | LangChain/package orchestration | 3.0 | 6.75 | 1 |
+| Tier 1 — Gold standard | Service Bindings / RPC | 6.8 | 8.3 | 3 |
+| Tier 1 — Gold standard | Outbound WebSockets | 7.0 | 8.2 | 3 |
+| Tier 1 — Gold standard | Browser Rendering | 6.2 | 8.2 | 3 |
+| Tier 1 — Gold standard | Email Workers | 6.5 | 8.3 | 3 |
+| Tier 1 — Gold standard | AI Gateway | 6.5 | 8.4 | 3 |
+| Tier 1 — Gold standard | R2 Data Catalog | 6.8 | 8.3 | 3 |
+| Tier 1 — Gold standard | LangChain/package orchestration | 6.2 | 8.1 | 3 |
+| Tier 1 — Gold standard | Hyperdrive | 6.5 | 8.4 | 3 |
+| Tier 1 — Gold standard | Agents SDK | 6.8 | 8.6 | 3 |
 
 ## Requirements
 

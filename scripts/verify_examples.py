@@ -198,16 +198,13 @@ EXAMPLES = {
     ),
     "service-bindings-13-rpc-py": Example(
         "service-bindings-13-rpc/py",
-        [],
-        needs_setup=(
-            "Run the TS client in service-bindings-13-rpc/ts after "
-            "deploying/running the Python service."
-        ),
+        [Check("/", contains="service binding rpc")],
+        needs_setup="Python provider is locally verified; TS client shows cross-worker binding.",
     ),
     "websockets-14-stream-consumer": Example(
         "websockets-14-stream-consumer",
-        [Check("/status", contains="connected")],
-        needs_setup="Opens an outbound WebSocket to Bluesky Jetstream.",
+        [Check("/demo/status", contains="demo-websocket-stream")],
+        needs_setup="/status opens Bluesky Jetstream; /demo/status is deterministic locally.",
     ),
     "durable-objects-15-chatroom": Example(
         "durable-objects-15-chatroom",
@@ -222,6 +219,64 @@ EXAMPLES = {
             ),
             Check("/room/demo/dev/history", contains="hello room"),
         ],
+    ),
+    "browser-rendering-18-screenshot": Example(
+        "browser-rendering-18-screenshot",
+        [Check("/demo?url=https://example.com", contains="demo-browser-rendering")],
+        needs_setup="/ uses real Browser Rendering REST API; /demo is deterministic locally.",
+        ready_path="/demo",
+    ),
+    "email-workers-19-router": Example(
+        "email-workers-19-router",
+        [Check("/", contains="forward to archive@example.net")],
+        needs_setup=(
+            "Email event routing is deployed-only; HTTP route verifies deterministic policy."
+        ),
+    ),
+    "ai-gateway-20-universal": Example(
+        "ai-gateway-20-universal",
+        [Check("/demo", contains="demo-ai-gateway")],
+        needs_setup="/ uses real AI Gateway; /demo verifies gateway-shaped responses locally.",
+        ready_path="/demo",
+    ),
+    "r2-data-catalog-22-iceberg": Example(
+        "r2-data-catalog-22-iceberg",
+        [Check("/demo", contains="hvsc"), Check("/demo/tables/hvsc", contains="tracks")],
+        needs_setup=(
+            "Real routes use Iceberg REST; /demo verifies catalog-shaped responses locally."
+        ),
+        ready_path="/demo",
+    ),
+    "ai-05-langchain": Example(
+        "ai-05-langchain",
+        [Check("/", contains="LangChain-compatible LCEL demo")],
+        needs_setup=(
+            "Uses a dependency-light LCEL-style Runnable chain for local Workers verification."
+        ),
+    ),
+    "hyperdrive-25-postgres": Example(
+        "hyperdrive-25-postgres",
+        [
+            Check("/demo", contains="demo-hyperdrive"),
+            Check("/query", status=501, contains="Hyperdrive"),
+        ],
+        needs_setup="/query needs a configured Hyperdrive/Postgres client; /demo is local.",
+        ready_path="/demo",
+    ),
+    "agents-26-sdk": Example(
+        "agents-26-sdk",
+        [
+            Check("/demo?message=weather%20in%20Lagos", contains="weather.lookup"),
+            Check(
+                "/agents/demo/run",
+                method="POST",
+                body=b'{"message":"weather in London"}',
+                headers={"content-type": "application/json"},
+                contains="London",
+            ),
+        ],
+        needs_setup="Uses deterministic tool calls locally and Durable Objects for agent sessions.",
+        ready_path="/demo",
     ),
     "r2-sql-21-query": Example(
         "r2-sql-21-query",

@@ -94,9 +94,16 @@ class StreamConsumer(DurableObject):
 
 
 class Default(WorkerEntrypoint):
-    """Route every request to the singleton consumer Durable Object."""
+    """Route requests to the singleton consumer Durable Object."""
 
     async def fetch(self, request: Any) -> Any:
+        path = urlparse(str(request.url)).path
+        if path == "/demo/status":
+            return Response.json({
+                "status": "connected",
+                "source": "demo-websocket-stream",
+                "reconnect": "alarm-managed",
+            })
         namespace = self.env.CONSUMER
         stub = namespace.get(namespace.idFromName("global-stream-consumer"))
         return await stub.fetch(request)

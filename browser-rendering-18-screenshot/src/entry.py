@@ -1,7 +1,7 @@
 from __future__ import annotations
 
 import json
-from dataclasses import dataclass
+from dataclasses import asdict, dataclass
 from typing import Any, Literal
 from urllib.parse import parse_qs, urlparse
 
@@ -25,6 +25,14 @@ class ScreenshotRequest:
         }
 
 
+@dataclass(frozen=True)
+class ScreenshotResult:
+    url: str
+    image_type: ImageType
+    bytes: int
+    source: str
+
+
 class BrowserRendering:
     def __init__(self, account_id: str, token: str):
         self.base_url = f"https://api.cloudflare.com/client/v4/accounts/{account_id}/browser-rendering"
@@ -44,10 +52,26 @@ class BrowserRendering:
         )
 
 
+class DemoBrowserRendering:
+    raw = None
+
+    async def screenshot(self, request: ScreenshotRequest) -> ScreenshotResult:
+        return ScreenshotResult(
+            url=request.url,
+            image_type=request.image_type,
+            bytes=67,
+            source="demo-browser-rendering",
+        )
+
+
 class Default(WorkerEntrypoint):
     async def fetch(self, request: Any) -> Response:
-        params = parse_qs(urlparse(str(request.url)).query)
+        parsed = urlparse(str(request.url))
+        params = parse_qs(parsed.query)
         target = params.get("url", ["https://example.com"])[0]
+        if parsed.path == "/demo":
+            result = await DemoBrowserRendering().screenshot(ScreenshotRequest(url=target))
+            return Response.json(asdict(result))
         renderer = BrowserRendering(str(self.env.ACCOUNT_ID), str(self.env.CF_API_TOKEN))
         rendered = await renderer.screenshot(ScreenshotRequest(url=target))
         return Response(rendered.body, headers={"content-type": "image/png"})

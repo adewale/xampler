@@ -4,7 +4,7 @@ from dataclasses import dataclass
 from typing import Any
 
 import js  # type: ignore[import-not-found]
-from workers import WorkerEntrypoint  # type: ignore[import-not-found]
+from workers import Response, WorkerEntrypoint  # type: ignore[import-not-found]
 
 
 @dataclass(frozen=True)
@@ -13,6 +13,13 @@ class IncomingEmail:
     recipient: str
     subject: str | None
     size: int
+
+
+@dataclass(frozen=True)
+class EmailDecision:
+    action: str
+    reason: str
+    email: IncomingEmail
 
 
 class EmailRouter:
@@ -28,11 +35,17 @@ class EmailRouter:
             size=int(message.rawSize),
         )
 
-    async def route(self, message: Any) -> IncomingEmail:
-        email = self.inspect(message)
+    def decide(self, email: IncomingEmail) -> EmailDecision:
         domain = email.sender.rsplit("@", 1)[-1]
         if domain in self.blocked_domains:
-            message.setReject("sender domain blocked")
+            return EmailDecision("reject", "sender domain blocked", email)
+        return EmailDecision("forward", f"forward to {self.forward_to}", email)
+
+    async def route(self, message: Any) -> IncomingEmail:
+        email = self.inspect(message)
+        decision = self.decide(email)
+        if decision.action == "reject":
+            message.setReject(decision.reason)
             return email
         headers = js.Headers.new()
         headers.set("X-Processed-By", "xampler-email-workers-19")
@@ -41,5 +54,21 @@ class EmailRouter:
 
 
 class Default(WorkerEntrypoint):
+    async def fetch(self, request: Any) -> Response:
+        sample = IncomingEmail(
+            sender="ada@example.com",
+            recipient="search@example.net",
+            subject="search: jeroen",
+            size=128,
+        )
+        decision = EmailRouter(
+            forward_to="archive@example.net", blocked_domains={"blocked.test"}
+        ).decide(sample)
+        return Response.json({
+            "action": decision.action,
+            "reason": decision.reason,
+            "email": decision.email.__dict__,
+        })
+
     async def email(self, message: Any, env: Any, ctx: Any) -> None:
         await EmailRouter(forward_to=str(env.FORWARD_TO)).route(message)
