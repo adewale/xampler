@@ -60,6 +60,7 @@ See:
 - [`docs/primitive-test-realism.md`](docs/primitive-test-realism.md)
 - [`docs/pythonic-tooling.md`](docs/pythonic-tooling.md)
 - [`docs/datasets.md`](docs/datasets.md)
+- [`docs/dataset-reuse-coverage.md`](docs/dataset-reuse-coverage.md)
 - [`docs/cloudflare-best-practices-alignment.md`](docs/cloudflare-best-practices-alignment.md)
 - [`docs/cloudflare-primitives-pythonic-scores.md`](docs/cloudflare-primitives-pythonic-scores.md)
 - [`docs/example-rubric-scores.md`](docs/example-rubric-scores.md)
