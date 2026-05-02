@@ -258,6 +258,7 @@ EXAMPLES = {
             Check("/", contains="HVSC AI/data pipeline"),
             Check("/ingest-fixture", method="POST", contains="HVSC #84"),
             Check("/search?q=sid", contains="HVSC #84"),
+            Check("/archive/verify", contains='"verified": false'),
         ],
         needs_setup=(
             "Initializes local D1 and uses deterministic AI/vector logic over HVSC metadata."

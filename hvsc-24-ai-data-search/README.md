@@ -26,6 +26,14 @@ curl -X POST http://localhost:9595/ingest-fixture
 
 Then open <http://localhost:9595/search?q=sid>.
 
+The page also has an optional button to stream the full HVSC archive into local R2:
+
+- source: `https://boswme.home.xs4all.nl/HVSC/HVSC_84-all-of-them.7z`
+- size: `83,748,140` bytes, about `79.9 MiB`
+- R2 key: `hvsc/archives/HVSC_84-all-of-them.7z`
+
+This large archive is intentionally **not** part of the default verifier. Use it for interactive stress testing of streaming R2 writes.
+
 Run the automated verifier:
 
 ```bash

@@ -6,8 +6,13 @@ from pathlib import PurePosixPath
 from typing import Any
 from urllib.parse import parse_qs, urlparse
 
-from cfboundary.ffi import d1_null, to_js, to_py
+import js  # type: ignore[import-not-found]
+from cfboundary.ffi import d1_null, is_js_missing, to_js, to_py
 from workers import Response, WorkerEntrypoint  # type: ignore[import-not-found]
+
+HVSC_ARCHIVE_KEY = "hvsc/archives/HVSC_84-all-of-them.7z"
+HVSC_ARCHIVE_URL = "https://boswme.home.xs4all.nl/HVSC/HVSC_84-all-of-them.7z"
+HVSC_ARCHIVE_SIZE = 83_748_140
 
 HVSC_VERSION_84 = {
     "version": 84,
@@ -56,6 +61,15 @@ class SearchResult:
     complete_url: str
 
 
+@dataclass(frozen=True)
+class ArchiveVerification:
+    key: str
+    source_url: str
+    expected_size: int
+    stored_size: int
+    verified: bool
+
+
 class R2Artifacts:
     def __init__(self, raw: Any):
         self.raw = raw
@@ -69,9 +83,36 @@ class R2Artifacts:
 
     async def read_json(self, key: str) -> Any | None:
         obj = await self.raw.get(key)
-        if obj is None:
+        if is_js_missing(obj):
             return None
         return json.loads(str(await obj.text()))
+
+    async def stream_from_url(self, *, url: str, key: str) -> ArchiveVerification:
+        response = await js.fetch(url)
+        expected_size = int(response.headers.get("content-length") or 0)
+        await self.raw.put(
+            key,
+            response.body,
+            to_js({"httpMetadata": {"contentType": "application/x-7z-compressed"}}),
+        )
+        return await self.verify_archive(key=key, url=url, expected_size=expected_size)
+
+    async def verify_archive(
+        self,
+        *,
+        key: str,
+        url: str = HVSC_ARCHIVE_URL,
+        expected_size: int = HVSC_ARCHIVE_SIZE,
+    ) -> ArchiveVerification:
+        obj = await self.raw.head(key)
+        stored_size = 0 if is_js_missing(obj) else int(obj.size)
+        return ArchiveVerification(
+            key=key,
+            source_url=url,
+            expected_size=expected_size,
+            stored_size=stored_size,
+            verified=stored_size == expected_size,
+        )
 
 
 class D1Database:
@@ -162,6 +203,12 @@ class HvscPipeline:
         await self.queue.send(IngestJob("hvsc-release-index", release.version, key))
         return {"version": release.version, "r2_key": key, "summary": summary}
 
+    async def ingest_archive(self) -> ArchiveVerification:
+        return await self.r2.stream_from_url(url=HVSC_ARCHIVE_URL, key=HVSC_ARCHIVE_KEY)
+
+    async def verify_archive(self) -> ArchiveVerification:
+        return await self.r2.verify_archive(key=HVSC_ARCHIVE_KEY)
+
     async def search(self, query: str) -> list[SearchResult]:
         results = await self.db.search(query)
         return [
@@ -187,6 +234,12 @@ class Default(WorkerEntrypoint):
 
         if path == "/ingest-fixture":
             return Response.json(await pipeline.ingest(HvscRelease.from_api(HVSC_VERSION_84)))
+
+        if path == "/archive/ingest":
+            return Response.json(asdict(await pipeline.ingest_archive()))
+
+        if path == "/archive/verify":
+            return Response.json(asdict(await pipeline.verify_archive()))
 
         if path == "/search":
             term = query.get("q", ["sid"])[0]
@@ -231,6 +284,11 @@ def index_html() -> str:
   </p>
 
   <p>
+    <button onclick="archiveIngest()">Optional: stream full 80 MiB archive to R2</button>
+    <button class="secondary" onclick="archiveVerify()">Verify archive in R2</button>
+  </p>
+
+  <p>
     <input id="q" value="sid" aria-label="search query">
     <button onclick="search(document.getElementById('q').value)">Search custom query</button>
   </p>
@@ -251,6 +309,13 @@ def index_html() -> str:
     }
     async function search(q) {
       await show(await fetch('/search?q=' + encodeURIComponent(q)));
+    }
+    async function archiveIngest() {
+      document.getElementById('output').textContent = 'Streaming ~80 MiB archive to local R2...';
+      await show(await fetch('/archive/ingest', { method: 'POST' }));
+    }
+    async function archiveVerify() {
+      await show(await fetch('/archive/verify'));
     }
   </script>
 </body>
