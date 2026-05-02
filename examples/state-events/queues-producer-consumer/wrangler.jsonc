@@ -9,9 +9,18 @@
     "consumers": [
       {
         "queue": "xampler-jobs",
-        "max_batch_size": 10,
+        "max_batch_size": 1,
+        "max_batch_timeout": 1,
+        "max_retries": 2,
         "dead_letter_queue": "xampler-jobs-dlq"
+      },
+      {
+        "queue": "xampler-jobs-dlq",
+        "max_batch_size": 1,
+        "max_batch_timeout": 1
       }
     ]
-  }
+  },
+  "durable_objects": {"bindings": [{"name": "TRACKER", "class_name": "QueueTracker"}]},
+  "migrations": [{"tag": "v1", "new_sqlite_classes": ["QueueTracker"]}]
 }

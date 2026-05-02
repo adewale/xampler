@@ -336,4 +336,17 @@ What changed:
 - REST-backed Workers now use deployed Worker secrets instead of temporary local `.dev.vars` for remote verification.
 - The HTTP verifier sends a stable User-Agent after deployed Workers returned Cloudflare `1010` bot-signature errors to default Python urllib requests.
 
-Lesson: local verifier state and remote account state are different things. Remote examples should make lifecycle explicit: prepare resources, verify behavior, and eventually add cleanup for disposable resources.
+Lesson: local verifier state and remote account state are different things. Remote examples should make lifecycle explicit: prepare resources, verify behavior, and cleanup disposable deployments/resources.
+
+## 28. Streaming composition is most convincing when it lands in a searchable product
+
+A streaming example that only emits records is useful, but a streaming example that lands those records in a Cloudflare primitive proves much more of the API surface.
+
+What changed:
+
+- Extended the Gutenberg example beyond stream events and ZIP inspection.
+- `/fts/ingest` now reads the real Project Gutenberg Shakespeare ZIP from R2, extracts the full HTML entry, strips tags, chunks all text, writes every chunk into D1, and mirrors those chunks into a D1 FTS5 table.
+- `/fts/search` performs full-text queries over the indexed archive.
+- `/fts/verify` checks that D1 row count equals FTS row count and runs several Shakespeare queries to show that the archive was indexed.
+
+Lesson: the best composition examples should show a path from bytes to records to indexed/queryable state. R2 streams, Python chunking, D1 writes, and FTS queries together reveal API and runtime issues that isolated examples miss.

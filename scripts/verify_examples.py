@@ -269,8 +269,26 @@ EXAMPLES = {
             Check("/demo", contains="gutenberg-stream-demo"),
             Check("/events", contains="gutenberg.search"),
             Check("/zip-demo", contains="r2-object-body"),
+            Check("/fts/ingest", contains='"all_chunks_indexed": true'),
+            Check("/fts/search?q=romeo%20juliet", contains='"count"'),
+            Check("/fts/verify", contains='"all_queries_return_results": true'),
         ],
-        needs_setup="Golden Gutenberg zip is stored at r2://xampler-datasets/gutenberg/100/raw/pg100-h.zip.",
+        needs_setup=(
+            "Golden Gutenberg zip is stored in R2; verifier initializes local D1 FTS."
+        ),
+        setup_commands=[
+            [
+                "uv",
+                "run",
+                "pywrangler",
+                "d1",
+                "execute",
+                "xampler-gutenberg",
+                "--local",
+                "--file",
+                "db_init.sql",
+            ]
+        ],
         ready_path="/demo",
     ),
     "examples/storage-data/hyperdrive-postgres": Example(

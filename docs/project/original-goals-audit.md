@@ -25,7 +25,7 @@ The biggest remaining gaps are completing token-backed/deployed remote verificat
 | Realistic complex AI/data example | Met | `examples/full-apps/hvsc-ai-data-search`. | AI/Vectorize remain deterministic seams locally. |
 | Interactive browser flows for complex examples | Met | HVSC browser flow has run-all, progress, search UX. | Add less flicker and better resumability if full import restarts. |
 | Avoid fake arbitrary search | Met | HVSC arbitrary search requires/imports real catalog shards. | Keep demo seams explicitly labeled. |
-| Add Gutenberg/Shakespeare complex data source | Met | Gutenberg zip uploaded to R2; streaming example has `/zip-demo` that reads the R2 object body stream and unzips the real Gutenberg archive. | Python `zipfile` still buffers because ZIP central directories require seeking. |
+| Add Gutenberg/Shakespeare complex data source | Met | Gutenberg zip uploaded to R2; streaming example has `/zip-demo` that reads the R2 object body stream, `/fts/ingest` that indexes the extracted full text into D1 FTS, and `/fts/verify` that proves representative queries work. | Python `zipfile` still buffers because ZIP central directories require seeking; deployed R2/D1 verification remains future work. |
 | Ground references in Cloudflare docs | Met | `docs/runtime/cloudflare-doc-links.md`; every example README has direct Cloudflare docs links. | Keep links current as docs move. |
 
 ## Current golden files
@@ -55,7 +55,7 @@ The biggest remaining gaps are completing token-backed/deployed remote verificat
 | Gap | Meaning | Next move |
 |---|---|---|
 | Remote verification for account-backed products | Several profiles now prepare resources/deploy Workers, but AI Gateway, Hyperdrive, Images, Analytics Engine, and richer R2/Queue assertions still need work. | Run token-backed profiles in CI/secrets and add product-specific metadata/assertions. |
-| End-to-end R2 stream pipelines | `/zip-demo` reads the real R2 object body and unzips it, while `/demo` remains a compact sample-text pipeline. | Feed extracted Gutenberg records into the same checkpoint/batch pipeline. |
+| End-to-end R2 stream pipelines | `/zip-demo` reads the real R2 object body and unzips it; `/fts/ingest` writes extracted text chunks into D1 and D1 FTS. | Make FTS ingestion resumable/incremental and verify it deployed. |
 | Missing Cache/Analytics/Images examples | Common production products are not represented as first-class examples. | Add direct Cache API, Workers Analytics Engine, and Cloudflare Images examples. |
 | Wrapper duplication | Examples repeat service/dataclass/status/demo patterns locally. | Lift only stable boring helpers into `xampler/`; keep product hero logic local. |
 

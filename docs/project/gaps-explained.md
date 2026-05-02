@@ -20,8 +20,8 @@ Remaining work:
 
 - run token-backed profiles in CI/secrets;
 - add product-specific metadata assertions, not just HTTP 200;
-- add cleanup for disposable remote resources;
-- finish AI Gateway, Hyperdrive, Images, Analytics Engine, and richer Queue DLQ polling.
+- run cleanup for disposable remote resources when a test run is complete;
+- finish AI Gateway, Hyperdrive, Images, Analytics Engine, and richer R2 table data assertions.
 
 ## Real R2 zip streaming and unzipping
 
@@ -73,7 +73,7 @@ The current `examples/streaming/binary-response` should remain, but it should ne
 | Direct Cloudflare docs links | Every example README now has a `Cloudflare docs` section with product links. | Keep links current as products move. |
 | Full local and deployed Service Bindings verifier | `verify_examples.py examples/network-edge/service-bindings-rpc/ts` starts the Python provider and TypeScript consumer locally; remote prep deploys Python provider first, TS consumer second, then verifies deployed Service Binding RPC. | Add richer RPC payload/error compatibility checks. |
 | True local and deployed WebSocket broadcast verifier | Chatroom verifier opens two real WebSocket clients locally; remote prep deploys the Durable Object Worker and verifies broadcast against the deployed URL. | Add hibernation/reconnect persistence checks. |
-| Queue retry/DLQ semantics | Queue verifier checks producer, consumer ack/retry, and deterministic dead-letter decision; remote prep creates queues/DLQ and deploys the Worker. | Real deployed Queue DLQ routing still needs bounded async polling. |
+| Queue retry/DLQ semantics | Queue verifier checks producer, consumer ack/retry, and deterministic dead-letter decision; remote prep creates queues/DLQ, deploys the Worker, sends a failing job, and polls a Durable Object tracker until DLQ delivery is observed. | Add batch/concurrency assertions and optional message cleanup. |
 | Direct R2 object-body unzip | Gutenberg `/zip-demo` reads the R2 object's `ReadableStream`, buffers the streamed zip bytes for Python `zipfile`, and reads the first HTML entry. | Python `zipfile` still needs a seekable buffer for the central directory; a true non-seekable ZIP parser would require a different library/format constraint. |
 
 ## Wrapper duplication not yet lifted into shared typed package

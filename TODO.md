@@ -37,9 +37,8 @@ Current result:
 TODO:
 
 - [ ] Investigate whether `pywrangler dev --remote` is the wrong mode for AI binding verification now that Wrangler supports remote bindings differently.
-- [ ] Try plain `uv run pywrangler dev` with the AI binding, matching Cloudflare's Workers AI docs more closely.
-- [ ] Change readiness to a non-AI `/health` route if the remote preview blocks `/demo` differently from local dev.
-- [ ] Keep the only required env as `XAMPLER_RUN_REMOTE=1` and `XAMPLER_REMOTE_WORKERS_AI=1` if `wrangler login` is enough.
+- [x] Avoid fragile remote preview by deploying the Workers AI example from prepare and verifying the deployed URL.
+- [x] Keep the only verify env as `XAMPLER_RUN_REMOTE=1` and `XAMPLER_REMOTE_WORKERS_AI=1` after prepared deployment.
 
 ### `vectorize`
 
@@ -114,7 +113,7 @@ Docs pattern:
 TODO:
 
 - [x] Add a prepare script that creates the bucket and enables catalog idempotently.
-- [ ] Add a tiny seed pipeline/table or documented fixture so `SHOW DATABASES` is not the only real query.
+- [x] Add a tiny seeded namespace/table so `SHOW DATABASES` is not the only real query.
 - [x] Use Cloudflare's `WRANGLER_R2_SQL_AUTH_TOKEN` env name where possible; map it to Worker secrets for deployed REST-backed Worker tests.
 - [x] Deploy the R2 SQL Worker from prepare after setting Worker secrets.
 - [ ] Keep token creation manual unless Cloudflare exposes a safe Wrangler OAuth flow for this permission.
@@ -162,7 +161,7 @@ TODO:
 - [x] Add a prepare step for `examples/state-events/queues-producer-consumer` that creates both queues if missing.
 - [x] Deploy the Worker after queue creation.
 - [x] Replace the deployed-URL-only remote profile with a profile that can use prepared state.
-- [ ] Verify real async consumer retry and DLQ behavior with bounded polling. Current remote route verifies deployed producer enqueueing.
+- [x] Verify real async consumer retry and DLQ behavior with bounded polling via a Durable Object tracker and DLQ consumer.
 
 ### `service-bindings`
 
@@ -196,6 +195,6 @@ TODO:
 - [x] Add `scripts/prepare_remote_examples.py` with profile-specific, idempotent setup.
 - [x] Prefer `wrangler login`/Wrangler OAuth for resource creation whenever Cloudflare supports it.
 - [x] Keep secrets out of generated files by using `wrangler secret put` for prepared deployed Workers.
-- [ ] Separate three phases fully: `prepare`, `verify`, and `cleanup`.
+- [x] Separate three phases fully: `prepare`, `verify`, and `cleanup`.
 - [x] Never auto-create paid resources unless `XAMPLER_RUN_REMOTE=1` and `XAMPLER_PREPARE_REMOTE=1` are set.
 - [x] Update `docs/runtime/remote-verification.md` for prepared profiles.

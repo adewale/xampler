@@ -172,6 +172,38 @@ def run_deployed_url_profile(profile: RemoteProfile, port: int, timeout: float) 
         run_http_check(base_url, check)
 
 
+def run_queues_dlq_profile(profile: RemoteProfile, port: int, timeout: float) -> None:
+    del port
+    base_url = deployed_base_url(profile)
+    run_http_check(base_url, RemoteCheck("/dev/remote-reset", method="POST"))
+    run_http_check(
+        base_url,
+        RemoteCheck(
+            "/jobs",
+            method="POST",
+            body=b'{"kind":"fail","payload":{"source":"remote-dlq-verifier"}}',
+            headers=json_headers,
+            status=202,
+            contains="remote-dlq-verifier",
+        ),
+    )
+    deadline = time.time() + timeout
+    last_body = ""
+    while time.time() < deadline:
+        request = urllib.request.Request(
+            f"{base_url}/dev/remote-status",
+            headers={"user-agent": "xampler-remote-verifier/1.0"},
+        )
+        with urllib.request.urlopen(request, timeout=20) as response:
+            last_body = response.read().decode("utf-8", errors="replace")
+        data = json.loads(last_body)
+        if int(data.get("dead_lettered", 0)) >= 1:
+            print("✓ remote Queue DLQ observed")
+            return
+        time.sleep(5)
+    raise AssertionError(f"Queue DLQ message was not observed before timeout: {last_body}")
+
+
 def run_websocket_profile(profile: RemoteProfile, port: int, timeout: float) -> None:
     del port
     base_url = deployed_base_url(profile)
@@ -318,14 +350,10 @@ vectorize_query_body = json.dumps(
 ).encode()
 
 PROFILES: dict[str, RemoteProfile] = {
-    "workers-ai": worker_profile(
+    "workers-ai": deployed_profile(
         "workers-ai",
-        "Calls the real Workers AI binding route through Wrangler remote dev.",
-        example_path="examples/ai-agents/workers-ai-inference",
-        required_env=(),
-        ready_path="/demo",
-        remote_bindings=True,
-        checks=(RemoteCheck("/", contains="text"),),
+        "Calls a deployed Worker with the real Workers AI binding.",
+        RemoteCheck("/", contains="text"),
     ),
     "vectorize": deployed_profile(
         "vectorize",
@@ -358,8 +386,9 @@ PROFILES: dict[str, RemoteProfile] = {
         RemoteCheck(
             "/",
             method="POST",
-            body=b'{"sql":"SHOW DATABASES"}',
+            body=b'{"sql":"SHOW TABLES IN xampler"}',
             headers=json_headers,
+            contains="gutenberg_smoke",
         ),
     ),
     "ai-gateway": worker_profile(
@@ -383,7 +412,7 @@ PROFILES: dict[str, RemoteProfile] = {
     "r2-data-catalog": deployed_profile(
         "r2-data-catalog",
         "Calls a deployed Worker that uses a real R2 Data Catalog/Iceberg endpoint.",
-        RemoteCheck("/"),
+        RemoteCheck("/tables/xampler", contains="gutenberg_smoke"),
     ),
     "hyperdrive": deployed_profile(
         "hyperdrive",
@@ -400,18 +429,12 @@ PROFILES: dict[str, RemoteProfile] = {
         "Calls a deployed real Analytics Engine route.",
         RemoteCheck("/"),
     ),
-    "queues-dlq": deployed_profile(
-        "queues-dlq",
-        "Calls deployed Queue producer/consumer/DLQ verification routes.",
-        RemoteCheck("/", contains="POST JSON"),
-        RemoteCheck(
-            "/jobs",
-            method="POST",
-            body=b'{"kind":"remote","payload":{"source":"remote-verifier"}}',
-            headers=json_headers,
-            status=202,
-            contains="remote-verifier",
-        ),
+    "queues-dlq": RemoteProfile(
+        name="queues-dlq",
+        description="Calls deployed Queue producer/consumer/DLQ verification routes.",
+        enable_env="XAMPLER_REMOTE_QUEUES_DLQ",
+        required_env=("XAMPLER_REMOTE_QUEUES_DLQ_URL",),
+        verifier=run_queues_dlq_profile,
     ),
     "service-bindings": deployed_profile(
         "service-bindings",

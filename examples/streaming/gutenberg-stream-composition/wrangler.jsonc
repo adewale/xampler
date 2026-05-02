@@ -8,5 +8,12 @@
   "r2_buckets": [
     { "binding": "ARTIFACTS", "bucket_name": "xampler-datasets", "remote": true }
   ],
+  "d1_databases": [
+    {
+      "binding": "DB",
+      "database_name": "xampler-gutenberg",
+      "database_id": "REPLACE_WITH_D1_DATABASE_ID"
+    }
+  ],
   "ai": { "binding": "AI" }
 }

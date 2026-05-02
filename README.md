@@ -43,7 +43,7 @@ examples/full-apps/hvsc-ai-data-search/
 | [`examples/full-apps/hvsc-ai-data-search/`](examples/full-apps/hvsc-ai-data-search) | AI/data app | HVSC release ingestion through R2, D1, Queues, Workers AI/Vectorize seams, and search. |
 | [`examples/storage-data/hyperdrive-postgres/`](examples/storage-data/hyperdrive-postgres) | Hyperdrive | Typed Postgres query shape through Hyperdrive with deterministic local transport. |
 | [`examples/ai-agents/agents-sdk-tools/`](examples/ai-agents/agents-sdk-tools) | Agents SDK | Stateful agent/session shape with tools, Durable Objects, and typed run results. |
-| [`examples/streaming/gutenberg-stream-composition/`](examples/streaming/gutenberg-stream-composition) | Streaming composition | Gutenberg golden file, byte/text/line/record streams, batches, checkpoints, AI/agent/WebSocket events. |
+| [`examples/streaming/gutenberg-stream-composition/`](examples/streaming/gutenberg-stream-composition) | Streaming composition | Gutenberg golden file, byte/text/line/record streams, batches, checkpoints, D1 FTS indexing, AI/agent/WebSocket events. |
 | [`examples/network-edge/htmlrewriter-opengraph/`](examples/network-edge/htmlrewriter-opengraph) | HTMLRewriter | OpenGraph metadata model and edge HTML response shape. |
 | [`examples/streaming/binary-response/`](examples/streaming/binary-response) | Binary responses | Dependency-free PNG bytes from a Worker. |
 | [`examples/network-edge/service-bindings-rpc/`](examples/network-edge/service-bindings-rpc) | Service bindings / RPC | Python RPC service shape with TypeScript client scaffold. |
@@ -68,7 +68,7 @@ await AgentSession(env.AGENT, "shakespeare").emit({"type": "summary", "data": su
 
 That exact high-level API is still aspirational, but the pieces exist today:
 
-- [`examples/streaming/gutenberg-stream-composition`](examples/streaming/gutenberg-stream-composition) reads a real R2 ZIP body stream, unzips it, models byte/text/line/record streams, batches, checkpoints, AI chunks, agent events, and WebSocket events.
+- [`examples/streaming/gutenberg-stream-composition`](examples/streaming/gutenberg-stream-composition) reads a real R2 ZIP body stream, unzips it, models byte/text/line/record streams, batches, checkpoints, indexes the full text into D1 FTS, and includes AI chunks, agent events, and WebSocket events.
 - [`examples/full-apps/hvsc-ai-data-search`](examples/full-apps/hvsc-ai-data-search) composes R2 datasets, D1 ingestion state/search, Queue-style jobs, Workers AI, and Vectorize seams into an interactive app.
 - [`examples/state-events/queues-producer-consumer`](examples/state-events/queues-producer-consumer), [`examples/ai-agents/agents-sdk-tools`](examples/ai-agents/agents-sdk-tools), and [`examples/network-edge/service-bindings-rpc`](examples/network-edge/service-bindings-rpc) show typed jobs, durable sessions/tools, and cross-worker RPC boundaries.
 
@@ -127,7 +127,7 @@ These examples are useful, but they contain a local stand-in, deterministic tran
 | `examples/ai-agents/agents-sdk-tools` | Demonstrates Agents-like shape with Durable Objects; not direct Cloudflare Agents SDK interop yet. |
 | `examples/ai-agents/langchain-style-chain` | LCEL-style chain is verified; it is not yet a real LangChain package workload. |
 | `examples/full-apps/hvsc-ai-data-search` | R2/D1/Queue paths are real locally, but AI and Vectorize are deterministic seams. |
-| `examples/streaming/gutenberg-stream-composition` | `/zip-demo` streams/unzips the real R2 ZIP; `/demo` still uses compact sample text for the checkpointed pipeline. |
+| `examples/streaming/gutenberg-stream-composition` | `/zip-demo` streams/unzips the real R2 ZIP; `/fts/ingest` indexes the full extracted text into D1 FTS; `/demo` still uses compact sample text for the checkpointed pipeline. |
 | `examples/streaming/binary-response` | Binary response is real, but it is not Cloudflare Images product coverage. |
 
 ## Pythonic API principles

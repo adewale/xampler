@@ -14,12 +14,15 @@ import os
 import re
 import subprocess
 import sys
+import urllib.error
+import urllib.request
 from pathlib import Path
 
 ROOT = Path(__file__).resolve().parents[1]
 STATE_PATH = ROOT / ".xampler-remote-state.json"
 
 PROFILE_DESCRIPTIONS: dict[str, str] = {
+    "workers-ai": "Deploy the Workers AI binding example for real inference verification.",
     "vectorize": "Create the xampler-vectorize index used by the Vectorize example.",
     "queues-dlq": "Create Queues/DLQ and deploy the Queue producer/consumer Worker.",
     "service-bindings": "Deploy Python provider then TypeScript consumer for Service Bindings RPC.",
@@ -96,6 +99,12 @@ def wrangler_json(command: list[str], *, cwd: Path | None = None) -> object | No
         return json.loads(proc.stdout)
     except json.JSONDecodeError:
         return None
+
+
+def prepare_workers_ai() -> None:
+    require_remote_prepare("workers-ai")
+    url = deploy_pyworker("examples/ai-agents/workers-ai-inference")
+    record_url("workers-ai", url)
 
 
 def prepare_vectorize() -> None:
@@ -260,8 +269,67 @@ def prepare_r2_catalog_prereqs(profile: str) -> tuple[str, str | None, str | Non
     )
 
 
+def catalog_request(
+    *,
+    catalog_uri: str,
+    token: str,
+    method: str,
+    path: str,
+    payload: dict[str, object] | None = None,
+) -> tuple[int, str]:
+    body = None if payload is None else json.dumps(payload).encode()
+    request = urllib.request.Request(
+        f"{catalog_uri.rstrip('/')}{path}",
+        data=body,
+        method=method,
+        headers={
+            "authorization": f"Bearer {token}",
+            "content-type": "application/json",
+            "user-agent": "xampler-remote-preparer/1.0",
+        },
+    )
+    try:
+        with urllib.request.urlopen(request, timeout=60) as response:
+            return response.status, response.read().decode("utf-8", errors="replace")
+    except urllib.error.HTTPError as error:
+        return error.code, error.read().decode("utf-8", errors="replace")
+
+
+def seed_catalog_table(catalog_uri: str, token: str) -> None:
+    namespace_status, namespace_body = catalog_request(
+        catalog_uri=catalog_uri,
+        token=token,
+        method="POST",
+        path="/v1/namespaces",
+        payload={"namespace": ["xampler"]},
+    )
+    if namespace_status not in {200, 201, 409}:
+        raise RuntimeError(f"create namespace failed: {namespace_status} {namespace_body}")
+    table_payload: dict[str, object] = {
+        "name": "gutenberg_smoke",
+        "schema": {
+            "type": "struct",
+            "schema-id": 0,
+            "fields": [
+                {"id": 1, "name": "id", "required": True, "type": "int"},
+                {"id": 2, "name": "text", "required": False, "type": "string"},
+            ],
+        },
+    }
+    table_status, table_body = catalog_request(
+        catalog_uri=catalog_uri,
+        token=token,
+        method="POST",
+        path="/v1/namespaces/xampler/tables",
+        payload=table_payload,
+    )
+    if table_status not in {200, 201, 409}:
+        raise RuntimeError(f"create table failed: {table_status} {table_body}")
+    print("Seeded R2 Data Catalog namespace/table: xampler.gutenberg_smoke")
+
+
 def prepare_r2_sql() -> None:
-    bucket, _catalog_uri, _warehouse = prepare_r2_catalog_prereqs("r2-sql")
+    bucket, catalog_uri, _warehouse = prepare_r2_catalog_prereqs("r2-sql")
     account_id = os.environ.get("CLOUDFLARE_ACCOUNT_ID") or account_id_from_wrangler()
     if not account_id:
         raise SystemExit("Could not determine CLOUDFLARE_ACCOUNT_ID from env or wrangler whoami.")
@@ -271,6 +339,8 @@ def prepare_r2_sql() -> None:
             "R2 SQL remote verification still needs WRANGLER_R2_SQL_AUTH_TOKEN "
             "with R2 SQL/Data Catalog/R2 permissions."
         )
+    if catalog_uri:
+        seed_catalog_table(catalog_uri, token)
     example = "examples/storage-data/r2-sql"
     set_secret(example, "ACCOUNT_ID", account_id)
     set_secret(example, "CF_API_TOKEN", token)
@@ -293,6 +363,7 @@ def prepare_r2_data_catalog() -> None:
         )
     if not catalog_uri:
         raise SystemExit("Could not determine R2 Data Catalog URI from wrangler catalog output.")
+    seed_catalog_table(catalog_uri, token)
     example = "examples/storage-data/r2-data-catalog"
     set_secret(example, "CATALOG_URI", catalog_uri)
     set_secret(example, "CATALOG_TOKEN", token)
@@ -303,6 +374,7 @@ def prepare_r2_data_catalog() -> None:
 def prepare_all() -> None:
     # Exclude REST-token-only preflights from all unless their credentials are present.
     for name in (
+        "workers-ai",
         "vectorize",
         "queues-dlq",
         "service-bindings",
@@ -314,6 +386,7 @@ def prepare_all() -> None:
 
 
 PREPARE = {
+    "workers-ai": prepare_workers_ai,
     "vectorize": prepare_vectorize,
     "queues-dlq": prepare_queues_dlq,
     "service-bindings": prepare_service_bindings,
