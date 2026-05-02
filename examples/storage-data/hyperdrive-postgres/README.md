@@ -15,3 +15,7 @@ uv run python ../scripts/verify_examples.py examples/storage-data/hyperdrive-pos
 - `PostgresQuery` and `PostgresResult` are typed dataclasses.
 - `HyperdrivePostgres.query()` is the production-facing service wrapper.
 - `DemoPostgres` verifies query validation and result shape locally.
+
+## Cloudflare docs
+
+- [Hyperdrive](https://developers.cloudflare.com/hyperdrive/)

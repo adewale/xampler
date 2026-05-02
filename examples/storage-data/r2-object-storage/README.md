@@ -260,3 +260,8 @@ See also:
 - [`docs/archive/r2-feature-coverage.md`](../../../docs/archive/r2-feature-coverage.md)
 - [`docs/api/pythonic-rubric.md`](../../../docs/api/pythonic-rubric.md)
 - [`docs/archive/aws-s3-comparison.md`](../../../docs/archive/aws-s3-comparison.md)
+
+## Cloudflare docs
+
+- [R2](https://developers.cloudflare.com/r2/)
+- [R2 Workers API](https://developers.cloudflare.com/r2/api/workers/)

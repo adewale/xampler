@@ -66,3 +66,11 @@ Run the automated verifier:
 ```bash
 uv run python scripts/verify_examples.py examples/full-apps/hvsc-ai-data-search
 ```
+
+## Cloudflare docs
+
+- [R2](https://developers.cloudflare.com/r2/)
+- [D1](https://developers.cloudflare.com/d1/)
+- [Queues](https://developers.cloudflare.com/queues/)
+- [Workers AI](https://developers.cloudflare.com/workers-ai/)
+- [Vectorize](https://developers.cloudflare.com/vectorize/)

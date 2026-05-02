@@ -59,7 +59,8 @@ class ChatRoom(DurableObject):
         self.broadcast(json.dumps(event))
 
     async def webSocketClose(self, ws: Any, code: int, reason: str, was_clean: bool) -> None:
-        ws.close(code, reason)
+        safe_code = 1000 if code in {1005, 1006} else code
+        ws.close(safe_code, reason)
 
     async def webSocketError(self, ws: Any, error: Any) -> None:
         ws.close(1011, "WebSocket error")

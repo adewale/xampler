@@ -29,3 +29,8 @@ Endpoints:
 - `/golden` verifies the R2 golden file metadata.
 - `/demo` runs a stream-to-stream local pipeline.
 - `/events` returns typed AI/agent/WebSocket stream events.
+
+## Cloudflare docs
+
+- [R2](https://developers.cloudflare.com/r2/)
+- [ReadableStream](https://developers.cloudflare.com/workers/runtime-apis/streams/)

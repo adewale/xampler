@@ -1,15 +1,20 @@
 from __future__ import annotations
 
 import json
+import zipfile
 from collections.abc import AsyncIterable, AsyncIterator, Awaitable, Callable
 from dataclasses import asdict, dataclass
+from io import BytesIO
 from typing import Any, Literal, TypeVar
 from urllib.parse import urlparse
 
+import js  # type: ignore[import-not-found]
+from cfboundary.ffi import to_py
 from workers import Response, WorkerEntrypoint  # type: ignore[import-not-found]
 
 T = TypeVar("T")
 GUTENBERG_KEY = "gutenberg/100/raw/pg100-h.zip"
+GUTENBERG_URL = "https://www.gutenberg.org/cache/epub/100/pg100-h.zip"
 SAMPLE_TEXT = """The Project Gutenberg eBook of The Complete Works of William Shakespeare
 Romeo and Juliet
 But soft, what light through yonder window breaks?
@@ -189,6 +194,26 @@ async def async_enumerate[T](
         index += 1
 
 
+async def unzip_gutenberg_archive() -> dict[str, Any]:
+    response = await js.fetch(GUTENBERG_URL)
+    data = bytes(to_py(await response.arrayBuffer()))
+    with zipfile.ZipFile(BytesIO(data)) as archive:
+        entries = [info for info in archive.infolist() if not info.is_dir()]
+        html_entries = [info for info in entries if info.filename.endswith((".html", ".htm"))]
+        first = html_entries[0] if html_entries else entries[0]
+        with archive.open(first) as file:
+            sample = file.read(160).decode("utf-8", errors="replace")
+    return {
+        "source_url": GUTENBERG_URL,
+        "golden_key": GUTENBERG_KEY,
+        "zip_bytes": len(data),
+        "entries": len(entries),
+        "html_entries": len(html_entries),
+        "first_entry": first.filename,
+        "sample": sample,
+    }
+
+
 async def stream_events() -> dict[str, Any]:
     ai_chunks = [chunk async for chunk in DemoAIService().stream_text("Shakespeare archive")]
     agent_events = [asdict(event) async for event in DemoAgentSession().stream("Hamlet")]
@@ -211,6 +236,8 @@ class Default(WorkerEntrypoint):
             return Response.json(await composed_pipeline())
         if path == "/events":
             return Response.json(await stream_events())
+        if path == "/zip-demo":
+            return Response.json(await unzip_gutenberg_archive())
         if path == "/golden":
             obj = await self.env.ARTIFACTS.head(GUTENBERG_KEY)
             exists = obj is not None

@@ -72,6 +72,16 @@ These gaps are important because they represent common production tasks that are
 
 The current `examples/streaming/binary-response` should remain, but it should never be described as Cloudflare Images coverage.
 
+## Recently closed gaps
+
+| Gap | What changed | Remaining caveat |
+|---|---|---|
+| Direct Cloudflare docs links | Every example README now has a `Cloudflare docs` section with product links. | Keep links current as products move. |
+| Full local Service Bindings verifier | `verify_examples.py examples/network-edge/service-bindings-rpc/ts` starts the Python provider and TypeScript consumer; TS invokes Python via Service Binding. | Still needs deployed verification. |
+| True WebSocket broadcast verifier | Chatroom verifier opens two real WebSocket clients and checks broadcast delivery. | Still needs deployed verification. |
+| Queue retry/DLQ semantics | Queue verifier checks producer, consumer ack/retry, and deterministic dead-letter decision. | Real deployed Queue DLQ routing still needs credentials/resources. |
+| Real zip unzipping demonstration | Gutenberg example now fetches and unzips the real Project Gutenberg archive in `/zip-demo`. | It currently fetches the source URL into bounded memory; direct R2 body streaming unzip remains future work. |
+
 ## Wrapper duplication not yet lifted into shared typed package
 
 Most examples still define their own wrapper classes locally. That is intentional so examples remain self-contained and easy to read, but repeated patterns are now stable enough to start lifting.

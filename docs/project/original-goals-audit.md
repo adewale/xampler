@@ -25,8 +25,8 @@ The biggest remaining gaps are remote/account-backed verification, direct real s
 | Realistic complex AI/data example | Met | `examples/full-apps/hvsc-ai-data-search`. | AI/Vectorize remain deterministic seams locally. |
 | Interactive browser flows for complex examples | Met | HVSC browser flow has run-all, progress, search UX. | Add less flicker and better resumability if full import restarts. |
 | Avoid fake arbitrary search | Met | HVSC arbitrary search requires/imports real catalog shards. | Keep demo seams explicitly labeled. |
-| Add Gutenberg/Shakespeare complex data source | Partially met | Gutenberg zip uploaded to R2 and `examples/streaming/gutenberg-stream-composition` exists. | The streaming demo does not yet unzip/process the actual golden archive in Worker. |
-| Ground references in Cloudflare docs | Mostly met | `docs/runtime/cloudflare-doc-links.md`; many READMEs link product docs. | Audit every example README for direct product docs links. |
+| Add Gutenberg/Shakespeare complex data source | Mostly met | Gutenberg zip uploaded to R2; streaming example has `/zip-demo` that fetches and unzips the real Gutenberg archive. | Direct R2 body streaming unzip remains future work. |
+| Ground references in Cloudflare docs | Met | `docs/runtime/cloudflare-doc-links.md`; every example README has direct Cloudflare docs links. | Keep links current as docs move. |
 
 ## Current golden files
 
@@ -61,8 +61,8 @@ The biggest remaining gaps are remote/account-backed verification, direct real s
 
 ## Next priorities
 
-1. Add env-gated remote verification profiles for Browser Rendering, AI Gateway, R2 SQL, R2 Data Catalog, Hyperdrive, Workers AI, Vectorize, and Agents.
-2. Convert Gutenberg streaming from sample text to actual R2 zip/object processing where feasible.
+1. Add env-gated remote verification profiles for Browser Rendering, AI Gateway, R2 SQL, R2 Data Catalog, Hyperdrive, Workers AI, Vectorize, Agents, Service Bindings, WebSockets, and Queues/DLQ.
+2. Convert Gutenberg zip processing from source-URL fetch to direct R2 object body streaming/unzipping where feasible.
 3. Add direct Cache API and Analytics Engine examples.
 4. Add Cloudflare Images product example separate from binary response.
 5. Continue lifting stable shared types/helpers into `xampler/` with strict pyright coverage.

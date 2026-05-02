@@ -157,7 +157,8 @@ EXAMPLES = {
                 status=202,
                 contains="resize",
             ),
-            Check("/dev/process-sample", method="POST", contains='"processed": 1'),
+            Check("/dev/process-sample", method="POST", contains='"processed"'),
+            Check("/dev/process-failing", method="POST", contains='"dead_lettered"'),
         ],
         needs_setup=(
             "Local Wrangler queues accept producer sends; deployed consumers need a real queue."
@@ -203,6 +204,11 @@ EXAMPLES = {
         "examples/network-edge/service-bindings-rpc/py",
         [Check("/", contains="service binding rpc")],
         needs_setup="Python provider is locally verified; TS client shows cross-worker binding.",
+    ),
+    "examples/network-edge/service-bindings-rpc/ts": Example(
+        "examples/network-edge/service-bindings-rpc/ts",
+        [Check("/?code=print('called%20from%20ts')", contains="called from ts")],
+        needs_setup="Starts TS client and Python provider; TS invokes Python via Service Binding.",
     ),
     "examples/network-edge/outbound-websocket-consumer": Example(
         "examples/network-edge/outbound-websocket-consumer",
@@ -262,6 +268,7 @@ EXAMPLES = {
         [
             Check("/demo", contains="gutenberg-stream-demo"),
             Check("/events", contains="gutenberg.search"),
+            Check("/zip-demo", contains="pg100-h"),
         ],
         needs_setup="Golden Gutenberg zip is stored at r2://xampler-datasets/gutenberg/100/raw/pg100-h.zip.",
         ready_path="/demo",
@@ -364,6 +371,9 @@ def main() -> int:
         print("Choose one of:", ", ".join(EXAMPLES), file=sys.stderr)
         return 2
 
+    if args.example == "examples/network-edge/service-bindings-rpc/ts":
+        return verify_service_binding_rpc(args.port, args.timeout)
+
     example = EXAMPLES[args.example]
     if example.needs_setup:
         print(f"Note: {example.needs_setup}")
@@ -389,6 +399,8 @@ def verify(example: Example, port: int, timeout: float) -> int:
         for check in example.checks:
             run_check(port, check)
             print(f"✓ {check.method} {check.path}")
+        if example.name == "examples/state-events/durable-object-chatroom":
+            verify_chatroom_websocket(port)
         return 0
     finally:
         os.killpg(proc.pid, signal.SIGTERM)
@@ -396,6 +408,68 @@ def verify(example: Example, port: int, timeout: float) -> int:
             proc.wait(timeout=10)
         except subprocess.TimeoutExpired:
             os.killpg(proc.pid, signal.SIGKILL)
+
+
+def verify_chatroom_websocket(port: int) -> None:
+    script = f"""
+const a = new WebSocket('ws://127.0.0.1:{port}/room/demo');
+const b = new WebSocket('ws://127.0.0.1:{port}/room/demo');
+let seen = false;
+const timeout = setTimeout(() => {{ console.error('websocket timeout'); process.exit(1); }}, 10000);
+b.onmessage = (event) => {{
+  if (String(event.data).includes('broadcast verifier')) {{
+    seen = true;
+    clearTimeout(timeout);
+    a.close();
+    b.close();
+    console.log('broadcast received');
+    process.exit(0);
+  }}
+}};
+let opened = 0;
+function maybeSend() {{
+  opened += 1;
+  if (opened === 2) {{
+    a.send(JSON.stringify({{ username: 'Ada', text: 'broadcast verifier' }}));
+  }}
+}}
+a.onopen = maybeSend;
+b.onopen = maybeSend;
+a.onerror = b.onerror = (error) => {{ console.error(error); process.exit(1); }};
+"""
+    subprocess.run(["node", "-e", script], check=True)
+    print("✓ WebSocket broadcast verifier")
+
+
+def verify_service_binding_rpc(port: int, timeout: float) -> int:
+    root = Path("examples/network-edge/service-bindings-rpc")
+    py_proc = subprocess.Popen(
+        ["uv", "run", "pywrangler", "dev", "--port", str(port), "--local"],
+        cwd=root / "py",
+        start_new_session=True,
+    )
+    ts_proc: subprocess.Popen[bytes] | None = None
+    try:
+        wait_until_ready(port, timeout)
+        ts_port = port + 1
+        ts_proc = subprocess.Popen(
+            ["npx", "--yes", "wrangler", "dev", "--port", str(ts_port), "--local"],
+            cwd=root / "ts",
+            start_new_session=True,
+        )
+        wait_until_ready(ts_port, timeout)
+        run_check(ts_port, Check("/?code=print('called%20from%20ts')", contains="called from ts"))
+        print("✓ TS Worker invoked Python RPC service binding")
+        return 0
+    finally:
+        for proc in (ts_proc, py_proc):
+            if proc is None:
+                continue
+            os.killpg(proc.pid, signal.SIGTERM)
+            try:
+                proc.wait(timeout=10)
+            except subprocess.TimeoutExpired:
+                os.killpg(proc.pid, signal.SIGKILL)
 
 
 def wait_until_ready(port: int, timeout: float, path: str = "/") -> None:

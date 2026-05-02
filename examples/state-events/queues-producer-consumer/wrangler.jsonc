@@ -6,6 +6,12 @@
   "compatibility_flags": ["python_workers"],
   "queues": {
     "producers": [{"binding": "JOBS", "queue": "xampler-jobs"}],
-    "consumers": [{"queue": "xampler-jobs", "max_batch_size": 10}]
+    "consumers": [
+      {
+        "queue": "xampler-jobs",
+        "max_batch_size": 10,
+        "dead_letter_queue": "xampler-jobs-dlq"
+      }
+    ]
   }
 }

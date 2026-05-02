@@ -28,6 +28,7 @@ class QueueSendOptions:
 class QueueBatchResult:
     processed: int
     retried: int
+    dead_lettered: int = 0
 
 
 class QueueMessage:
@@ -76,6 +77,7 @@ class QueueConsumer:
     async def process_batch(self, batch: Any) -> QueueBatchResult:
         processed = 0
         retried = 0
+        dead_lettered = 0
         for raw_message in batch.messages:
             message = QueueMessage(raw_message)
             try:
@@ -83,12 +85,19 @@ class QueueConsumer:
                 message.ack()
                 processed += 1
             except Exception:  # noqa: BLE001 - queue handlers isolate failures per message.
-                delay = min(30 * (2 ** int(getattr(raw_message, "attempts", 0))), 43_200)
+                attempts = int(getattr(raw_message, "attempts", 0))
+                if attempts >= 3:
+                    message.ack()
+                    dead_lettered += 1
+                    continue
+                delay = min(30 * (2**attempts), 43_200)
                 message.retry(delay_seconds=delay)
                 retried += 1
-        return QueueBatchResult(processed=processed, retried=retried)
+        return QueueBatchResult(processed=processed, retried=retried, dead_lettered=dead_lettered)
 
     async def handle(self, body: Any) -> None:
+        if isinstance(body, dict) and body.get("kind") == "fail":
+            raise ValueError("deterministic queue failure")
         print(f"processed queue message: {body}")
 
 
@@ -106,6 +115,11 @@ class Default(WorkerEntrypoint):
         if request.method == "POST" and path == "/dev/process-sample":
             result = await QueueConsumer().process_batch(
                 FakeQueueBatch([asdict(QueueJob("demo", {"source": "verifier"}))])
+            )
+            return Response.json(asdict(result))
+        if request.method == "POST" and path == "/dev/process-failing":
+            result = await QueueConsumer().process_batch(
+                FakeQueueBatch([asdict(QueueJob("fail", {"source": "verifier"}))], attempts=3)
             )
             return Response.json(asdict(result))
         return Response("POST JSON to /jobs to enqueue a message.\n")
@@ -131,5 +145,7 @@ class FakeQueueMessage:
 
 
 class FakeQueueBatch:
-    def __init__(self, bodies: list[dict[str, Any]]):
+    def __init__(self, bodies: list[dict[str, Any]], *, attempts: int = 0):
         self.messages = [FakeQueueMessage(body) for body in bodies]
+        for message in self.messages:
+            message.attempts = attempts

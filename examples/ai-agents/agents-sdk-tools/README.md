@@ -23,3 +23,7 @@ Try:
 curl http://127.0.0.1:8787/demo?message=weather%20in%20Lagos
 curl -X POST http://127.0.0.1:8787/agents/demo/run -d '{"message":"weather in Lagos"}'
 ```
+
+## Cloudflare docs
+
+- [Agents](https://developers.cloudflare.com/agents/)
