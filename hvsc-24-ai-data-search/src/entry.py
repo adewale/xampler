@@ -360,7 +360,11 @@ class Default(WorkerEntrypoint):
         if path == "/catalog/ingest-r2":
             key = query.get("key", [HVSC_CATALOG_KEY])[0]
             limit = int(query.get("limit", ["0"])[0] or 0)
-            return Response.json(await pipeline.ingest_catalog_from_r2(key=key, limit=limit))
+            result = await pipeline.ingest_catalog_from_r2(key=key, limit=limit)
+            if result.get("error") and query.get("fallback", ["sample"])[0] == "sample":
+                fallback = await pipeline.ingest_sample_catalog()
+                result = {**result, "fallback": fallback}
+            return Response.json(result)
 
         if path == "/archive/ingest":
             return Response.json(asdict(await pipeline.ingest_archive()))
@@ -402,6 +406,10 @@ def index_html() -> str:
     button { margin: .25rem; padding: .7rem 1rem; border: 0; }
     button { border-radius: .5rem; background: #2563eb; color: white; cursor: pointer; }
     button.secondary { background: #475569; }
+    button.done { background: #16a34a; }
+    button.running { background: #ca8a04; }
+    button.failed { background: #dc2626; }
+    #runAll { display: block; width: 100%; font-size: 1.1rem; margin: 1rem 0; }
     input { padding: .65rem; min-width: 14rem; }
     pre { background: #0f172a; color: #e2e8f0; padding: 1rem; }
     pre { border-radius: .5rem; overflow: auto; }
@@ -413,14 +421,26 @@ def index_html() -> str:
   <p>The 80 MiB archive itself is not text-searchable until you unpack it locally,
   build a JSONL catalog, and upload that catalog to R2. These buttons verify each step.</p>
 
+  <button id="runAll" onclick="runAll()">▶ Run all dataset checks and prepare search</button>
+
   <ol>
-    <li><button onclick="archiveVerify()">1. Verify full archive object in R2</button></li>
-    <li><button onclick="ingest()">2. Ingest release metadata + bundled sample catalog</button></li>
-    <li><button onclick="catalogVerify()">3. Verify generated catalog JSONL in R2</button></li>
-    <li><button onclick="catalogIngest()">4. Pull catalog JSONL from R2 into D1</button></li>
+    <li>
+      <button id="step1" onclick="archiveVerify()">1. Verify full archive object in R2</button>
+    </li>
+    <li>
+      <button id="step2" onclick="ingest()">2. Ingest release metadata + sample</button>
+    </li>
+    <li>
+      <button id="step3" onclick="catalogVerify()">3. Verify catalog JSONL in R2</button>
+    </li>
+    <li>
+      <button id="step4" onclick="catalogIngest()">4. Pull catalog JSONL into D1</button>
+    </li>
     <li>
       <input id="q" value="jeroen" aria-label="search query">
-      <button onclick="search(document.getElementById('q').value)">5. Search D1 catalog</button>
+      <button id="step5" onclick="search(document.getElementById('q').value)">
+        5. Search D1 catalog
+      </button>
     </li>
   </ol>
 
@@ -446,9 +466,32 @@ def index_html() -> str:
     async function show(response) {
       const text = await response.text();
       try {
-        document.getElementById('output').textContent = JSON.stringify(JSON.parse(text), null, 2);
+        const data = JSON.parse(text);
+        document.getElementById('output').textContent = JSON.stringify(data, null, 2);
+        return data;
       } catch {
         document.getElementById('output').textContent = text;
+        return text;
+      }
+    }
+    function setStep(id, state) {
+      const el = document.getElementById(id);
+      if (!el) return;
+      el.classList.remove('done', 'running', 'failed');
+      if (state) el.classList.add(state);
+      if (state === 'done') el.textContent = '✓ ' + el.textContent.replace(/^[✓▶✗] /, '');
+      if (state === 'running') el.textContent = '▶ ' + el.textContent.replace(/^[✓▶✗] /, '');
+      if (state === 'failed') el.textContent = '✗ ' + el.textContent.replace(/^[✓▶✗] /, '');
+    }
+    async function step(id, fn) {
+      setStep(id, 'running');
+      try {
+        const result = await fn();
+        setStep(id, 'done');
+        return result;
+      } catch (error) {
+        setStep(id, 'failed');
+        throw error;
       }
     }
     function catalogKey() {
@@ -458,28 +501,50 @@ def index_html() -> str:
       return encodeURIComponent(document.getElementById('limit').value || '0');
     }
     async function ingest() {
-      await show(await fetch('/ingest-fixture', { method: 'POST' }));
+      return await show(await fetch('/ingest-fixture', { method: 'POST' }));
     }
     async function catalogSample() {
-      await show(await fetch('/catalog/ingest-sample', { method: 'POST' }));
+      return await show(await fetch('/catalog/ingest-sample', { method: 'POST' }));
     }
     async function catalogVerify() {
-      await show(await fetch('/catalog/verify-r2?key=' + catalogKey()));
+      return await show(await fetch('/catalog/verify-r2?key=' + catalogKey()));
     }
     async function catalogIngest() {
       document.getElementById('output').textContent = 'Pulling catalog JSONL from R2 into D1...';
-      const path = '/catalog/ingest-r2?key=' + catalogKey() + '&limit=' + limit();
-      await show(await fetch(path, { method: 'POST' }));
+      const path = '/catalog/ingest-r2?key=' + catalogKey();
+      const params = '&limit=' + limit() + '&fallback=sample';
+      return await show(await fetch(path + params, { method: 'POST' }));
     }
     async function search(q) {
-      await show(await fetch('/tracks?q=' + encodeURIComponent(q)));
+      return await show(await fetch('/tracks?q=' + encodeURIComponent(q)));
     }
     async function archiveIngest() {
       document.getElementById('output').textContent = 'Streaming ~80 MiB archive to local R2...';
-      await show(await fetch('/archive/ingest', { method: 'POST' }));
+      return await show(await fetch('/archive/ingest', { method: 'POST' }));
     }
     async function archiveVerify() {
-      await show(await fetch('/archive/verify'));
+      return await show(await fetch('/archive/verify'));
+    }
+    async function runAll() {
+      const runButton = document.getElementById('runAll');
+      runButton.disabled = true;
+      runButton.className = 'running';
+      runButton.textContent = '▶ Running dataset checks...';
+      try {
+        await step('step1', archiveVerify);
+        await step('step2', ingest);
+        await step('step3', catalogVerify);
+        await step('step4', catalogIngest);
+        await step('step5', () => search(document.getElementById('q').value || 'jeroen'));
+        runButton.className = 'done';
+        runButton.textContent = '✓ Dataset ready — arbitrary D1 catalog search is enabled';
+      } catch (error) {
+        runButton.className = 'failed';
+        runButton.textContent = '✗ Setup failed — see output';
+        document.getElementById('output').textContent = String(error);
+      } finally {
+        runButton.disabled = false;
+      }
     }
   </script>
 </body>
