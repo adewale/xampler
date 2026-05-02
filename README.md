@@ -47,6 +47,45 @@ d1-04-query/
 | [`websockets-14-stream-consumer/`](websockets-14-stream-consumer) | WebSockets | WebSocket example scaffold and session model direction. |
 | [`durable-objects-15-chatroom/`](durable-objects-15-chatroom) | Durable Objects + WebSockets | Chatroom durable object scaffold. |
 
+## Best no-lies examples
+
+These are the best starting points because they do something easy to explain and their verifier exercises the real local Cloudflare primitive path rather than a fake/demo transport.
+
+| Example | Why it is trustworthy |
+|---|---|
+| [`workers-01-hello/`](workers-01-hello) | Starts a real Python Worker and returns a real response. |
+| [`r2-01/`](r2-01) | Writes text, uploads `BreakingThe35.jpeg`, streams it back, and byte-compares it. |
+| [`kv-02-binding/`](kv-02-binding) | Uses local KV for text, JSON, list, delete, and missing-key behavior. |
+| [`d1-04-query/`](d1-04-query) | Initializes local D1, creates an index, runs real bound queries, and checks `EXPLAIN`. |
+| [`assets-06-static-assets/`](assets-06-static-assets) | Proves static assets are served without waking Python; dynamic `/api/status` still runs Python. |
+| [`durable-objects-07-counter/`](durable-objects-07-counter) | Uses real local Durable Objects and verifies named-object isolation. |
+| [`scheduled-08-cron/`](scheduled-08-cron) | Hits Wrangler's local scheduled handler endpoint and runs the scheduled job path. |
+| [`pages-23-functions/`](pages-23-functions) | Runs `pages dev`, serves static Pages output, and verifies a file-routed Function. |
+
+## Examples with deliberate demo seams
+
+These examples are useful, but they contain a local stand-in, deterministic transport, or partial truth. They are marked this way so the repo does not confuse API-shape verification with real remote product verification.
+
+| Example | The lie / seam |
+|---|---|
+| `workers-ai-09-inference` | `/demo` is deterministic; `/` is the real Workers AI binding path. |
+| `vectorize-17-search` | `/demo` verifies vector API shape locally; real Vectorize needs an account index. |
+| `workflows-10-pipeline` | `/demo/*` fakes start/status; real workflow runtime verification is still needed. |
+| `queues-16-producer-consumer` | Producer is real locally; consumer delivery uses a deterministic harness. |
+| `service-bindings-13-rpc` | Python provider is verified; full two-worker RPC flow is not one-command verified yet. |
+| `websockets-14-stream-consumer` | `/demo/status` does not open the public Jetstream socket. |
+| `browser-rendering-18-screenshot` | `/demo` returns screenshot metadata, not a real browser screenshot. |
+| `email-workers-19-router` | HTTP route verifies policy; it is not a real Email Routing event. |
+| `ai-gateway-20-universal` | `/demo` mimics OpenAI-compatible shape; real gateway call needs credentials. |
+| `r2-sql-21-query` | `/demo` verifies guarded SQL shaping; real R2 SQL is account-backed. |
+| `r2-data-catalog-22-iceberg` | `/demo` is a fixture catalog; real Iceberg catalog verification is still needed. |
+| `hyperdrive-25-postgres` | `/demo` does not connect to Postgres through Hyperdrive. |
+| `agents-26-sdk` | Demonstrates Agents-like shape with Durable Objects; not direct Cloudflare Agents SDK interop yet. |
+| `ai-05-langchain` | LCEL-style chain is verified; it is not yet a real LangChain package workload. |
+| `hvsc-24-ai-data-search` | R2/D1/Queue paths are real locally, but AI and Vectorize are deterministic seams. |
+| `streaming-27-gutenberg` | Golden zip is real in R2, but `/demo` currently streams sample text instead of unzipping the archive. |
+| `images-12-generation` | Binary response is real, but it is not Cloudflare Images product coverage. |
+
 ## Pythonic API principles
 
 See:

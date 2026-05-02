@@ -12,6 +12,7 @@ dev = [
     "py7zr>=1.1.0",
     "pytest>=8.3",
     "pytest-asyncio>=0.24",
+    "pyright>=1.1.390",
     "ruff>=0.8",
 ]
 
@@ -22,3 +23,9 @@ target-version = "py312"
 
 [tool.ruff.lint]
 select = ["E", "F", "I", "UP", "B", "SIM"]
+
+[tool.pyright]
+include = ["xampler"]
+exclude = ["**/.venv", "**/.venv-workers", "**/python_modules"]
+pythonVersion = "3.13"
+typeCheckingMode = "strict"
