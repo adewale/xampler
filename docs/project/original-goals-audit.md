@@ -6,7 +6,7 @@ Last reviewed: 2026-05-02.
 
 Xampler now substantially meets the original direction: it is a GitHub-hosted collection of executable Python Workers examples, covers a broad set of Cloudflare Developer Platform primitives, uses Pythonic wrappers around bindings, distinguishes real verification from demo seams, and includes realistic shared datasets in R2.
 
-The biggest remaining gaps are remote/account-backed verification, direct real streaming from large R2 objects into pipelines, missing Cache/Analytics/Images product examples, and reducing per-example wrapper duplication into shared typed helpers only after APIs stabilize. See [`gaps-explained.md`](gaps-explained.md) for details.
+The biggest remaining gaps are remote/account-backed verification, wiring direct R2 streams into more end-to-end pipelines, missing Cache/Analytics/Images product examples, and reducing per-example wrapper duplication into shared typed helpers only after APIs stabilize. See [`gaps-explained.md`](gaps-explained.md) for details.
 
 ## Goal-by-goal assessment
 
@@ -25,7 +25,7 @@ The biggest remaining gaps are remote/account-backed verification, direct real s
 | Realistic complex AI/data example | Met | `examples/full-apps/hvsc-ai-data-search`. | AI/Vectorize remain deterministic seams locally. |
 | Interactive browser flows for complex examples | Met | HVSC browser flow has run-all, progress, search UX. | Add less flicker and better resumability if full import restarts. |
 | Avoid fake arbitrary search | Met | HVSC arbitrary search requires/imports real catalog shards. | Keep demo seams explicitly labeled. |
-| Add Gutenberg/Shakespeare complex data source | Mostly met | Gutenberg zip uploaded to R2; streaming example has `/zip-demo` that fetches and unzips the real Gutenberg archive. | Direct R2 body streaming unzip remains future work. |
+| Add Gutenberg/Shakespeare complex data source | Met | Gutenberg zip uploaded to R2; streaming example has `/zip-demo` that reads the R2 object body stream and unzips the real Gutenberg archive. | Python `zipfile` still buffers because ZIP central directories require seeking. |
 | Ground references in Cloudflare docs | Met | `docs/runtime/cloudflare-doc-links.md`; every example README has direct Cloudflare docs links. | Keep links current as docs move. |
 
 ## Current golden files
@@ -55,14 +55,14 @@ The biggest remaining gaps are remote/account-backed verification, direct real s
 | Gap | Meaning | Next move |
 |---|---|---|
 | Remote verification for account-backed products | Local demo transports prove wrapper shape, not real Browser Rendering/AI Gateway/Vectorize/etc. behavior. | Add `--remote` profiles that require credentials and assert product-specific metadata. |
-| Real R2 zip streaming/unzipping | Gutenberg zip is real in R2, but the demo pipeline currently streams sample text. | Stream actual R2 object chunks, test bounded unzip strategies, checkpoint extracted records. |
+| End-to-end R2 stream pipelines | `/zip-demo` reads the real R2 object body and unzips it, while `/demo` remains a compact sample-text pipeline. | Feed extracted Gutenberg records into the same checkpoint/batch pipeline. |
 | Missing Cache/Analytics/Images examples | Common production products are not represented as first-class examples. | Add direct Cache API, Workers Analytics Engine, and Cloudflare Images examples. |
 | Wrapper duplication | Examples repeat service/dataclass/status/demo patterns locally. | Lift only stable boring helpers into `xampler/`; keep product hero logic local. |
 
 ## Next priorities
 
 1. Add env-gated remote verification profiles for Browser Rendering, AI Gateway, R2 SQL, R2 Data Catalog, Hyperdrive, Workers AI, Vectorize, Agents, Service Bindings, WebSockets, and Queues/DLQ.
-2. Convert Gutenberg zip processing from source-URL fetch to direct R2 object body streaming/unzipping where feasible.
+2. Add a true non-seekable archive streaming example if a suitable format/library is chosen.
 3. Add direct Cache API and Analytics Engine examples.
 4. Add Cloudflare Images product example separate from binary response.
 5. Continue lifting stable shared types/helpers into `xampler/` with strict pyright coverage.

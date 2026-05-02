@@ -29,6 +29,7 @@ Endpoints:
 - `/golden` verifies the R2 golden file metadata.
 - `/demo` runs a stream-to-stream local pipeline.
 - `/events` returns typed AI/agent/WebSocket stream events.
+- `/zip-demo` reads `gutenberg/100/raw/pg100-h.zip` through the R2 object `ReadableStream`, then opens the streamed bytes with `zipfile` and reads the first HTML entry. In local Wrangler mode, the endpoint seeds the local R2 bucket from the Gutenberg source URL if the golden object is missing; deployed/remote runs use the existing `xampler-datasets` object directly.
 
 ## Cloudflare docs
 

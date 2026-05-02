@@ -9,7 +9,7 @@ from typing import Any, Literal, TypeVar
 from urllib.parse import urlparse
 
 import js  # type: ignore[import-not-found]
-from cfboundary.ffi import to_py
+from cfboundary.ffi import is_js_missing, to_js_bytes, to_py
 from workers import Response, WorkerEntrypoint  # type: ignore[import-not-found]
 
 T = TypeVar("T")
@@ -194,9 +194,41 @@ async def async_enumerate[T](
         index += 1
 
 
-async def unzip_gutenberg_archive() -> dict[str, Any]:
+async def js_readable_stream_chunks(stream: Any) -> AsyncIterator[bytes]:
+    reader = stream.getReader()
+    while True:
+        result = await reader.read()
+        if bool(getattr(result, "done", False)):
+            break
+        value = getattr(result, "value", None)
+        if value is not None:
+            yield bytes(to_py(value))
+
+
+async def ensure_gutenberg_r2_object(bucket: Any) -> bool:
+    if not is_js_missing(await bucket.head(GUTENBERG_KEY)):
+        return False
     response = await js.fetch(GUTENBERG_URL)
     data = bytes(to_py(await response.arrayBuffer()))
+    await bucket.put(GUTENBERG_KEY, to_js_bytes(data))
+    return True
+
+
+async def read_r2_object_body(bucket: Any, key: str) -> tuple[bytes, int]:
+    obj = await bucket.get(key)
+    if is_js_missing(obj):
+        raise ValueError(f"R2 object not found: {key}")
+    chunks: list[bytes] = []
+    chunk_count = 0
+    async for chunk in js_readable_stream_chunks(obj.body):
+        chunks.append(chunk)
+        chunk_count += 1
+    return b"".join(chunks), chunk_count
+
+
+async def unzip_gutenberg_archive_from_r2(bucket: Any) -> dict[str, Any]:
+    seeded = await ensure_gutenberg_r2_object(bucket)
+    data, chunk_count = await read_r2_object_body(bucket, GUTENBERG_KEY)
     with zipfile.ZipFile(BytesIO(data)) as archive:
         entries = [info for info in archive.infolist() if not info.is_dir()]
         html_entries = [info for info in entries if info.filename.endswith((".html", ".htm"))]
@@ -204,9 +236,13 @@ async def unzip_gutenberg_archive() -> dict[str, Any]:
         with archive.open(first) as file:
             sample = file.read(160).decode("utf-8", errors="replace")
     return {
-        "source_url": GUTENBERG_URL,
+        "source": "r2-object-body",
+        "source_url_for_local_seed": GUTENBERG_URL,
+        "seeded_from_source_url": seeded,
         "golden_key": GUTENBERG_KEY,
         "zip_bytes": len(data),
+        "r2_stream_chunks": chunk_count,
+        "r2_streamed_bytes": len(data),
         "entries": len(entries),
         "html_entries": len(html_entries),
         "first_entry": first.filename,
@@ -237,7 +273,7 @@ class Default(WorkerEntrypoint):
         if path == "/events":
             return Response.json(await stream_events())
         if path == "/zip-demo":
-            return Response.json(await unzip_gutenberg_archive())
+            return Response.json(await unzip_gutenberg_archive_from_r2(self.env.ARTIFACTS))
         if path == "/golden":
             obj = await self.env.ARTIFACTS.head(GUTENBERG_KEY)
             exists = obj is not None

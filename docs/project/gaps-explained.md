@@ -80,7 +80,7 @@ The current `examples/streaming/binary-response` should remain, but it should ne
 | Full local Service Bindings verifier | `verify_examples.py examples/network-edge/service-bindings-rpc/ts` starts the Python provider and TypeScript consumer; TS invokes Python via Service Binding. | Still needs deployed verification. |
 | True WebSocket broadcast verifier | Chatroom verifier opens two real WebSocket clients and checks broadcast delivery. | Still needs deployed verification. |
 | Queue retry/DLQ semantics | Queue verifier checks producer, consumer ack/retry, and deterministic dead-letter decision. | Real deployed Queue DLQ routing still needs credentials/resources. |
-| Real zip unzipping demonstration | Gutenberg example now fetches and unzips the real Project Gutenberg archive in `/zip-demo`. | It currently fetches the source URL into bounded memory; direct R2 body streaming unzip remains future work. |
+| Direct R2 object-body unzip | Gutenberg `/zip-demo` reads the R2 object's `ReadableStream`, buffers the streamed zip bytes for Python `zipfile`, and reads the first HTML entry. | Python `zipfile` still needs a seekable buffer for the central directory; a true non-seekable ZIP parser would require a different library/format constraint. |
 
 ## Wrapper duplication not yet lifted into shared typed package
 

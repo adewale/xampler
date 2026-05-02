@@ -36,7 +36,7 @@ Sorted by Pythonic score, highest first.
 | LangChain/package orchestration | `examples/ai-agents/langchain-style-chain` | 6.2 | 8.1 | `PromptInput`, `PromptOutput`, `PromptTemplate`, `DemoModel`, `PromptChain`, `PromptService`; dependency-light LCEL-style Runnable shape verified locally. | Add real LangChain package compatibility when Pyodide support is sufficient. |
 | Hyperdrive | `examples/storage-data/hyperdrive-postgres` | 6.5 | 8.4 | `HyperdriveConfig`, `PostgresQuery`, `PostgresResult`, `HyperdrivePostgres`, `DemoPostgres`; local verifier and deployed config route. | Real Postgres client wiring, transactions, pooling notes, remote Hyperdrive verifier. |
 | Agents SDK | `examples/ai-agents/agents-sdk-tools` | 6.8 | 8.6 | `AgentMessage`, `AgentToolCall`, `AgentRunResult`, `WeatherTool`, `DemoAgent`, `AgentSession`, Durable Object session routing. | Direct Cloudflare Agents SDK interop as Python support matures, streaming agent responses, human-in-the-loop state. |
-| Streaming composition | `examples/streaming/gutenberg-stream-composition` | 7.2 | 8.8 | `ByteStream`, `JsonlReader`, `RecordStream`, `aiter_batches`, `StreamCheckpoint`, AI/agent/WebSocket stream event shapes, Gutenberg R2 golden file. | Lift streaming helpers into shared package and wire real R2 streams into the pipeline. |
+| Streaming composition | `examples/streaming/gutenberg-stream-composition` | 7.6 | 8.8 | `ByteStream`, `JsonlReader`, `RecordStream`, `aiter_batches`, `StreamCheckpoint`, AI/agent/WebSocket stream event shapes, Gutenberg R2 golden file, direct R2 object-body ZIP unzip demo. | Lift streaming helpers into shared package and feed extracted R2 records into the checkpointed pipeline. |
 
 ## Aggregate view
 

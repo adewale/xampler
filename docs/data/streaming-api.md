@@ -8,7 +8,7 @@ Streaming is now a first-class Xampler API shape. The goal is that R2 objects, J
 
 | Suggestion | Implemented surface | Example |
 |---|---|---|
-| 1. Object streams | `ByteStream.iter_bytes()`, `iter_text()`, `iter_lines()` | `examples/streaming/gutenberg-stream-composition` |
+| 1. Object streams | `ByteStream.iter_bytes()`, `iter_text()`, `iter_lines()`, `js_readable_stream_chunks()` | `examples/streaming/gutenberg-stream-composition /zip-demo` |
 | 2. JSONL records | `JsonlReader.records()` | `examples/streaming/gutenberg-stream-composition /events` |
 | 3. Batching | `aiter_batches(records, size=...)` | `examples/streaming/gutenberg-stream-composition /demo` |
 | 4. Stream-to-D1 style sink | `DemoD1Sink.insert_batch()` + checkpoints | `examples/streaming/gutenberg-stream-composition /demo` |
@@ -28,11 +28,15 @@ async for batch in aiter_batches(records, size=500):
     await progress.checkpoint(batch)
 ```
 
-The current executable proof is `examples/streaming/gutenberg-stream-composition`, which uses Project Gutenberg's Shakespeare archive as the golden large-file source:
+The current executable proof is `examples/streaming/gutenberg-stream-composition`, which uses Project Gutenberg's Shakespeare archive as the golden large-file source. `/zip-demo` reads this object through the R2 object's JavaScript `ReadableStream`, converts chunks at the FFI boundary, and opens the streamed ZIP bytes with Python `zipfile`:
 
 ```text
 r2://xampler-datasets/gutenberg/100/raw/pg100-h.zip
 ```
+
+## ZIP caveat
+
+ZIP central directories live at the end of the archive, so Python's standard `zipfile` API still needs a seekable byte buffer before entry extraction. Xampler now verifies direct R2 object-body streaming into that buffer; a fully non-seekable archive stream would require a different parser or an archive format designed for forward-only reads.
 
 ## Next integration work
 

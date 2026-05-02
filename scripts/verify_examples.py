@@ -268,7 +268,7 @@ EXAMPLES = {
         [
             Check("/demo", contains="gutenberg-stream-demo"),
             Check("/events", contains="gutenberg.search"),
-            Check("/zip-demo", contains="pg100-h"),
+            Check("/zip-demo", contains="r2-object-body"),
         ],
         needs_setup="Golden Gutenberg zip is stored at r2://xampler-datasets/gutenberg/100/raw/pg100-h.zip.",
         ready_path="/demo",
