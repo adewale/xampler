@@ -14,6 +14,36 @@ HVSC_ARCHIVE_KEY = "hvsc/archives/HVSC_84-all-of-them.7z"
 HVSC_ARCHIVE_URL = "https://boswme.home.xs4all.nl/HVSC/HVSC_84-all-of-them.7z"
 HVSC_ARCHIVE_SIZE = 83_748_140
 
+SAMPLE_CATALOG_ROWS = [
+    {
+        "id": "hvsc:84:jeroen_tel:cybernoid_ii",
+        "version": 84,
+        "path": "MUSICIANS/J/Jeroen_Tel/Cybernoid_II.sid",
+        "filename": "Cybernoid_II.sid",
+        "title": "Cybernoid II",
+        "composer": "Jeroen Tel",
+        "search_text": "Jeroen Tel Cybernoid II Commodore 64 C64 SID Jeroen_Tel",
+    },
+    {
+        "id": "hvsc:84:rob_hubbard:monty_on_the_run",
+        "version": 84,
+        "path": "MUSICIANS/H/Hubbard_Rob/Monty_on_the_Run.sid",
+        "filename": "Monty_on_the_Run.sid",
+        "title": "Monty on the Run",
+        "composer": "Rob Hubbard",
+        "search_text": "Rob Hubbard Monty on the Run Commodore 64 C64 SID",
+    },
+    {
+        "id": "hvsc:84:martin_galway:parallax",
+        "version": 84,
+        "path": "MUSICIANS/G/Galway_Martin/Parallax.sid",
+        "filename": "Parallax.sid",
+        "title": "Parallax",
+        "composer": "Martin Galway",
+        "search_text": "Martin Galway Parallax Commodore 64 C64 SID",
+    },
+]
+
 HVSC_VERSION_84 = {
     "version": 84,
     "source": "https://www.hvsc.c64.org/api/v1/version/7z",
@@ -50,6 +80,17 @@ class IngestJob:
     kind: str
     version: int
     r2_key: str
+
+
+@dataclass(frozen=True)
+class Track:
+    id: str
+    version: int
+    path: str
+    filename: str
+    title: str | None
+    composer: str | None
+    search_text: str
 
 
 @dataclass(frozen=True)
@@ -137,6 +178,28 @@ class D1Database:
             summary,
         )
 
+    async def save_track(self, track: Track) -> None:
+        await self.execute(
+            "INSERT OR REPLACE INTO tracks "
+            "(id, version, path, filename, title, composer, search_text) "
+            "VALUES (?, ?, ?, ?, ?, ?, ?)",
+            track.id,
+            track.version,
+            track.path,
+            track.filename,
+            track.title,
+            track.composer,
+            track.search_text,
+        )
+
+    async def search_tracks(self, query: str) -> list[Track]:
+        rows = await self.execute(
+            "SELECT id, version, path, filename, title, composer, search_text "
+            "FROM tracks WHERE search_text LIKE ? ORDER BY path LIMIT 20",
+            f"%{query}%",
+        )
+        return [Track(**row) for row in rows]
+
     async def search(self, query: str) -> list[SearchResult]:
         rows = await self.execute(
             "SELECT version, summary, update_url, complete_url "
@@ -209,6 +272,16 @@ class HvscPipeline:
     async def verify_archive(self) -> ArchiveVerification:
         return await self.r2.verify_archive(key=HVSC_ARCHIVE_KEY)
 
+    async def ingest_sample_catalog(self) -> dict[str, Any]:
+        rows = SAMPLE_CATALOG_ROWS
+        for row in rows:
+            await self.db.save_track(Track(**row))
+        await self.r2.write_json("hvsc/84/catalog/sample-jeroen.json", rows)
+        return {"tracks": len(rows), "contains": "jeroen"}
+
+    async def search_tracks(self, query: str) -> list[Track]:
+        return await self.db.search_tracks(query)
+
     async def search(self, query: str) -> list[SearchResult]:
         results = await self.db.search(query)
         return [
@@ -233,7 +306,12 @@ class Default(WorkerEntrypoint):
             return Response(index_html(), headers={"content-type": "text/html; charset=utf-8"})
 
         if path == "/ingest-fixture":
-            return Response.json(await pipeline.ingest(HvscRelease.from_api(HVSC_VERSION_84)))
+            release_result = await pipeline.ingest(HvscRelease.from_api(HVSC_VERSION_84))
+            catalog_result = await pipeline.ingest_sample_catalog()
+            return Response.json({"release": release_result, "catalog": catalog_result})
+
+        if path == "/catalog/ingest-sample":
+            return Response.json(await pipeline.ingest_sample_catalog())
 
         if path == "/archive/ingest":
             return Response.json(asdict(await pipeline.ingest_archive()))
@@ -241,10 +319,18 @@ class Default(WorkerEntrypoint):
         if path == "/archive/verify":
             return Response.json(asdict(await pipeline.verify_archive()))
 
+        if path == "/tracks":
+            term = query.get("q", ["jeroen"])[0]
+            tracks = [asdict(track) for track in await pipeline.search_tracks(term)]
+            return Response.json({"query": term, "tracks": tracks})
+
         if path == "/search":
             term = query.get("q", ["sid"])[0]
-            results = [asdict(result) for result in await pipeline.search(term)]
-            return Response.json({"query": term, "results": results})
+            release_results = [asdict(result) for result in await pipeline.search(term)]
+            track_results = [asdict(track) for track in await pipeline.search_tracks(term)]
+            return Response.json(
+                {"query": term, "results": release_results, "tracks": track_results}
+            )
 
         return Response("Not found", status=404)
 
@@ -281,6 +367,7 @@ def index_html() -> str:
     <button class="secondary" onclick="search('sid')">Search SID</button>
     <button class="secondary" onclick="search('commodore')">Search Commodore</button>
     <button class="secondary" onclick="search('hvsc')">Search HVSC</button>
+    <button class="secondary" onclick="search('jeroen')">Search Jeroen</button>
   </p>
 
   <p>
@@ -293,7 +380,7 @@ def index_html() -> str:
     <button onclick="search(document.getElementById('q').value)">Search custom query</button>
   </p>
 
-  <pre id="output">Click “Ingest HVSC fixture”, then search.</pre>
+  <pre id="output">Click “Ingest HVSC fixture”, then search for “jeroen”.</pre>
 
   <script>
     async function show(response) {

@@ -59,6 +59,7 @@ See:
 - [`docs/top-10-improvement-plan.md`](docs/top-10-improvement-plan.md)
 - [`docs/primitive-test-realism.md`](docs/primitive-test-realism.md)
 - [`docs/pythonic-tooling.md`](docs/pythonic-tooling.md)
+- [`docs/datasets.md`](docs/datasets.md)
 - [`docs/cloudflare-best-practices-alignment.md`](docs/cloudflare-best-practices-alignment.md)
 - [`docs/cloudflare-primitives-pythonic-scores.md`](docs/cloudflare-primitives-pythonic-scores.md)
 - [`docs/example-rubric-scores.md`](docs/example-rubric-scores.md)
@@ -96,7 +97,7 @@ Coverage and Pythonic API scores are out of 10. Test realism is out of 5; see [`
 | Tier 1 — Gold standard | Pages | 6.0 | 8.4 | 4 |
 | Tier 1 — Gold standard | Workflows | 7.2 | 8.5 | 4 |
 | Tier 1 — Gold standard | R2 SQL | 6.5 | 8.4 | 4 |
-| Tier 1 — Gold standard | HVSC AI/data app | 8.0 | 8.7 | 4 |
+| Tier 1 — Gold standard | HVSC AI/data app | 8.6 | 9.0 | 4.5 |
 | Tier 4 — High API promise, low realism | Service Bindings / RPC | 6.0 | 8.0 | 1 |
 | Tier 4 — High API promise, low realism | Outbound WebSockets | 6.5 | 7.75 | 1 |
 | Tier 4 — High API promise, low realism | Browser Rendering | 5.0 | 7.75 | 1 |

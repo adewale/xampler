@@ -32,7 +32,7 @@ Sorted by Pythonic score, highest first.
 | AI Gateway | `ai-gateway-20-universal` | 5.0 | 7.75 | `AIGateway`, `ChatRequest`, `ChatMessage`; OpenAI-compatible chat through gateway. | Caching/rate-limit metadata, dynamic routing/fallbacks, provider key patterns, observability. |
 | R2 Data Catalog | `r2-data-catalog-22-iceberg` | 5.0 | 7.75 | `R2DataCatalog`; list namespaces/tables via Iceberg REST API. | PyIceberg client example, table creation, append/read, schema evolution, snapshots. |
 | R2 SQL | `r2-sql-21-query` | 6.5 | 8.4 | `R2SqlClient`, `R2SqlQuery`, `R2SqlResult`, read-only/single-table safety checks, automatic `LIMIT`, `explain`, deterministic demo client. | Schema discovery helpers, richer query builder, real R2 SQL verification. |
-| AI/data app | `hvsc-24-ai-data-search` | 8.0 | 8.7 | `HvscPipeline`, `HvscRelease`, `IngestJob`, `SearchResult`, R2 artifact storage, D1 metadata, Queue job, deterministic summarizer/vector search, HVSC fixture. | Larger HVSC catalog sample, remote Workers AI/Vectorize verification, FastAPI facade. |
+| AI/data app | `hvsc-24-ai-data-search` | 8.6 | 9.0 | `HvscPipeline`, `HvscRelease`, `Track`, `IngestJob`, `SearchResult`, R2 artifact storage, optional 80 MiB archive streaming/verification, D1 release + track metadata, Queue job, deterministic summarizer/vector search, HVSC sample catalog with Jeroen search. | Remote Workers AI/Vectorize verification, full catalog import from generated JSONL, FastAPI facade. |
 | LangChain/package orchestration | `ai-05-langchain` | 3.0 | 6.75 | `PromptService` boundary only. | Real LangChain-compatible workload or removal/replacement. |
 
 ## Aggregate view

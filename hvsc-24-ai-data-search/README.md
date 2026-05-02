@@ -24,7 +24,7 @@ Then open <http://localhost:9595/>. In another terminal, ingest the fixture once
 curl -X POST http://localhost:9595/ingest-fixture
 ```
 
-Then open <http://localhost:9595/search?q=sid>.
+Then open <http://localhost:9595/search?q=sid> or <http://localhost:9595/tracks?q=jeroen>.
 
 The page also has an optional button to stream the full HVSC archive into local R2:
 
@@ -33,6 +33,15 @@ The page also has an optional button to stream the full HVSC archive into local 
 - R2 key: `hvsc/archives/HVSC_84-all-of-them.7z`
 
 This large archive is intentionally **not** part of the default verifier. Use it for interactive stress testing of streaming R2 writes.
+
+To build a real catalog from the full archive, see [`../docs/datasets.md`](../docs/datasets.md):
+
+```bash
+uv run python scripts/hvsc_download_unpack.py
+uv run python scripts/hvsc_build_catalog.py
+uv run python scripts/hvsc_upload_archive.py xampler-datasets
+uv run python scripts/hvsc_upload_catalog.py xampler-datasets
+```
 
 Run the automated verifier:
 
