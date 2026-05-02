@@ -21,7 +21,7 @@ This document surveys leading open source Python libraries used with Amazon S3 o
 
 ## Pythonic assessment
 
-Scores use the project rubric in [`docs/pythonic-rubric.md`](pythonic-rubric.md).
+Scores use the project rubric in [`docs/api/pythonic-rubric.md`](../api/pythonic-rubric.md).
 
 | Library | Pythonic score | Strengths | Tradeoffs |
 |---|---:|---|---|

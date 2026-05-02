@@ -12,7 +12,7 @@ What changed:
 
 - Added `scripts/verify_examples.py`.
 - Verified `examples/start/hello-worker`, `examples/storage-data/r2-object-storage`, `examples/storage-data/kv-namespace`, `examples/start/fastapi-worker`, `examples/storage-data/d1-database`, `examples/state-events/durable-object-counter`, `examples/start/static-assets`, `examples/state-events/queues-producer-consumer`, `examples/streaming/binary-response`, `examples/network-edge/htmlrewriter-opengraph`, and `examples/state-events/cron-trigger` at different realism levels.
-- Added `docs/primitive-test-realism.md` to make test depth visible.
+- Added `docs/api/primitive-test-realism.md` to make test depth visible.
 
 Lesson: every new example should ship with a verifier path, even if the first verifier is shallow. If the official Cloudflare example requires local setup, our verifier should automate that setup instead of merely documenting it.
 
@@ -24,7 +24,7 @@ What changed:
 
 - Example package scripts now use `uv run pywrangler dev` and `uv run pywrangler deploy`.
 - Docs now prefer `uv` + `pywrangler` over `npm install` + `npx wrangler`.
-- Added `docs/pythonic-tooling.md`.
+- Added `docs/runtime/pythonic-tooling.md`.
 
 Lesson: Node/Wrangler may exist under the hood, but the developer workflow should feel Python-native.
 
@@ -155,7 +155,7 @@ What changed:
 
 - Coverage and Pythonic API scores are out of 10.
 - Test realism is out of 5.
-- `docs/top-10-improvement-plan.md` identifies the next action for each key primitive.
+- `docs/archive/top-10-improvement-plan.md` identifies the next action for each key primitive.
 
 Lesson: every low score should point to the next PR.
 

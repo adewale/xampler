@@ -56,4 +56,4 @@ Some Cloudflare products such as DNS, WAF, Access, Zero Trust, and Registrar are
 1. Raise level-3 Tier 1 examples to level 4 with richer deterministic local harnesses.
 2. Add env-gated remote verification profiles for account-backed examples.
 3. Add missing primitives in dependency order: Cache API, Analytics Engine, Secrets/config, Turnstile, Cloudflare Images.
-4. Keep README, `docs/primitives-api-surface.md`, and `docs/primitive-test-realism.md` synchronized after each promotion.
+4. Keep README, `docs/api/primitives-api-surface.md`, and `docs/api/primitive-test-realism.md` synchronized after each promotion.

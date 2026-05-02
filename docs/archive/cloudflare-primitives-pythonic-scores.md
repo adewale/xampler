@@ -1,6 +1,6 @@
 # Cloudflare Primitive API Surface Pythonic Scores
 
-Last reviewed: 2026-05-02. Scores are out of **10** and use [`pythonic-rubric.md`](pythonic-rubric.md).
+Last reviewed: 2026-05-02. Scores are out of **10** and use [`pythonic-rubric.md`](../api/pythonic-rubric.md).
 
 This scores the **API surface we currently expose in the examples**, not Cloudflare's underlying JavaScript APIs.
 

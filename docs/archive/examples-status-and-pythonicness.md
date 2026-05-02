@@ -12,7 +12,7 @@ This is the operating status board for the repository. An example is not conside
 
 ## Scores
 
-Scores use [`docs/pythonic-rubric.md`](pythonic-rubric.md). They consider readability, Python metaphors, dataclasses/types, async correctness, testability, platform honesty, and the friendly/platform/escape-hatch layering.
+Scores use [`docs/api/pythonic-rubric.md`](../api/pythonic-rubric.md). They consider readability, Python metaphors, dataclasses/types, async correctness, testability, platform honesty, and the friendly/platform/escape-hatch layering.
 
 | Example | Primitive | Status | Verified command | Pythonic score | Why |
 |---|---|---|---|---:|---|

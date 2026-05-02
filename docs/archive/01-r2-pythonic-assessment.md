@@ -1,6 +1,6 @@
 # Pythonic Assessment: `examples/storage-data/r2-object-storage`
 
-This assesses the current R2 example against [`docs/pythonic-rubric.md`](pythonic-rubric.md).
+This assesses the current R2 example against [`docs/api/pythonic-rubric.md`](../api/pythonic-rubric.md).
 
 Last reviewed: 2026-05-01. Python anchor: **Python 3.13**.
 

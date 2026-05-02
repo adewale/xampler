@@ -93,34 +93,36 @@ These examples are useful, but they contain a local stand-in, deterministic tran
 
 See:
 
-- [`docs/lessons-learned.md`](docs/lessons-learned.md)
-- [`docs/pythonic-rubric.md`](docs/pythonic-rubric.md)
-- [`docs/cloudflare-python-api-shape.md`](docs/cloudflare-python-api-shape.md)
-- [`docs/s3-python-library-research.md`](docs/s3-python-library-research.md)
-- [`docs/api-iteration-log.md`](docs/api-iteration-log.md)
-- [`docs/api-surface-review.md`](docs/api-surface-review.md)
-- [`docs/unified-api-surface.md`](docs/unified-api-surface.md)
-- [`docs/primitives-api-surface.md`](docs/primitives-api-surface.md)
-- [`docs/python-design-patterns.md`](docs/python-design-patterns.md)
-- [`docs/top-10-improvement-plan.md`](docs/top-10-improvement-plan.md)
-- [`docs/primitive-test-realism.md`](docs/primitive-test-realism.md)
-- [`docs/pythonic-tooling.md`](docs/pythonic-tooling.md)
-- [`docs/python-workers-runtime-guidance.md`](docs/python-workers-runtime-guidance.md)
-- [`docs/streaming-api.md`](docs/streaming-api.md)
-- [`docs/native-python-workers-comparison.md`](docs/native-python-workers-comparison.md)
-- [`docs/project-structure-and-naming.md`](docs/project-structure-and-naming.md)
-- [`docs/cloudflare-doc-links.md`](docs/cloudflare-doc-links.md)
-- [`docs/wrapper-consistency-audit.md`](docs/wrapper-consistency-audit.md)
-- [`docs/internal-consistency-audit.md`](docs/internal-consistency-audit.md)
-- [`docs/datasets.md`](docs/datasets.md)
-- [`docs/dataset-reuse-coverage.md`](docs/dataset-reuse-coverage.md)
-- [`docs/cloudflare-best-practices-alignment.md`](docs/cloudflare-best-practices-alignment.md)
-- [`docs/cloudflare-primitives-pythonic-scores.md`](docs/cloudflare-primitives-pythonic-scores.md)
-- [`docs/example-rubric-scores.md`](docs/example-rubric-scores.md)
-- [`docs/examples-status-and-pythonicness.md`](docs/examples-status-and-pythonicness.md)
-- [`docs/executable-examples.md`](docs/executable-examples.md)
-- [`docs/tier-1-completion-plan.md`](docs/tier-1-completion-plan.md)
-- [`docs/composite-example-backlog.md`](docs/composite-example-backlog.md)
+- [`docs/project/lessons-learned.md`](docs/project/lessons-learned.md)
+- [`docs/api/pythonic-rubric.md`](docs/api/pythonic-rubric.md)
+- [`docs/api/cloudflare-python-api-shape.md`](docs/api/cloudflare-python-api-shape.md)
+- [`docs/data/s3-python-library-research.md`](docs/data/s3-python-library-research.md)
+- [`docs/archive/api-iteration-log.md`](docs/archive/api-iteration-log.md)
+- [`docs/archive/api-surface-review.md`](docs/archive/api-surface-review.md)
+- [`docs/api/unified-api-surface.md`](docs/api/unified-api-surface.md)
+- [`docs/api/primitives-api-surface.md`](docs/api/primitives-api-surface.md)
+- [`docs/api/python-design-patterns.md`](docs/api/python-design-patterns.md)
+- [`docs/archive/top-10-improvement-plan.md`](docs/archive/top-10-improvement-plan.md)
+- [`docs/api/primitive-test-realism.md`](docs/api/primitive-test-realism.md)
+- [`docs/runtime/pythonic-tooling.md`](docs/runtime/pythonic-tooling.md)
+- [`docs/runtime/python-workers-runtime-guidance.md`](docs/runtime/python-workers-runtime-guidance.md)
+- [`docs/data/streaming-api.md`](docs/data/streaming-api.md)
+- [`docs/api/native-python-workers-comparison.md`](docs/api/native-python-workers-comparison.md)
+- [`docs/project/project-structure-and-naming.md`](docs/project/project-structure-and-naming.md)
+- [`docs/runtime/cloudflare-doc-links.md`](docs/runtime/cloudflare-doc-links.md)
+- [`docs/project/wrapper-consistency-audit.md`](docs/project/wrapper-consistency-audit.md)
+- [`docs/archive/internal-consistency-audit.md`](docs/archive/internal-consistency-audit.md)
+- [`docs/data/datasets.md`](docs/data/datasets.md)
+- [`docs/archive/dataset-reuse-coverage.md`](docs/archive/dataset-reuse-coverage.md)
+- [`docs/runtime/cloudflare-best-practices-alignment.md`](docs/runtime/cloudflare-best-practices-alignment.md)
+- [`docs/archive/cloudflare-primitives-pythonic-scores.md`](docs/archive/cloudflare-primitives-pythonic-scores.md)
+- [`docs/archive/example-rubric-scores.md`](docs/archive/example-rubric-scores.md)
+- [`docs/archive/examples-status-and-pythonicness.md`](docs/archive/examples-status-and-pythonicness.md)
+- [`docs/archive/executable-examples.md`](docs/archive/executable-examples.md)
+- [`docs/archive/tier-1-completion-plan.md`](docs/archive/tier-1-completion-plan.md)
+- [`docs/index.md`](docs/index.md)
+- [`docs/project/composite-example-backlog.md`](docs/project/composite-example-backlog.md)
+- [`docs/project/original-goals-audit.md`](docs/project/original-goals-audit.md)
 
 The short version:
 
@@ -133,7 +135,7 @@ The short version:
 
 ## Primitive metrics
 
-Coverage and Pythonic API scores are out of 10. Test realism is out of 5; see [`docs/primitive-test-realism.md`](docs/primitive-test-realism.md).
+Coverage and Pythonic API scores are out of 10. Test realism is out of 5; see [`docs/api/primitive-test-realism.md`](docs/api/primitive-test-realism.md).
 
 | Tier | Primitive | Coverage / 10 | Pythonic API / 10 | Test Realism / 5 |
 |---|---|---:|---:|---:|

@@ -2,7 +2,7 @@
 
 Last reviewed: 2026-05-01. Python anchor: Python 3.13.
 
-Scores use [`docs/pythonic-rubric.md`](pythonic-rubric.md), including the newer criteria from Python S3 library research: familiar Python metaphors, layered API ergonomics, context managers where useful, typed dataclasses, iteration, and explicit `.raw` escape hatches.
+Scores use [`docs/api/pythonic-rubric.md`](../api/pythonic-rubric.md), including the newer criteria from Python S3 library research: familiar Python metaphors, layered API ergonomics, context managers where useful, typed dataclasses, iteration, and explicit `.raw` escape hatches.
 
 ## Summary table
 

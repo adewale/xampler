@@ -50,7 +50,7 @@ The page also has an optional button to stream the full HVSC archive into local 
 
 This large archive is intentionally **not** part of the default verifier. Use it for interactive stress testing of streaming R2 writes.
 
-To build a real catalog from the full archive, see [`docs/datasets.md`](../../../docs/datasets.md):
+To build a real catalog from the full archive, see [`docs/data/datasets.md`](../../../docs/data/datasets.md):
 
 ```bash
 uv run python scripts/hvsc_download_unpack.py

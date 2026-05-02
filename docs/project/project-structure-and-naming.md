@@ -78,11 +78,11 @@ Avoid sequence numbers. They imply tutorial order and make insertions/renames fe
 | User journey | Doc |
 |---|---|
 | “What is this project?” | `README.md` |
-| “Show me the API shape.” | `docs/unified-api-surface.md` |
-| “Compare to native Python Workers.” | `docs/native-python-workers-comparison.md` |
-| “Show streaming composition.” | `docs/streaming-api.md` + `examples/streaming/gutenberg-stream-composition` |
-| “Which examples are verified?” | `docs/primitive-test-realism.md` |
-| “What should be built next?” | `docs/composite-example-backlog.md` |
+| “Show me the API shape.” | `docs/api/unified-api-surface.md` |
+| “Compare to native Python Workers.” | `docs/api/native-python-workers-comparison.md` |
+| “Show streaming composition.” | `docs/data/streaming-api.md` + `examples/streaming/gutenberg-stream-composition` |
+| “Which examples are verified?” | `docs/api/primitive-test-realism.md` |
+| “What should be built next?” | `docs/project/composite-example-backlog.md` |
 
 ## Cloudflare docs grounding
 
