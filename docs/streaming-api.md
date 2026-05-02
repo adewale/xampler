@@ -8,14 +8,14 @@ Streaming is now a first-class Xampler API shape. The goal is that R2 objects, J
 
 | Suggestion | Implemented surface | Example |
 |---|---|---|
-| 1. Object streams | `ByteStream.iter_bytes()`, `iter_text()`, `iter_lines()` | `streaming-27-gutenberg` |
-| 2. JSONL records | `JsonlReader.records()` | `streaming-27-gutenberg /events` |
-| 3. Batching | `aiter_batches(records, size=...)` | `streaming-27-gutenberg /demo` |
-| 4. Stream-to-D1 style sink | `DemoD1Sink.insert_batch()` + checkpoints | `streaming-27-gutenberg /demo` |
-| 5. Agent streaming | `DemoAgentSession.stream() -> AgentEvent` | `streaming-27-gutenberg /events` |
-| 6. AI/gateway token streaming | `DemoAIService.stream_text()` | `streaming-27-gutenberg /events` |
-| 7. WebSocket session stream | `DemoWebSocketSession.__aiter__()` | `streaming-27-gutenberg /events` |
-| 8. Resumable checkpoints | `StreamCheckpoint` | `streaming-27-gutenberg /demo` |
+| 1. Object streams | `ByteStream.iter_bytes()`, `iter_text()`, `iter_lines()` | `examples/streaming/gutenberg-stream-composition` |
+| 2. JSONL records | `JsonlReader.records()` | `examples/streaming/gutenberg-stream-composition /events` |
+| 3. Batching | `aiter_batches(records, size=...)` | `examples/streaming/gutenberg-stream-composition /demo` |
+| 4. Stream-to-D1 style sink | `DemoD1Sink.insert_batch()` + checkpoints | `examples/streaming/gutenberg-stream-composition /demo` |
+| 5. Agent streaming | `DemoAgentSession.stream() -> AgentEvent` | `examples/streaming/gutenberg-stream-composition /events` |
+| 6. AI/gateway token streaming | `DemoAIService.stream_text()` | `examples/streaming/gutenberg-stream-composition /events` |
+| 7. WebSocket session stream | `DemoWebSocketSession.__aiter__()` | `examples/streaming/gutenberg-stream-composition /events` |
+| 8. Resumable checkpoints | `StreamCheckpoint` | `examples/streaming/gutenberg-stream-composition /demo` |
 
 ## Stream-to-stream target
 
@@ -28,7 +28,7 @@ async for batch in aiter_batches(records, size=500):
     await progress.checkpoint(batch)
 ```
 
-The current executable proof is `streaming-27-gutenberg`, which uses Project Gutenberg's Shakespeare archive as the golden large-file source:
+The current executable proof is `examples/streaming/gutenberg-stream-composition`, which uses Project Gutenberg's Shakespeare archive as the golden large-file source:
 
 ```text
 r2://xampler-datasets/gutenberg/100/raw/pg100-h.zip

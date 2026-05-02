@@ -1,0 +1,14 @@
+[project]
+name = "xampler-network-edge-service-bindings-rpc-py"
+version = "0.1.0"
+requires-python = ">=3.13"
+dependencies = [
+    "cfboundary @ git+https://github.com/adewale/cfboundary@v0.1.11",
+    "pygments>=2.19",
+]
+
+[dependency-groups]
+dev = [
+    "workers-py",
+    "workers-runtime-sdk",
+]

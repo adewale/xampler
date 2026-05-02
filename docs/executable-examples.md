@@ -15,16 +15,16 @@ uv run python scripts/verify_examples.py --list
 Run one example and perform HTTP checks:
 
 ```bash
-uv run python scripts/verify_examples.py workers-01-hello
-uv run python scripts/verify_examples.py r2-01
-uv run python scripts/verify_examples.py fastapi-03-framework
-uv run python scripts/verify_examples.py d1-04-query
-uv run python scripts/verify_examples.py durable-objects-07-counter
-uv run python scripts/verify_examples.py assets-06-static-assets
-uv run python scripts/verify_examples.py queues-16-producer-consumer
-uv run python scripts/verify_examples.py images-12-generation
-uv run python scripts/verify_examples.py htmlrewriter-11-opengraph
-uv run python scripts/verify_examples.py scheduled-08-cron
+uv run python scripts/verify_examples.py examples/start/hello-worker
+uv run python scripts/verify_examples.py examples/storage-data/r2-object-storage
+uv run python scripts/verify_examples.py examples/start/fastapi-worker
+uv run python scripts/verify_examples.py examples/storage-data/d1-database
+uv run python scripts/verify_examples.py examples/state-events/durable-object-counter
+uv run python scripts/verify_examples.py examples/start/static-assets
+uv run python scripts/verify_examples.py examples/state-events/queues-producer-consumer
+uv run python scripts/verify_examples.py examples/streaming/binary-response
+uv run python scripts/verify_examples.py examples/network-edge/htmlrewriter-opengraph
+uv run python scripts/verify_examples.py examples/state-events/cron-trigger
 ```
 
 The verifier starts `uv run pywrangler dev`, waits for the local server, sends requests, checks status/body expectations, and shuts Wrangler down. `pywrangler` may call Wrangler internally, but users do not need an npm workflow for Python examples.
@@ -33,11 +33,11 @@ The verifier starts `uv run pywrangler dev`, waits for the local server, sends r
 
 ```bash
 uv run ruff check .
-uv run python -m compileall -q workers-01-hello kv-02-binding fastapi-03-framework \
-  d1-04-query ai-05-langchain assets-06-static-assets durable-objects-07-counter \
-  scheduled-08-cron workers-ai-09-inference workflows-10-pipeline \
-  htmlrewriter-11-opengraph images-12-generation service-bindings-13-rpc \
-  websockets-14-stream-consumer durable-objects-15-chatroom r2-01 tests
+uv run python -m compileall -q examples/start/hello-worker examples/storage-data/kv-namespace examples/start/fastapi-worker \
+  examples/storage-data/d1-database examples/ai-agents/langchain-style-chain examples/start/static-assets examples/state-events/durable-object-counter \
+  examples/state-events/cron-trigger examples/ai-agents/workers-ai-inference examples/state-events/workflows-pipeline \
+  examples/network-edge/htmlrewriter-opengraph examples/streaming/binary-response examples/network-edge/service-bindings-rpc \
+  examples/network-edge/outbound-websocket-consumer examples/state-events/durable-object-chatroom examples/storage-data/r2-object-storage tests
 uv run pytest -q
 ```
 
@@ -51,17 +51,17 @@ All checks passed!
 Wrangler smoke checks actually run in this workspace:
 
 ```bash
-uv run python scripts/verify_examples.py workers-01-hello
-uv run python scripts/verify_examples.py r2-01
-uv run python scripts/verify_examples.py kv-02-binding
-uv run python scripts/verify_examples.py fastapi-03-framework
-uv run python scripts/verify_examples.py d1-04-query
-uv run python scripts/verify_examples.py durable-objects-07-counter
-uv run python scripts/verify_examples.py assets-06-static-assets
-uv run python scripts/verify_examples.py queues-16-producer-consumer
-uv run python scripts/verify_examples.py images-12-generation
-uv run python scripts/verify_examples.py htmlrewriter-11-opengraph
-uv run python scripts/verify_examples.py scheduled-08-cron
+uv run python scripts/verify_examples.py examples/start/hello-worker
+uv run python scripts/verify_examples.py examples/storage-data/r2-object-storage
+uv run python scripts/verify_examples.py examples/storage-data/kv-namespace
+uv run python scripts/verify_examples.py examples/start/fastapi-worker
+uv run python scripts/verify_examples.py examples/storage-data/d1-database
+uv run python scripts/verify_examples.py examples/state-events/durable-object-counter
+uv run python scripts/verify_examples.py examples/start/static-assets
+uv run python scripts/verify_examples.py examples/state-events/queues-producer-consumer
+uv run python scripts/verify_examples.py examples/streaming/binary-response
+uv run python scripts/verify_examples.py examples/network-edge/htmlrewriter-opengraph
+uv run python scripts/verify_examples.py examples/state-events/cron-trigger
 ```
 
 Verified results included successful HTTP checks for Worker responses, R2 put/get and JPEG byte comparison, KV text/JSON/list/delete, FastAPI ASGI routing, D1 local setup plus seeded and parameter-bound queries, Durable Object counter isolation, static asset plus dynamic route serving, queue producer enqueue, generated image response, OpenGraph HTML output, and scheduled Worker health.

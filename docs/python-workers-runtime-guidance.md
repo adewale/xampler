@@ -45,11 +45,11 @@ Python Workers consume more CPU than equivalent JavaScript Workers. Examples tha
 
 Xampler currently treats these as heavy examples:
 
-- `hvsc-24-ai-data-search`
-- `streaming-27-gutenberg`
-- `ai-05-langchain`
-- `agents-26-sdk`
-- `fastapi-03-framework`
+- `examples/full-apps/hvsc-ai-data-search`
+- `examples/streaming/gutenberg-stream-composition`
+- `examples/ai-agents/langchain-style-chain`
+- `examples/ai-agents/agents-sdk-tools`
+- `examples/start/fastapi-worker`
 
 ## `to_py` guidance
 

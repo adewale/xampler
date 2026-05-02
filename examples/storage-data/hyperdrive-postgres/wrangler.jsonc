@@ -1,0 +1,14 @@
+{
+  "$schema": "node_modules/wrangler/config-schema.json",
+  "name": "xampler-storage-data-hyperdrive-postgres",
+  "main": "src/entry.py",
+  "compatibility_date": "2026-05-01",
+  "compatibility_flags": ["python_workers"],
+  "hyperdrive": [
+    {
+      "binding": "HYPERDRIVE",
+      "id": "REPLACE_WITH_HYPERDRIVE_ID",
+      "localConnectionString": "postgres://user:password@localhost:5432/postgres"
+    }
+  ]
+}

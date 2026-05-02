@@ -12,7 +12,7 @@ import subprocess
 from pathlib import Path
 
 ROOT = Path(__file__).resolve().parents[1]
-EXAMPLE = ROOT / "hvsc-24-ai-data-search"
+EXAMPLE = ROOT / "examples/full-apps/hvsc-ai-data-search"
 ARCHIVE = ROOT / ".data" / "hvsc" / "84" / "raw" / "HVSC_84-all-of-them.7z"
 DEFAULT_KEY = "hvsc/84/raw/HVSC_84-all-of-them.7z"
 

@@ -1,0 +1,1 @@
+{"name":"xampler-examples/network-edge/service-bindings-rpc-ts","private":true,"scripts":{"dev":"wrangler dev"},"devDependencies":{"wrangler":"latest","typescript":"latest"}}

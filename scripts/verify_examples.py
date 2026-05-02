@@ -45,13 +45,16 @@ class Example:
     ready_path: str = "/"
 
 
+R2_FIXTURE = Path("examples/storage-data/r2-object-storage") / "fixtures" / "BreakingThe35.jpeg"
+
+
 EXAMPLES = {
-    "workers-01-hello": Example(
-        "workers-01-hello",
+    "examples/start/hello-worker": Example(
+        "examples/start/hello-worker",
         [Check("/", contains="Pythonic Worker")],
     ),
-    "r2-01": Example(
-        "r2-01",
+    "examples/storage-data/r2-object-storage": Example(
+        "examples/storage-data/r2-object-storage",
         [
             Check("/", contains="R2 from Python Workers"),
             Check("/simple/verify.txt", method="PUT", body=b"hello r2", status=201),
@@ -59,18 +62,18 @@ EXAMPLES = {
             Check(
                 "/objects/images/BreakingThe35.jpeg",
                 method="PUT",
-                body=(Path("r2-01") / "fixtures" / "BreakingThe35.jpeg").read_bytes(),
+                body=R2_FIXTURE.read_bytes(),
                 headers={"content-type": "image/jpeg"},
                 status=201,
             ),
             Check(
                 "/objects/images/BreakingThe35.jpeg/stream",
-                expected_body=(Path("r2-01") / "fixtures" / "BreakingThe35.jpeg").read_bytes(),
+                expected_body=R2_FIXTURE.read_bytes(),
             ),
         ],
     ),
-    "kv-02-binding": Example(
-        "kv-02-binding",
+    "examples/storage-data/kv-namespace": Example(
+        "examples/storage-data/kv-namespace",
         [
             Check("/text/verify", method="PUT", body=b"hello kv", status=201),
             Check("/text/verify", contains="hello kv"),
@@ -88,12 +91,12 @@ EXAMPLES = {
         ],
         needs_setup="Wrangler accepts placeholder KV ids for local dev; replace id before deploy.",
     ),
-    "fastapi-03-framework": Example(
-        "fastapi-03-framework",
+    "examples/start/fastapi-worker": Example(
+        "examples/start/fastapi-worker",
         [Check("/", contains="FastAPI"), Check("/items/python", contains="python")],
     ),
-    "d1-04-query": Example(
-        "d1-04-query",
+    "examples/storage-data/d1-database": Example(
+        "examples/storage-data/d1-database",
         [
             Check("/", contains="PEP 20"),
             Check("/by-author?author=PEP%2020", contains="Readability"),
@@ -116,15 +119,15 @@ EXAMPLES = {
             ]
         ],
     ),
-    "assets-06-static-assets": Example(
-        "assets-06-static-assets",
+    "examples/start/static-assets": Example(
+        "examples/start/static-assets",
         [
             Check("/", contains="Served by Workers Assets"),
             Check("/api/status", contains="Dynamic Python route"),
         ],
     ),
-    "durable-objects-07-counter": Example(
-        "durable-objects-07-counter",
+    "examples/state-events/durable-object-counter": Example(
+        "examples/state-events/durable-object-counter",
         [
             Check("/demo/reset", contains="0"),
             Check("/other/reset", contains="0"),
@@ -135,15 +138,15 @@ EXAMPLES = {
             Check("/other", contains="1"),
         ],
     ),
-    "scheduled-08-cron": Example(
-        "scheduled-08-cron",
+    "examples/state-events/cron-trigger": Example(
+        "examples/state-events/cron-trigger",
         [
             Check("/", contains="scheduled worker is alive"),
             Check("/cdn-cgi/handler/scheduled", status=200),
         ],
     ),
-    "queues-16-producer-consumer": Example(
-        "queues-16-producer-consumer",
+    "examples/state-events/queues-producer-consumer": Example(
+        "examples/state-events/queues-producer-consumer",
         [
             Check("/", contains="POST JSON"),
             Check(
@@ -160,33 +163,33 @@ EXAMPLES = {
             "Local Wrangler queues accept producer sends; deployed consumers need a real queue."
         ),
     ),
-    "workers-ai-09-inference": Example(
-        "workers-ai-09-inference",
+    "examples/ai-agents/workers-ai-inference": Example(
+        "examples/ai-agents/workers-ai-inference",
         [Check("/demo", contains="Workers AI response")],
         needs_setup=(
             "/ uses the real Workers AI binding; /demo is deterministic for local verification."
         ),
         ready_path="/demo",
     ),
-    "workflows-10-pipeline": Example(
-        "workflows-10-pipeline",
+    "examples/state-events/workflows-pipeline": Example(
+        "examples/state-events/workflows-pipeline",
         [
             Check("/demo/start", contains="demo-instance"),
             Check("/demo/status/demo-instance", contains="complete"),
         ],
         needs_setup="/start uses real Workflows; /demo/* is deterministic for local verification.",
     ),
-    "htmlrewriter-11-opengraph": Example(
-        "htmlrewriter-11-opengraph",
+    "examples/network-edge/htmlrewriter-opengraph": Example(
+        "examples/network-edge/htmlrewriter-opengraph",
         [Check("/", contains="og:title")],
     ),
-    "vectorize-17-search": Example(
-        "vectorize-17-search",
+    "examples/ai-agents/vectorize-search": Example(
+        "examples/ai-agents/vectorize-search",
         [Check("/demo", contains="doc-1")],
         needs_setup="Real /upsert and /query use Vectorize; /demo is deterministic locally.",
     ),
-    "images-12-generation": Example(
-        "images-12-generation",
+    "examples/streaming/binary-response": Example(
+        "examples/streaming/binary-response",
         [
             Check(
                 "/",
@@ -196,18 +199,18 @@ EXAMPLES = {
             )
         ],
     ),
-    "service-bindings-13-rpc-py": Example(
-        "service-bindings-13-rpc/py",
+    "examples/network-edge/service-bindings-rpc-py": Example(
+        "examples/network-edge/service-bindings-rpc/py",
         [Check("/", contains="service binding rpc")],
         needs_setup="Python provider is locally verified; TS client shows cross-worker binding.",
     ),
-    "websockets-14-stream-consumer": Example(
-        "websockets-14-stream-consumer",
+    "examples/network-edge/outbound-websocket-consumer": Example(
+        "examples/network-edge/outbound-websocket-consumer",
         [Check("/demo/status", contains="demo-websocket-stream")],
         needs_setup="/status opens Bluesky Jetstream; /demo/status is deterministic locally.",
     ),
-    "durable-objects-15-chatroom": Example(
-        "durable-objects-15-chatroom",
+    "examples/state-events/durable-object-chatroom": Example(
+        "examples/state-events/durable-object-chatroom",
         [
             Check("/", contains="Python Workers Chatroom"),
             Check(
@@ -220,42 +223,42 @@ EXAMPLES = {
             Check("/room/demo/dev/history", contains="hello room"),
         ],
     ),
-    "browser-rendering-18-screenshot": Example(
-        "browser-rendering-18-screenshot",
+    "examples/network-edge/browser-rendering-screenshot": Example(
+        "examples/network-edge/browser-rendering-screenshot",
         [Check("/demo?url=https://example.com", contains="demo-browser-rendering")],
         needs_setup="/ uses real Browser Rendering REST API; /demo is deterministic locally.",
         ready_path="/demo",
     ),
-    "email-workers-19-router": Example(
-        "email-workers-19-router",
+    "examples/network-edge/email-worker-router": Example(
+        "examples/network-edge/email-worker-router",
         [Check("/", contains="forward to archive@example.net")],
         needs_setup=(
             "Email event routing is deployed-only; HTTP route verifies deterministic policy."
         ),
     ),
-    "ai-gateway-20-universal": Example(
-        "ai-gateway-20-universal",
+    "examples/ai-agents/ai-gateway-chat": Example(
+        "examples/ai-agents/ai-gateway-chat",
         [Check("/demo", contains="demo-ai-gateway")],
         needs_setup="/ uses real AI Gateway; /demo verifies gateway-shaped responses locally.",
         ready_path="/demo",
     ),
-    "r2-data-catalog-22-iceberg": Example(
-        "r2-data-catalog-22-iceberg",
+    "examples/storage-data/r2-data-catalog": Example(
+        "examples/storage-data/r2-data-catalog",
         [Check("/demo", contains="hvsc"), Check("/demo/tables/hvsc", contains="tracks")],
         needs_setup=(
             "Real routes use Iceberg REST; /demo verifies catalog-shaped responses locally."
         ),
         ready_path="/demo",
     ),
-    "ai-05-langchain": Example(
-        "ai-05-langchain",
+    "examples/ai-agents/langchain-style-chain": Example(
+        "examples/ai-agents/langchain-style-chain",
         [Check("/", contains="LangChain-compatible LCEL demo")],
         needs_setup=(
             "Uses a dependency-light LCEL-style Runnable chain for local Workers verification."
         ),
     ),
-    "streaming-27-gutenberg": Example(
-        "streaming-27-gutenberg",
+    "examples/streaming/gutenberg-stream-composition": Example(
+        "examples/streaming/gutenberg-stream-composition",
         [
             Check("/demo", contains="gutenberg-stream-demo"),
             Check("/events", contains="gutenberg.search"),
@@ -263,8 +266,8 @@ EXAMPLES = {
         needs_setup="Golden Gutenberg zip is stored at r2://xampler-datasets/gutenberg/100/raw/pg100-h.zip.",
         ready_path="/demo",
     ),
-    "hyperdrive-25-postgres": Example(
-        "hyperdrive-25-postgres",
+    "examples/storage-data/hyperdrive-postgres": Example(
+        "examples/storage-data/hyperdrive-postgres",
         [
             Check("/demo", contains="demo-hyperdrive"),
             Check("/query", status=501, contains="Hyperdrive"),
@@ -272,8 +275,8 @@ EXAMPLES = {
         needs_setup="/query needs a configured Hyperdrive/Postgres client; /demo is local.",
         ready_path="/demo",
     ),
-    "agents-26-sdk": Example(
-        "agents-26-sdk",
+    "examples/ai-agents/agents-sdk-tools": Example(
+        "examples/ai-agents/agents-sdk-tools",
         [
             Check("/demo?message=weather%20in%20Lagos", contains="weather.lookup"),
             Check(
@@ -287,8 +290,8 @@ EXAMPLES = {
         needs_setup="Uses deterministic tool calls locally and Durable Objects for agent sessions.",
         ready_path="/demo",
     ),
-    "r2-sql-21-query": Example(
-        "r2-sql-21-query",
+    "examples/storage-data/r2-sql": Example(
+        "examples/storage-data/r2-sql",
         [
             Check(
                 "/demo",
@@ -307,8 +310,8 @@ EXAMPLES = {
         ],
         needs_setup="Real / calls the R2 SQL API; /demo verifies safe query shaping locally.",
     ),
-    "pages-23-functions": Example(
-        "pages-23-functions",
+    "examples/start/pages-functions": Example(
+        "examples/start/pages-functions",
         [
             Check("/", contains="Xampler Pages"),
             Check("/api/hello?name=Python", contains="Hello, Python"),
@@ -316,8 +319,8 @@ EXAMPLES = {
         needs_setup="Pages Functions are TypeScript today; verifier uses Wrangler Pages dev.",
         dev_command=["uv", "run", "pywrangler", "pages", "dev", "public", "--port"],
     ),
-    "hvsc-24-ai-data-search": Example(
-        "hvsc-24-ai-data-search",
+    "examples/full-apps/hvsc-ai-data-search": Example(
+        "examples/full-apps/hvsc-ai-data-search",
         [
             Check("/", contains="HVSC AI/data pipeline"),
             Check("/ingest-fixture", method="POST", contains="HVSC #84"),

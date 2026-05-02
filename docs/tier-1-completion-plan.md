@@ -33,7 +33,7 @@ The repository covers many core Workers primitives, but it does not yet have ded
 | Missing primitive/product | Proposed example | Notes |
 |---|---|---|
 | Workers Analytics Engine | `analytics-engine-25-events` | Write/query event analytics from Workers; useful for telemetry and dataset-search analytics. |
-| Hyperdrive | `hyperdrive-25-postgres` | Added. Python DB client pattern for Postgres through Hyperdrive; important for existing app migrations. |
+| Hyperdrive | `examples/storage-data/hyperdrive-postgres` | Added. Python DB client pattern for Postgres through Hyperdrive; important for existing app migrations. |
 | Workers Builds / Deploy Hooks | `workers-builds-27-ci` | Build/deploy lifecycle example; mostly tooling/config rather than runtime API. |
 | Secrets Store / environment secrets | `secrets-28-config` | Typed config loader, secret validation, local `.dev.vars` vs deployed secrets. |
 | Static forms / Turnstile integration | `turnstile-29-forms` | Developer-facing bot protection flow for Workers/Pages apps. |
@@ -45,7 +45,7 @@ The repository covers many core Workers primitives, but it does not yet have ded
 | Workers for Platforms / Dispatch Namespaces | `dispatch-35-platforms` | Multi-tenant Worker dispatch; advanced but core platform capability. |
 | Logpush / Observability APIs | `observability-36-logs` | Account API example for shipping/querying logs; useful for production apps. |
 | Cache API | `cache-37-edge-cache` | Workers Cache API is used implicitly elsewhere but deserves a direct Pythonic wrapper example. |
-| Agents SDK | `agents-26-sdk` | Added. Stateful agent/session shape with tools and Durable Object routing. |
+| Agents SDK | `examples/ai-agents/agents-sdk-tools` | Added. Stateful agent/session shape with tools and Durable Object routing. |
 | URLPattern / routing helpers | `routing-38-urlpattern` | Small runtime primitive for Python Workers request routing. |
 | Tail Workers | `tail-workers-39-observability` | Dedicated observability Worker receiving events. |
 

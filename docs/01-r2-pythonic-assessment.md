@@ -1,4 +1,4 @@
-# Pythonic Assessment: `r2-01`
+# Pythonic Assessment: `examples/storage-data/r2-object-storage`
 
 This assesses the current R2 example against [`docs/pythonic-rubric.md`](pythonic-rubric.md).
 
@@ -47,4 +47,4 @@ It now covers most key Workers-binding R2 operations: put/get/head/delete/list, 
 
 ## Overall judgment
 
-`r2-01` is now a strong foundation for the rest of the examples. It is Pythonic where it matters most: user-facing storage operations, metadata modeling, missing-value behavior, async streaming, and testability. Its main risk is breadth: a comprehensive R2 sample can overwhelm beginners unless the documentation preserves the progression from simple to advanced.
+`examples/storage-data/r2-object-storage` is now a strong foundation for the rest of the examples. It is Pythonic where it matters most: user-facing storage operations, metadata modeling, missing-value behavior, async streaming, and testability. Its main risk is breadth: a comprehensive R2 sample can overwhelm beginners unless the documentation preserves the progression from simple to advanced.

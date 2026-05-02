@@ -1,0 +1,8 @@
+{
+  "$schema": "node_modules/wrangler/config-schema.json",
+  "name": "xampler-storage-data-r2-sql",
+  "main": "src/entry.py",
+  "compatibility_date": "2026-05-01",
+  "compatibility_flags": ["python_workers"],
+  "vars": {"ACCOUNT_ID": "REPLACE_WITH_ACCOUNT_ID"}
+}

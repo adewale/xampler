@@ -16,7 +16,7 @@ from pathlib import Path
 
 ROOT = Path(__file__).resolve().parents[1]
 CATALOG = ROOT / ".data" / "hvsc" / "84" / "catalog" / "tracks.jsonl"
-SCHEMA = ROOT / "hvsc-24-ai-data-search" / "db_init.sql"
+SCHEMA = ROOT / "examples/full-apps/hvsc-ai-data-search" / "db_init.sql"
 
 
 def main() -> int:
@@ -89,7 +89,7 @@ def sql_value(value: object) -> str:
 def execute_sql(database: str, file: Path, *, remote: bool) -> None:
     command = ["uv", "run", "pywrangler", "d1", "execute", database, "--file", str(file)]
     command.append("--remote" if remote else "--local")
-    subprocess.run(command, cwd=ROOT / "hvsc-24-ai-data-search", check=True)
+    subprocess.run(command, cwd=ROOT / "examples/full-apps/hvsc-ai-data-search", check=True)
 
 
 if __name__ == "__main__":

@@ -1,8 +1,0 @@
-{
-  "$schema": "node_modules/wrangler/config-schema.json",
-  "name": "xampler-workflows-10-pipeline",
-  "main": "src/entry.py",
-  "compatibility_date": "2026-05-01",
-  "compatibility_flags": ["python_workers"],
-  "workflows": [{"name": "xampler-pipeline", "binding": "PIPELINE", "class_name": "Pipeline"}]
-}

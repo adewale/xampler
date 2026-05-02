@@ -4,48 +4,51 @@ Python Workers examples for people who know Python and are learning the Cloudfla
 
 These examples use [`cfboundary`](https://github.com/adewale/cfboundary) where low-level JavaScript/Python conversion matters: `JsProxy` conversion, Python `bytes` to JavaScript `Uint8Array`, JavaScript `null`/`undefined`, and stream handling.
 
-## Naming convention
+## Folder structure and naming
 
-Example directories put the Cloudflare product or primitive first, then the number:
+Examples live under `examples/` by user journey rather than by sequence number. Names use `<product-or-capability>-<hero-use-case>` and avoid numeric ordering.
 
 ```text
-r2-01/
-kv-02-binding/
-d1-04-query/
+examples/start/hello-worker/
+examples/storage-data/r2-object-storage/
+examples/state-events/queues-producer-consumer/
+examples/ai-agents/agents-sdk-tools/
+examples/streaming/gutenberg-stream-composition/
+examples/full-apps/hvsc-ai-data-search/
 ```
 
 ## Examples
 
 | Example | Primitive / topic | What it demonstrates |
 |---|---|---|
-| [`workers-01-hello/`](workers-01-hello) | Workers | Minimal Python Worker and response helper. |
-| [`r2-01/`](r2-01) | R2 | Pythonic object storage wrapper, metadata, listing, streaming, multipart. |
-| [`kv-02-binding/`](kv-02-binding) | Workers KV | `KVNamespace`/`KVKey`, text/JSON values, existence, delete, list. |
-| [`fastapi-03-framework/`](fastapi-03-framework) | FastAPI on Workers | Python framework shape on Workers. |
-| [`d1-04-query/`](d1-04-query) | D1 | Query wrapper, typed rows, D1 null/boundary conversion. |
-| [`ai-05-langchain/`](ai-05-langchain) | Python package / LangChain shape | Keeps package orchestration behind a service boundary. |
-| [`assets-06-static-assets/`](assets-06-static-assets) | Workers Assets | Serve static files without waking Python. |
-| [`durable-objects-07-counter/`](durable-objects-07-counter) | Durable Objects | Stateful counter object. |
-| [`scheduled-08-cron/`](scheduled-08-cron) | Cron triggers | Scheduled handler with job service object. |
-| [`workers-ai-09-inference/`](workers-ai-09-inference) | Workers AI | Typed request dataclass and AI service wrapper. |
-| [`workflows-10-pipeline/`](workflows-10-pipeline) | Workflows | Workflow entrypoint and instance creation. |
-| [`queues-16-producer-consumer/`](queues-16-producer-consumer) | Queues | Producer/consumer wrapper, typed jobs, ack/retry. |
-| [`vectorize-17-search/`](vectorize-17-search) | Vectorize | Typed vectors, upsert, query, get, delete, describe. |
-| [`browser-rendering-18-screenshot/`](browser-rendering-18-screenshot) | Browser Rendering | REST screenshot client from a Python Worker. |
-| [`email-workers-19-router/`](email-workers-19-router) | Email Workers | Inspect, reject, and forward incoming email. |
-| [`ai-gateway-20-universal/`](ai-gateway-20-universal) | AI Gateway | OpenAI-compatible chat through AI Gateway. |
-| [`r2-sql-21-query/`](r2-sql-21-query) | R2 SQL | SQL query client wrapper. |
-| [`r2-data-catalog-22-iceberg/`](r2-data-catalog-22-iceberg) | R2 Data Catalog | Iceberg REST namespace/table client. |
-| [`pages-23-functions/`](pages-23-functions) | Pages | Static Pages project with file-based Function. |
-| [`hvsc-24-ai-data-search/`](hvsc-24-ai-data-search) | AI/data app | HVSC release ingestion through R2, D1, Queues, Workers AI/Vectorize seams, and search. |
-| [`hyperdrive-25-postgres/`](hyperdrive-25-postgres) | Hyperdrive | Typed Postgres query shape through Hyperdrive with deterministic local transport. |
-| [`agents-26-sdk/`](agents-26-sdk) | Agents SDK | Stateful agent/session shape with tools, Durable Objects, and typed run results. |
-| [`streaming-27-gutenberg/`](streaming-27-gutenberg) | Streaming composition | Gutenberg golden file, byte/text/line/record streams, batches, checkpoints, AI/agent/WebSocket events. |
-| [`htmlrewriter-11-opengraph/`](htmlrewriter-11-opengraph) | HTMLRewriter | OpenGraph metadata model and edge HTML response shape. |
-| [`images-12-generation/`](images-12-generation) | Binary responses | Dependency-free PNG bytes from a Worker. |
-| [`service-bindings-13-rpc/`](service-bindings-13-rpc) | Service bindings / RPC | Python RPC service shape with TypeScript client scaffold. |
-| [`websockets-14-stream-consumer/`](websockets-14-stream-consumer) | WebSockets | WebSocket example scaffold and session model direction. |
-| [`durable-objects-15-chatroom/`](durable-objects-15-chatroom) | Durable Objects + WebSockets | Chatroom durable object scaffold. |
+| [`examples/start/hello-worker/`](examples/start/hello-worker) | Workers | Minimal Python Worker and response helper. |
+| [`examples/storage-data/r2-object-storage/`](examples/storage-data/r2-object-storage) | R2 | Pythonic object storage wrapper, metadata, listing, streaming, multipart. |
+| [`examples/storage-data/kv-namespace/`](examples/storage-data/kv-namespace) | Workers KV | `KVNamespace`/`KVKey`, text/JSON values, existence, delete, list. |
+| [`examples/start/fastapi-worker/`](examples/start/fastapi-worker) | FastAPI on Workers | Python framework shape on Workers. |
+| [`examples/storage-data/d1-database/`](examples/storage-data/d1-database) | D1 | Query wrapper, typed rows, D1 null/boundary conversion. |
+| [`examples/ai-agents/langchain-style-chain/`](examples/ai-agents/langchain-style-chain) | Python package / LangChain shape | Keeps package orchestration behind a service boundary. |
+| [`examples/start/static-assets/`](examples/start/static-assets) | Workers Assets | Serve static files without waking Python. |
+| [`examples/state-events/durable-object-counter/`](examples/state-events/durable-object-counter) | Durable Objects | Stateful counter object. |
+| [`examples/state-events/cron-trigger/`](examples/state-events/cron-trigger) | Cron triggers | Scheduled handler with job service object. |
+| [`examples/ai-agents/workers-ai-inference/`](examples/ai-agents/workers-ai-inference) | Workers AI | Typed request dataclass and AI service wrapper. |
+| [`examples/state-events/workflows-pipeline/`](examples/state-events/workflows-pipeline) | Workflows | Workflow entrypoint and instance creation. |
+| [`examples/state-events/queues-producer-consumer/`](examples/state-events/queues-producer-consumer) | Queues | Producer/consumer wrapper, typed jobs, ack/retry. |
+| [`examples/ai-agents/vectorize-search/`](examples/ai-agents/vectorize-search) | Vectorize | Typed vectors, upsert, query, get, delete, describe. |
+| [`examples/network-edge/browser-rendering-screenshot/`](examples/network-edge/browser-rendering-screenshot) | Browser Rendering | REST screenshot client from a Python Worker. |
+| [`examples/network-edge/email-worker-router/`](examples/network-edge/email-worker-router) | Email Workers | Inspect, reject, and forward incoming email. |
+| [`examples/ai-agents/ai-gateway-chat/`](examples/ai-agents/ai-gateway-chat) | AI Gateway | OpenAI-compatible chat through AI Gateway. |
+| [`examples/storage-data/r2-sql/`](examples/storage-data/r2-sql) | R2 SQL | SQL query client wrapper. |
+| [`examples/storage-data/r2-data-catalog/`](examples/storage-data/r2-data-catalog) | R2 Data Catalog | Iceberg REST namespace/table client. |
+| [`examples/start/pages-functions/`](examples/start/pages-functions) | Pages | Static Pages project with file-based Function. |
+| [`examples/full-apps/hvsc-ai-data-search/`](examples/full-apps/hvsc-ai-data-search) | AI/data app | HVSC release ingestion through R2, D1, Queues, Workers AI/Vectorize seams, and search. |
+| [`examples/storage-data/hyperdrive-postgres/`](examples/storage-data/hyperdrive-postgres) | Hyperdrive | Typed Postgres query shape through Hyperdrive with deterministic local transport. |
+| [`examples/ai-agents/agents-sdk-tools/`](examples/ai-agents/agents-sdk-tools) | Agents SDK | Stateful agent/session shape with tools, Durable Objects, and typed run results. |
+| [`examples/streaming/gutenberg-stream-composition/`](examples/streaming/gutenberg-stream-composition) | Streaming composition | Gutenberg golden file, byte/text/line/record streams, batches, checkpoints, AI/agent/WebSocket events. |
+| [`examples/network-edge/htmlrewriter-opengraph/`](examples/network-edge/htmlrewriter-opengraph) | HTMLRewriter | OpenGraph metadata model and edge HTML response shape. |
+| [`examples/streaming/binary-response/`](examples/streaming/binary-response) | Binary responses | Dependency-free PNG bytes from a Worker. |
+| [`examples/network-edge/service-bindings-rpc/`](examples/network-edge/service-bindings-rpc) | Service bindings / RPC | Python RPC service shape with TypeScript client scaffold. |
+| [`examples/network-edge/outbound-websocket-consumer/`](examples/network-edge/outbound-websocket-consumer) | WebSockets | WebSocket example scaffold and session model direction. |
+| [`examples/state-events/durable-object-chatroom/`](examples/state-events/durable-object-chatroom) | Durable Objects + WebSockets | Chatroom durable object scaffold. |
 
 ## Best no-lies examples
 
@@ -53,14 +56,14 @@ These are the best starting points because they do something easy to explain and
 
 | Example | Why it is trustworthy |
 |---|---|
-| [`workers-01-hello/`](workers-01-hello) | Starts a real Python Worker and returns a real response. |
-| [`r2-01/`](r2-01) | Writes text, uploads `BreakingThe35.jpeg`, streams it back, and byte-compares it. |
-| [`kv-02-binding/`](kv-02-binding) | Uses local KV for text, JSON, list, delete, and missing-key behavior. |
-| [`d1-04-query/`](d1-04-query) | Initializes local D1, creates an index, runs real bound queries, and checks `EXPLAIN`. |
-| [`assets-06-static-assets/`](assets-06-static-assets) | Proves static assets are served without waking Python; dynamic `/api/status` still runs Python. |
-| [`durable-objects-07-counter/`](durable-objects-07-counter) | Uses real local Durable Objects and verifies named-object isolation. |
-| [`scheduled-08-cron/`](scheduled-08-cron) | Hits Wrangler's local scheduled handler endpoint and runs the scheduled job path. |
-| [`pages-23-functions/`](pages-23-functions) | Runs `pages dev`, serves static Pages output, and verifies a file-routed Function. |
+| [`examples/start/hello-worker/`](examples/start/hello-worker) | Starts a real Python Worker and returns a real response. |
+| [`examples/storage-data/r2-object-storage/`](examples/storage-data/r2-object-storage) | Writes text, uploads `BreakingThe35.jpeg`, streams it back, and byte-compares it. |
+| [`examples/storage-data/kv-namespace/`](examples/storage-data/kv-namespace) | Uses local KV for text, JSON, list, delete, and missing-key behavior. |
+| [`examples/storage-data/d1-database/`](examples/storage-data/d1-database) | Initializes local D1, creates an index, runs real bound queries, and checks `EXPLAIN`. |
+| [`examples/start/static-assets/`](examples/start/static-assets) | Proves static assets are served without waking Python; dynamic `/api/status` still runs Python. |
+| [`examples/state-events/durable-object-counter/`](examples/state-events/durable-object-counter) | Uses real local Durable Objects and verifies named-object isolation. |
+| [`examples/state-events/cron-trigger/`](examples/state-events/cron-trigger) | Hits Wrangler's local scheduled handler endpoint and runs the scheduled job path. |
+| [`examples/start/pages-functions/`](examples/start/pages-functions) | Runs `pages dev`, serves static Pages output, and verifies a file-routed Function. |
 
 ## Examples with deliberate demo seams
 
@@ -68,23 +71,23 @@ These examples are useful, but they contain a local stand-in, deterministic tran
 
 | Example | The lie / seam |
 |---|---|
-| `workers-ai-09-inference` | `/demo` is deterministic; `/` is the real Workers AI binding path. |
-| `vectorize-17-search` | `/demo` verifies vector API shape locally; real Vectorize needs an account index. |
-| `workflows-10-pipeline` | `/demo/*` fakes start/status; real workflow runtime verification is still needed. |
-| `queues-16-producer-consumer` | Producer is real locally; consumer delivery uses a deterministic harness. |
-| `service-bindings-13-rpc` | Python provider is verified; full two-worker RPC flow is not one-command verified yet. |
-| `websockets-14-stream-consumer` | `/demo/status` does not open the public Jetstream socket. |
-| `browser-rendering-18-screenshot` | `/demo` returns screenshot metadata, not a real browser screenshot. |
-| `email-workers-19-router` | HTTP route verifies policy; it is not a real Email Routing event. |
-| `ai-gateway-20-universal` | `/demo` mimics OpenAI-compatible shape; real gateway call needs credentials. |
-| `r2-sql-21-query` | `/demo` verifies guarded SQL shaping; real R2 SQL is account-backed. |
-| `r2-data-catalog-22-iceberg` | `/demo` is a fixture catalog; real Iceberg catalog verification is still needed. |
-| `hyperdrive-25-postgres` | `/demo` does not connect to Postgres through Hyperdrive. |
-| `agents-26-sdk` | Demonstrates Agents-like shape with Durable Objects; not direct Cloudflare Agents SDK interop yet. |
-| `ai-05-langchain` | LCEL-style chain is verified; it is not yet a real LangChain package workload. |
-| `hvsc-24-ai-data-search` | R2/D1/Queue paths are real locally, but AI and Vectorize are deterministic seams. |
-| `streaming-27-gutenberg` | Golden zip is real in R2, but `/demo` currently streams sample text instead of unzipping the archive. |
-| `images-12-generation` | Binary response is real, but it is not Cloudflare Images product coverage. |
+| `examples/ai-agents/workers-ai-inference` | `/demo` is deterministic; `/` is the real Workers AI binding path. |
+| `examples/ai-agents/vectorize-search` | `/demo` verifies vector API shape locally; real Vectorize needs an account index. |
+| `examples/state-events/workflows-pipeline` | `/demo/*` fakes start/status; real workflow runtime verification is still needed. |
+| `examples/state-events/queues-producer-consumer` | Producer is real locally; consumer delivery uses a deterministic harness. |
+| `examples/network-edge/service-bindings-rpc` | Python provider is verified; full two-worker RPC flow is not one-command verified yet. |
+| `examples/network-edge/outbound-websocket-consumer` | `/demo/status` does not open the public Jetstream socket. |
+| `examples/network-edge/browser-rendering-screenshot` | `/demo` returns screenshot metadata, not a real browser screenshot. |
+| `examples/network-edge/email-worker-router` | HTTP route verifies policy; it is not a real Email Routing event. |
+| `examples/ai-agents/ai-gateway-chat` | `/demo` mimics OpenAI-compatible shape; real gateway call needs credentials. |
+| `examples/storage-data/r2-sql` | `/demo` verifies guarded SQL shaping; real R2 SQL is account-backed. |
+| `examples/storage-data/r2-data-catalog` | `/demo` is a fixture catalog; real Iceberg catalog verification is still needed. |
+| `examples/storage-data/hyperdrive-postgres` | `/demo` does not connect to Postgres through Hyperdrive. |
+| `examples/ai-agents/agents-sdk-tools` | Demonstrates Agents-like shape with Durable Objects; not direct Cloudflare Agents SDK interop yet. |
+| `examples/ai-agents/langchain-style-chain` | LCEL-style chain is verified; it is not yet a real LangChain package workload. |
+| `examples/full-apps/hvsc-ai-data-search` | R2/D1/Queue paths are real locally, but AI and Vectorize are deterministic seams. |
+| `examples/streaming/gutenberg-stream-composition` | Golden zip is real in R2, but `/demo` currently streams sample text instead of unzipping the archive. |
+| `examples/streaming/binary-response` | Binary response is real, but it is not Cloudflare Images product coverage. |
 
 ## Pythonic API principles
 
@@ -177,6 +180,7 @@ Static/local Python checks:
 ```bash
 uv sync
 uv run ruff check .
+uv run pyright
 uv run pytest -q
 ```
 
@@ -184,6 +188,6 @@ Run and verify an example locally with `uv` + `pywrangler`:
 
 ```bash
 uv run python scripts/verify_examples.py --list
-uv run python scripts/verify_examples.py workers-01-hello
-uv run python scripts/verify_examples.py r2-01
+uv run python scripts/verify_examples.py examples/start/hello-worker
+uv run python scripts/verify_examples.py examples/storage-data/r2-object-storage
 ```

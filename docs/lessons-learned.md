@@ -11,7 +11,7 @@ A good example is not just code that looks right. It must run under the same loc
 What changed:
 
 - Added `scripts/verify_examples.py`.
-- Verified `workers-01-hello`, `r2-01`, `kv-02-binding`, `fastapi-03-framework`, `d1-04-query`, `durable-objects-07-counter`, `assets-06-static-assets`, `queues-16-producer-consumer`, `images-12-generation`, `htmlrewriter-11-opengraph`, and `scheduled-08-cron` at different realism levels.
+- Verified `examples/start/hello-worker`, `examples/storage-data/r2-object-storage`, `examples/storage-data/kv-namespace`, `examples/start/fastapi-worker`, `examples/storage-data/d1-database`, `examples/state-events/durable-object-counter`, `examples/start/static-assets`, `examples/state-events/queues-producer-consumer`, `examples/streaming/binary-response`, `examples/network-edge/htmlrewriter-opengraph`, and `examples/state-events/cron-trigger` at different realism levels.
 - Added `docs/primitive-test-realism.md` to make test depth visible.
 
 Lesson: every new example should ship with a verifier path, even if the first verifier is shallow. If the official Cloudflare example requires local setup, our verifier should automate that setup instead of merely documenting it.
@@ -80,7 +80,7 @@ String-only object storage examples are too shallow.
 
 What changed:
 
-- Added `r2-01/fixtures/BreakingThe35.jpeg`.
+- Added `examples/storage-data/r2-object-storage/fixtures/BreakingThe35.jpeg`.
 - The R2 verifier uploads the JPEG, streams it back, and byte-compares the result.
 
 Lesson: realistic binary fixtures expose boundary and streaming bugs that text examples miss.
@@ -143,7 +143,7 @@ Lesson: best-practice support should be tracked per primitive, not assumed globa
 
 ## 14. Complex examples expose composability gaps
 
-The `hvsc-24-ai-data-search` example combines HVSC release metadata, R2, D1, Queues, Workers AI and Vectorize seams. It showed that each primitive wrapper needs typed inputs and outputs that compose with the next wrapper.
+The `examples/full-apps/hvsc-ai-data-search` example combines HVSC release metadata, R2, D1, Queues, Workers AI and Vectorize seams. It showed that each primitive wrapper needs typed inputs and outputs that compose with the next wrapper.
 
 Lesson: keep the small examples focused, but regularly build one end-to-end app to discover missing API affordances.
 

@@ -62,14 +62,14 @@ These commands require Wrangler to be authenticated for your Cloudflare account.
 
 | Example | Reuse |
 |---|---|
-| `hvsc-24-ai-data-search` | Source archive, sample catalog, D1 search rows, queue indexing jobs, future Workers AI/Vectorize embeddings. |
-| `r2-01` | Large object `head`, range, stream, metadata, and multipart comparison. |
-| `d1-04-query` | Richer track/composer metadata instead of tiny quotes. |
-| `queues-16-producer-consumer` | Queue jobs that reference R2 catalog keys and offsets. |
-| `workers-ai-09-inference` | Summarize selected composers/tracks. |
-| `vectorize-17-search` | Embed and search track metadata. |
-| `r2-sql-21-query` | Query catalog exports when converted to Parquet/Iceberg-compatible data. |
-| `r2-data-catalog-22-iceberg` | Catalog HVSC track metadata as an Iceberg table. |
+| `examples/full-apps/hvsc-ai-data-search` | Source archive, sample catalog, D1 search rows, queue indexing jobs, future Workers AI/Vectorize embeddings. |
+| `examples/storage-data/r2-object-storage` | Large object `head`, range, stream, metadata, and multipart comparison. |
+| `examples/storage-data/d1-database` | Richer track/composer metadata instead of tiny quotes. |
+| `examples/state-events/queues-producer-consumer` | Queue jobs that reference R2 catalog keys and offsets. |
+| `examples/ai-agents/workers-ai-inference` | Summarize selected composers/tracks. |
+| `examples/ai-agents/vectorize-search` | Embed and search track metadata. |
+| `examples/storage-data/r2-sql` | Query catalog exports when converted to Parquet/Iceberg-compatible data. |
+| `examples/storage-data/r2-data-catalog` | Catalog HVSC track metadata as an Iceberg table. |
 
 ## Cost posture
 

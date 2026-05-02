@@ -11,7 +11,7 @@ Use `uv` and `pywrangler` for Python Worker examples:
 ```bash
 uv run pywrangler dev
 uv run pywrangler deploy
-uv run python scripts/verify_examples.py r2-01
+uv run python scripts/verify_examples.py examples/storage-data/r2-object-storage
 ```
 
 Do **not** require this for Python examples:
@@ -35,7 +35,7 @@ The user-facing workflow should still be Pythonic:
 
 Some Cloudflare surfaces are not Python Worker surfaces:
 
-- `pages-23-functions` uses Pages Functions, which are JavaScript/TypeScript today.
-- `service-bindings-13-rpc/ts` intentionally includes a TypeScript client to demonstrate cross-language RPC.
+- `examples/start/pages-functions` uses Pages Functions, which are JavaScript/TypeScript today.
+- `examples/network-edge/service-bindings-rpc/ts` intentionally includes a TypeScript client to demonstrate cross-language RPC.
 
 For those examples, Node/Wrangler commands are allowed, but they should be isolated and documented as exceptions.

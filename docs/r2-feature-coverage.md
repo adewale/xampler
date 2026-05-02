@@ -17,11 +17,11 @@ Primary R2 sources:
 - Storage classes: https://developers.cloudflare.com/r2/buckets/storage-classes/
 - SSE-C example: https://developers.cloudflare.com/r2/examples/ssec/
 
-## What `r2-01` now covers
+## What `examples/storage-data/r2-object-storage` now covers
 
 | R2 feature | Why it matters | Sample route/API |
 |---|---|---|
-| Worker binding configuration | The native way Workers access R2. | `r2-01/wrangler.jsonc` binds `BUCKET`. |
+| Worker binding configuration | The native way Workers access R2. | `examples/storage-data/r2-object-storage/wrangler.jsonc` binds `BUCKET`. |
 | Put small text | First Pythonic happy path. | `PUT /simple/<key>` -> `R2Bucket.put_text()`. |
 | Get small text | Native Python `str` return. | `GET /simple/<key>` -> `R2Bucket.get_text()`. |
 | Put small bytes | Demonstrates `bytes` -> JS `Uint8Array`. | `PUT /bytes/<key>` -> `R2Bucket.put_bytes()`. |
@@ -56,7 +56,7 @@ Primary R2 sources:
 
 ## Documentation structure for R2
 
-`r2-01` should teach in this order:
+`examples/storage-data/r2-object-storage` should teach in this order:
 
 1. **Mental model**: R2 is object storage; buckets are flat; Workers access buckets through bindings.
 2. **Python boundary**: R2 is a JavaScript API in Python Workers; `cfboundary` converts where needed.

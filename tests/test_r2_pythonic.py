@@ -6,7 +6,8 @@ from typing import Any
 
 import pytest
 
-sys.path.insert(0, str(Path(__file__).resolve().parents[1] / "r2-01" / "src"))
+R2_SRC = Path(__file__).resolve().parents[1] / "examples/storage-data/r2-object-storage" / "src"
+sys.path.insert(0, str(R2_SRC))
 
 from r2_pythonic import R2Bucket  # noqa: E402
 

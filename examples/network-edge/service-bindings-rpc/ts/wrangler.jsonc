@@ -1,0 +1,9 @@
+{
+  "$schema": "node_modules/wrangler/config-schema.json",
+  "name": "xampler-network-edge-service-bindings-rpc-ts",
+  "main": "src/index.ts",
+  "compatibility_date": "2026-05-01",
+  "services": [
+    {"binding": "PYTHON_RPC", "service": "xampler-examples/network-edge/service-bindings-rpc-py"}
+  ]
+}

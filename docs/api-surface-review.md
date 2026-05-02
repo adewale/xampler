@@ -4,7 +4,7 @@ Last reviewed: 2026-05-02.
 
 After raising the Workers AI, Vectorize, Pages, Durable Objects + WebSockets, Workflows, and R2 SQL examples, the repeated API shape is stronger: service wrappers own platform bindings, dataclasses describe inputs/results, deterministic demo services make local verification possible when Cloudflare account resources are required, and real routes keep the official binding/API vocabulary visible.
 
-## Lesson from `hvsc-24-ai-data-search`
+## Lesson from `examples/full-apps/hvsc-ai-data-search`
 
 The complex HVSC example made one iteration rule clearer: individual primitives should keep improving toward composability. The useful surface is not just `R2Bucket`, `D1Database`, `QueueService`, `AIService`, or `VectorIndex` in isolation; it is whether those wrappers can be stitched together into a real pipeline without the Worker entrypoint becoming glue-code soup.
 
