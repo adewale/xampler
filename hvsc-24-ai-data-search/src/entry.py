@@ -476,6 +476,9 @@ def index_html() -> str:
     input { padding: .65rem; min-width: 14rem; }
     pre { background: #0f172a; color: #e2e8f0; padding: 1rem; }
     pre { border-radius: .5rem; overflow: auto; }
+    .progress { background: #e2e8f0; border-radius: 999px; overflow: hidden; height: 1rem; }
+    .bar { background: #16a34a; height: 100%; width: 0%; transition: width .2s; }
+    #progressText { margin: .5rem 0 1rem; color: #334155; }
   </style>
 </head>
 <body>
@@ -524,6 +527,8 @@ def index_html() -> str:
     <label>Import limit: <input id="limit" value="0"></label>
   </p>
 
+  <div class="progress"><div id="progressBar" class="bar"></div></div>
+  <p id="progressText">0% — not started</p>
   <pre id="output">Start at button 1. Use button 4 after uploading catalog JSONL to R2.</pre>
 
   <script>
@@ -546,6 +551,12 @@ def index_html() -> str:
       if (state === 'done') el.textContent = '✓ ' + el.textContent.replace(/^[✓▶✗] /, '');
       if (state === 'running') el.textContent = '▶ ' + el.textContent.replace(/^[✓▶✗] /, '');
       if (state === 'failed') el.textContent = '✗ ' + el.textContent.replace(/^[✓▶✗] /, '');
+    }
+    function setProgress(done, total, rows) {
+      const percent = total ? Math.floor((done / total) * 100) : 0;
+      document.getElementById('progressBar').style.width = percent + '%';
+      document.getElementById('progressText').textContent =
+        percent + '% — ' + done + ' / ' + total + ' shards, ' + rows + ' rows imported';
     }
     async function step(id, fn) {
       setStep(id, 'running');
@@ -582,10 +593,13 @@ def index_html() -> str:
     async function shardedIngest() {
       let state = await show(await fetch('/ingest/start', { method: 'POST' }));
       if (state.error) throw new Error(state.error);
+      setProgress(state.completed_shards, state.total_shards, state.imported_rows);
       while (state.status !== 'complete') {
-        const msg = 'Importing shard ' + state.completed_shards + ' of ' + state.total_shards;
-        document.getElementById('output').textContent = msg;
+        const msg = 'Importing shard ' + (state.completed_shards + 1) + ' of ';
+        document.getElementById('output').textContent = msg + state.total_shards;
         state = await show(await fetch('/ingest/next', { method: 'POST' }));
+        setProgress(state.completed_shards, state.total_shards, state.imported_rows);
+        await new Promise(resolve => setTimeout(resolve, 25));
       }
       return state;
     }
