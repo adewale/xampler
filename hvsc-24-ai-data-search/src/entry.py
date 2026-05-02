@@ -15,54 +15,6 @@ HVSC_ARCHIVE_URL = "https://boswme.home.xs4all.nl/HVSC/HVSC_84-all-of-them.7z"
 HVSC_ARCHIVE_SIZE = 83_748_140
 HVSC_CATALOG_KEY = "hvsc/84/catalog/tracks.jsonl"
 
-SAMPLE_CATALOG_ROWS = [
-    {
-        "id": "hvsc:84:jeroen_tel:cybernoid_ii",
-        "version": 84,
-        "path": "MUSICIANS/J/Jeroen_Tel/Cybernoid_II.sid",
-        "filename": "Cybernoid_II.sid",
-        "title": "Cybernoid II",
-        "composer": "Jeroen Tel",
-        "search_text": "Jeroen Tel Cybernoid II Commodore 64 C64 SID Jeroen_Tel",
-    },
-    {
-        "id": "hvsc:84:rob_hubbard:monty_on_the_run",
-        "version": 84,
-        "path": "MUSICIANS/H/Hubbard_Rob/Monty_on_the_Run.sid",
-        "filename": "Monty_on_the_Run.sid",
-        "title": "Monty on the Run",
-        "composer": "Rob Hubbard",
-        "search_text": "Rob Hubbard Monty on the Run Commodore 64 C64 SID",
-    },
-    {
-        "id": "hvsc:84:martin_galway:parallax",
-        "version": 84,
-        "path": "MUSICIANS/G/Galway_Martin/Parallax.sid",
-        "filename": "Parallax.sid",
-        "title": "Parallax",
-        "composer": "Martin Galway",
-        "search_text": "Martin Galway Parallax Commodore 64 C64 SID",
-    },
-    {
-        "id": "hvsc:84:maniacs_of_noise:last_ninja_3",
-        "version": 84,
-        "path": "MUSICIANS/M/Maniacs_of_Noise/Last_Ninja_3.sid",
-        "filename": "Last_Ninja_3.sid",
-        "title": "Last Ninja 3",
-        "composer": "Maniacs of Noise",
-        "search_text": "Maniacs of Noise Last Ninja 3 Commodore 64 C64 SID",
-    },
-    {
-        "id": "hvsc:84:maniacs_of_noise:turbo_outrun",
-        "version": 84,
-        "path": "MUSICIANS/M/Maniacs_of_Noise/Turbo_Outrun.sid",
-        "filename": "Turbo_Outrun.sid",
-        "title": "Turbo Outrun",
-        "composer": "Maniacs of Noise",
-        "search_text": "Maniacs of Noise Turbo Outrun Commodore 64 C64 SID",
-    },
-]
-
 HVSC_VERSION_84 = {
     "version": 84,
     "source": "https://www.hvsc.c64.org/api/v1/version/7z",
@@ -307,13 +259,6 @@ class HvscPipeline:
     async def verify_archive(self) -> ArchiveVerification:
         return await self.r2.verify_archive(key=HVSC_ARCHIVE_KEY)
 
-    async def ingest_sample_catalog(self) -> dict[str, Any]:
-        rows = SAMPLE_CATALOG_ROWS
-        for row in rows:
-            await self.db.save_track(Track(**row))
-        await self.r2.write_json("hvsc/84/catalog/sample-jeroen.json", rows)
-        return {"tracks": len(rows), "contains": "jeroen"}
-
     async def verify_catalog(self, key: str = HVSC_CATALOG_KEY) -> CatalogVerification:
         return await self.r2.verify_catalog(key)
 
@@ -375,11 +320,7 @@ class Default(WorkerEntrypoint):
 
         if path == "/ingest-fixture":
             release_result = await pipeline.ingest(HvscRelease.from_api(HVSC_VERSION_84))
-            catalog_result = await pipeline.ingest_sample_catalog()
-            return Response.json({"release": release_result, "catalog": catalog_result})
-
-        if path == "/catalog/ingest-sample":
-            return Response.json(await pipeline.ingest_sample_catalog())
+            return Response.json({"release": release_result})
 
         if path == "/catalog/status":
             return Response.json(await pipeline.catalog_status())
@@ -392,13 +333,6 @@ class Default(WorkerEntrypoint):
             key = query.get("key", [HVSC_CATALOG_KEY])[0]
             limit = int(query.get("limit", ["0"])[0] or 0)
             result = await pipeline.ingest_catalog_from_r2(key=key, limit=limit)
-            if result.get("error") and query.get("fallback", ["sample"])[0] == "sample":
-                fallback = await pipeline.ingest_sample_catalog()
-                result = {
-                    **result,
-                    "fallback": fallback,
-                    "warning": "Full R2 catalog missing; loaded bundled sample catalog only.",
-                }
             return Response.json(result)
 
         if path == "/archive/ingest":
@@ -414,8 +348,8 @@ class Default(WorkerEntrypoint):
             response = {"query": term, "tracks": tracks, "status": status}
             if not tracks:
                 response["hint"] = (
-                    "No D1 track rows matched. Run the full catalog upload/import, "
-                    "or try sample terms: jeroen, maniacs, hubbard, galway, sid."
+                    "No D1 track rows matched. Run scripts/hvsc_full_pipeline.py "
+                    "to unpack the real archive, build the catalog, and import D1."
                 )
             return Response.json(response)
 

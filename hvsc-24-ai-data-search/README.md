@@ -18,19 +18,27 @@ Run an interactive browser session from the repository root:
 uv run python scripts/serve_hvsc.py
 ```
 
-Then open <http://localhost:9595/>. In another terminal, ingest the fixture once:
+Then open <http://localhost:9595/>.
+
+For arbitrary composer/title/path search, first build and import the real catalog from the archive:
 
 ```bash
-curl -X POST http://localhost:9595/ingest-fixture
+uv run python scripts/hvsc_full_pipeline.py --skip-upload
+```
+
+If you want to upload the raw archive and catalog to your permanent R2 bucket too:
+
+```bash
+uv run python scripts/hvsc_full_pipeline.py --bucket xampler-datasets
 ```
 
 Then use the numbered buttons in the page:
 
 1. Verify the full archive object in R2.
-2. Ingest release metadata plus the bundled sample catalog.
+2. Ingest release metadata.
 3. Verify a generated `tracks.jsonl` catalog object in R2.
-4. Pull that catalog JSONL from R2 into D1.
-5. Search the D1 catalog for arbitrary terms such as `jeroen`.
+4. Pull a small catalog JSONL from R2 into D1, if you uploaded one.
+5. Search the D1 catalog for arbitrary terms such as `jeroen`, `maniacs`, `hubbard`, or any composer/file present in the imported catalog.
 
 You can also open <http://localhost:9595/search?q=sid> or <http://localhost:9595/tracks?q=jeroen>.
 
@@ -38,7 +46,7 @@ The page also has an optional button to stream the full HVSC archive into local 
 
 - source: `https://boswme.home.xs4all.nl/HVSC/HVSC_84-all-of-them.7z`
 - size: `83,748,140` bytes, about `79.9 MiB`
-- R2 key: `hvsc/archives/HVSC_84-all-of-them.7z`
+- R2 key: `hvsc/84/raw/HVSC_84-all-of-them.7z`
 
 This large archive is intentionally **not** part of the default verifier. Use it for interactive stress testing of streaming R2 writes.
 
