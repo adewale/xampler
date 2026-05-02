@@ -254,6 +254,15 @@ EXAMPLES = {
             "Uses a dependency-light LCEL-style Runnable chain for local Workers verification."
         ),
     ),
+    "streaming-27-gutenberg": Example(
+        "streaming-27-gutenberg",
+        [
+            Check("/demo", contains="gutenberg-stream-demo"),
+            Check("/events", contains="gutenberg.search"),
+        ],
+        needs_setup="Golden Gutenberg zip is stored at r2://xampler-datasets/gutenberg/100/raw/pg100-h.zip.",
+        ready_path="/demo",
+    ),
     "hyperdrive-25-postgres": Example(
         "hyperdrive-25-postgres",
         [

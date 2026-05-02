@@ -1,12 +1,15 @@
-from io import BytesIO
+from __future__ import annotations
 
-from PIL import Image
+import base64
+
 from workers import Response, WorkerEntrypoint
+
+PNG_1X1_BLUE = base64.b64decode(
+    "iVBORw0KGgoAAAANSUhEUgAAAAEAAAABCAIAAACQd1PeAAAADUlEQVR4nGNkYPj/HwADAgH/"
+    "bc8U9wAAAABJRU5ErkJggg=="
+)
 
 
 class Default(WorkerEntrypoint):
     async def fetch(self, request):
-        img = Image.new("RGB", (300, 120), "#2563eb")
-        out = BytesIO()
-        img.save(out, format="PNG")
-        return Response(out.getvalue(), headers={"content-type": "image/png"})
+        return Response(PNG_1X1_BLUE, headers={"content-type": "image/png"})

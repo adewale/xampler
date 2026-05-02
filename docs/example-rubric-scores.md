@@ -19,7 +19,7 @@ Scores use [`docs/pythonic-rubric.md`](pythonic-rubric.md), including the newer 
 | `workers-ai-09-inference` | Workers AI | 8.25 | Typed request dataclass and `AIService.generate_text()`. Needs typed response models and model catalog docs. |
 | `workflows-10-pipeline` | Workflows | 7.5 | Shows workflow class and instance creation. Needs more Pythonic `WorkflowService`/`WorkflowInstance` wrappers. |
 | `htmlrewriter-11-opengraph` | HTMLRewriter | 7.75 | Uses metadata dataclass and clean route. Needs real `HTMLRewriter` boundary wrapper instead of simplified HTML generation. |
-| `images-12-generation` | Python packages / binary responses | 8.0 | Pillow example is simple and Pythonic. Needs typed image options and cache/R2 integration. |
+| `images-12-generation` | Binary responses | 8.2 | Dependency-free PNG bytes keep the example focused on binary Worker responses. Needs typed options and cache/R2 integration. |
 | `service-bindings-13-rpc` | Service bindings / RPC | 8.0 | Python RPC method is simple and typed. Needs full TS client binding config and request/response dataclasses. |
 | `websockets-14-stream-consumer` | WebSockets | 7.75 | Executable Durable Object WebSocket consumer with literate comments, alarm reconnection, and JS proxy boundary notes. Could still use a higher-level session wrapper. |
 | `durable-objects-15-chatroom` | Durable Objects + WebSockets | 8.0 | Executable chatroom with WebSocket hibernation API, room routing, history, and browser client. Needs richer `ChatSession` abstraction and tests. |

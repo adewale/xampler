@@ -19,7 +19,7 @@ This scores the **API surface we currently expose in the examples**, not Cloudfl
 | Queues | `queues-16-producer-consumer` | 8.7 | `QueueService`, `QueueJob`, `QueueSendOptions`, `QueueMessage`, `QueueBatchResult`, explicit ack/retry handling, and deterministic consumer harness. | Real queue delivery verifier; dead-letter queue example. |
 | Workflows | `workflows-10-pipeline` | 8.5 | Workflow entrypoint, `WorkflowService.start/status`, durable steps, deterministic status verifier. | Real Workflow runtime status verification; richer typed event payloads. |
 | HTMLRewriter | `htmlrewriter-11-opengraph` | 8.3 | Metadata dataclass, escaped transformation wrapper, and executable HTML response shape. | Real Python-native `HTMLRewriter` wrapper with element handlers when available. |
-| Binary responses / Pillow | `images-12-generation` | 8.4 | Simple Pillow PNG generation and binary response with content-type and PNG signature verification. | Typed query params, validation, cache/R2 integration. |
+| Binary responses | `images-12-generation` | 8.2 | Dependency-free PNG bytes and binary response with content-type and PNG signature verification. | Typed query params, validation, cache/R2 integration. |
 | Service bindings / RPC | `service-bindings-13-rpc` | 8.3 | Python RPC method, TS client service binding, and local provider verifier. | Full two-worker verifier; typed request/response dataclasses. |
 | Outbound WebSockets | `websockets-14-stream-consumer` | 8.2 | Durable Object-owned outbound socket, alarms, Pyodide `create_proxy` boundary, deterministic status verifier. | Deterministic fake stream messages; higher-level session object. |
 | Durable Objects + WebSockets | `durable-objects-15-chatroom` | 8.5 | Room-per-Durable-Object, browser client, WebSocket hibernation API, persisted message history, deterministic room verifier. | Automated WebSocket broadcast verifier; `ChatSession` abstraction. |
@@ -29,6 +29,7 @@ This scores the **API surface we currently expose in the examples**, not Cloudfl
 | R2 Data Catalog | `r2-data-catalog-22-iceberg` | 8.3 | `Namespace`, `TableRef`, Iceberg REST client, deterministic catalog fixture. | PyIceberg create/append/read and remote verifier. |
 | Hyperdrive | `hyperdrive-25-postgres` | 8.4 | `HyperdriveConfig`, `PostgresQuery`, `PostgresResult`, production/demo client split. | Real Postgres client wiring and remote verifier. |
 | Agents SDK | `agents-26-sdk` | 8.6 | Typed agent messages, tool calls, run results, deterministic tools, Durable Object session routing. | Streaming responses and direct Agents SDK interop as Python support matures. |
+| Streaming composition | `streaming-27-gutenberg` | 8.8 | Typed byte/text/line streams, JSONL reader, batches, checkpoints, AI/agent/WebSocket event streams. | Lift helpers into a shared package and use real R2 body streams. |
 
 ## Current average
 

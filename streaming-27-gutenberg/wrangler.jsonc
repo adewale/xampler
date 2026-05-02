@@ -1,0 +1,11 @@
+{
+  "$schema": "node_modules/wrangler/config-schema.json",
+  "name": "xampler-streaming-27-gutenberg",
+  "main": "src/entry.py",
+  "compatibility_date": "2026-05-01",
+  "compatibility_flags": ["python_workers"],
+  "r2_buckets": [
+    { "binding": "ARTIFACTS", "bucket_name": "xampler-datasets", "remote": true }
+  ],
+  "ai": { "binding": "AI" }
+}

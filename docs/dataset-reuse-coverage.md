@@ -39,7 +39,7 @@ Why: the complex example now has optional full-archive streaming into R2, archiv
 | Workers AI | `workers-ai-09-inference` | Summarize composer/track metadata from R2 catalog rows. | 6.3 | 7.5 | +1.2 |
 | Workflows | `workflows-10-pipeline` | Model archive -> catalog -> D1 -> vector indexing as a real workflow. | 7.2 | 8.3 | +1.1 |
 | HTMLRewriter | `htmlrewriter-11-opengraph` | Generate OpenGraph tags for composer/search-result pages from D1 catalog rows. | 5.5 | 6.5 | +1.0 |
-| Images/Pillow | `images-12-generation` | Generate share cards for composers/tracks from catalog metadata. | 6.5 | 7.3 | +0.8 |
+| Binary responses | `images-12-generation` | Generate deterministic binary responses for composer/track share-card fixtures. | 6.0 | 7.0 | +1.0 |
 | Service Bindings/RPC | `service-bindings-13-rpc` | Python service exposes HVSC search/highlight, TS client consumes it. | 6.0 | 7.1 | +1.1 |
 | WebSockets | `websockets-14-stream-consumer` | Stream import progress/events while catalog rows are processed. | 6.5 | 7.2 | +0.7 |
 | DO + WebSockets | `durable-objects-15-chatroom` | Add a collaborative HVSC listening/search room seeded from the catalog. | 7.5 | 8.0 | +0.5 |

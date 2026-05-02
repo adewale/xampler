@@ -29,7 +29,7 @@ Scores use [`docs/pythonic-rubric.md`](pythonic-rubric.md). They consider readab
 | `workers-ai-09-inference` | Workers AI | Runnable with runtime support | verifier listed | 8.25 | Typed request dataclass and `AIService`. Needs verified local/deployed AI run and typed response model. |
 | `workflows-10-pipeline` | Workflows | Runnable with runtime support | verifier listed | 7.75 | Real workflow entrypoint and `/start`/`/status`. Needs verified workflow run and `WorkflowInstance` handle. |
 | `htmlrewriter-11-opengraph` | HTMLRewriter | Runnable | verifier listed | 7.75 | Has metadata model and executable response, but should use real `HTMLRewriter` boundary instead of prebuilt HTML. |
-| `images-12-generation` | Pillow / binary response | Runnable | verifier listed | 8.0 | Real Pillow-generated PNG. Needs typed query parameters and cache/R2 integration. |
+| `images-12-generation` | Binary response | Verified | `uv run python scripts/verify_examples.py images-12-generation` | 8.2 | Dependency-free deterministic PNG bytes with content-type and signature verification. |
 | `service-bindings-13-rpc` | Service bindings / RPC | Verified provider | `uv run python scripts/verify_examples.py service-bindings-13-rpc-py` | 8.3 | Python RPC service plus TS client config; provider is locally verified. Needs full two-worker verifier. |
 | `websockets-14-stream-consumer` | Outbound WebSockets + Durable Objects | Verified | `uv run python scripts/verify_examples.py websockets-14-stream-consumer` | 8.2 | Real outbound WebSocket consumer plus deterministic `/demo/status` verifier. |
 | `durable-objects-15-chatroom` | Durable Objects + WebSockets | Runnable/browser-verifiable | verifier listed for page | 8.0 | Real chatroom page and DO WebSocket room. Needs automated WebSocket client verification. |
@@ -59,6 +59,7 @@ uv run python scripts/verify_examples.py ai-gateway-20-universal
 uv run python scripts/verify_examples.py r2-data-catalog-22-iceberg
 uv run python scripts/verify_examples.py hyperdrive-25-postgres
 uv run python scripts/verify_examples.py agents-26-sdk
+uv run python scripts/verify_examples.py streaming-27-gutenberg
 ```
 
 ## Pythonic themes that are working

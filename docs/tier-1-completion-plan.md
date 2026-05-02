@@ -38,7 +38,7 @@ The repository covers many core Workers primitives, but it does not yet have ded
 | Secrets Store / environment secrets | `secrets-28-config` | Typed config loader, secret validation, local `.dev.vars` vs deployed secrets. |
 | Static forms / Turnstile integration | `turnstile-29-forms` | Developer-facing bot protection flow for Workers/Pages apps. |
 | Rate Limiting binding/rules integration | `rate-limiting-30-guard` | Request guard wrapper with deterministic local limiter. |
-| Cloudflare Images API | `cloudflare-images-31-transform` | Current `images-12` is Pillow/binary response, not Cloudflare Images product coverage. |
+| Cloudflare Images API | `cloudflare-images-31-transform` | Current `images-12` is generic binary response coverage, not Cloudflare Images product coverage. |
 | Stream | `stream-32-video` | Upload/status/playback token patterns for video workflows. |
 | Calls / Realtime SFU | `calls-33-realtime` | WebRTC/realtime media APIs; account-backed, likely remote verifier only. |
 | Pub/Sub | `pubsub-34-mqtt` | MQTT publish/subscribe flow if available to the account. |

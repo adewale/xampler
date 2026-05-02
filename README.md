@@ -40,8 +40,9 @@ d1-04-query/
 | [`hvsc-24-ai-data-search/`](hvsc-24-ai-data-search) | AI/data app | HVSC release ingestion through R2, D1, Queues, Workers AI/Vectorize seams, and search. |
 | [`hyperdrive-25-postgres/`](hyperdrive-25-postgres) | Hyperdrive | Typed Postgres query shape through Hyperdrive with deterministic local transport. |
 | [`agents-26-sdk/`](agents-26-sdk) | Agents SDK | Stateful agent/session shape with tools, Durable Objects, and typed run results. |
+| [`streaming-27-gutenberg/`](streaming-27-gutenberg) | Streaming composition | Gutenberg golden file, byte/text/line/record streams, batches, checkpoints, AI/agent/WebSocket events. |
 | [`htmlrewriter-11-opengraph/`](htmlrewriter-11-opengraph) | HTMLRewriter | OpenGraph metadata model and edge HTML response shape. |
-| [`images-12-generation/`](images-12-generation) | Python packages / binary responses | Pillow image generation from a Worker. |
+| [`images-12-generation/`](images-12-generation) | Binary responses | Dependency-free PNG bytes from a Worker. |
 | [`service-bindings-13-rpc/`](service-bindings-13-rpc) | Service bindings / RPC | Python RPC service shape with TypeScript client scaffold. |
 | [`websockets-14-stream-consumer/`](websockets-14-stream-consumer) | WebSockets | WebSocket example scaffold and session model direction. |
 | [`durable-objects-15-chatroom/`](durable-objects-15-chatroom) | Durable Objects + WebSockets | Chatroom durable object scaffold. |
@@ -62,6 +63,11 @@ See:
 - [`docs/top-10-improvement-plan.md`](docs/top-10-improvement-plan.md)
 - [`docs/primitive-test-realism.md`](docs/primitive-test-realism.md)
 - [`docs/pythonic-tooling.md`](docs/pythonic-tooling.md)
+- [`docs/streaming-api.md`](docs/streaming-api.md)
+- [`docs/native-python-workers-comparison.md`](docs/native-python-workers-comparison.md)
+- [`docs/project-structure-and-naming.md`](docs/project-structure-and-naming.md)
+- [`docs/cloudflare-doc-links.md`](docs/cloudflare-doc-links.md)
+- [`docs/wrapper-consistency-audit.md`](docs/wrapper-consistency-audit.md)
 - [`docs/datasets.md`](docs/datasets.md)
 - [`docs/dataset-reuse-coverage.md`](docs/dataset-reuse-coverage.md)
 - [`docs/cloudflare-best-practices-alignment.md`](docs/cloudflare-best-practices-alignment.md)
@@ -92,7 +98,7 @@ Coverage and Pythonic API scores are out of 10. Test realism is out of 5; see [`
 | Tier 1 — Gold standard | Durable Objects | 7.0 | 8.6 | 4 |
 | Tier 1 — Gold standard | Workers Assets | 7.4 | 9.0 | 4 |
 | Tier 1 — Gold standard | D1 database | 7.5 | 8.9 | 4 |
-| Tier 1 — Gold standard | Binary responses / Pillow | 6.5 | 8.4 | 4 |
+| Tier 1 — Gold standard | Binary responses | 6.0 | 8.2 | 4 |
 | Tier 1 — Gold standard | Cron Triggers | 6.5 | 8.5 | 4 |
 | Tier 1 — Gold standard | HTMLRewriter | 5.5 | 8.3 | 4 |
 | Tier 1 — Gold standard | Queues | 8.1 | 8.7 | 4 |
@@ -113,6 +119,7 @@ Coverage and Pythonic API scores are out of 10. Test realism is out of 5; see [`
 | Tier 1 — Gold standard | LangChain/package orchestration | 6.2 | 8.1 | 3 |
 | Tier 1 — Gold standard | Hyperdrive | 6.5 | 8.4 | 3 |
 | Tier 1 — Gold standard | Agents SDK | 6.8 | 8.6 | 3 |
+| Tier 1 — Gold standard | Streaming composition | 7.2 | 8.8 | 3 |
 
 ## Requirements
 

@@ -56,7 +56,7 @@ raw = r2.raw
 | Workers AI | `ai.generate_text(TextGenerationRequest(...)) -> TextGenerationResponse`. |
 | Workflows | `workflow.start(payload) -> WorkflowInstance`; `await instance.status()`. |
 | HTMLRewriter | `OpenGraphRewriter(OpenGraphPage(...)).transform(html)`. |
-| Images / binary responses | Pillow creates bytes; Worker returns typed binary `Response` with content type. |
+| Binary responses | Worker returns deterministic PNG bytes with content type and binary verification. |
 | Service Bindings / RPC | `await env.CODE.highlight_code(code)` exposed as a typed Python method. |
 | Outbound WebSockets | Durable Object owns socket; `GET /demo/status` proves session/status shape. |
 | Durable Objects + WebSockets | Room Durable Object owns sockets/history; `ChatMessage` is persisted and broadcast. |
@@ -71,6 +71,7 @@ raw = r2.raw
 | HVSC AI/data app | `HvscPipeline` composes R2 + D1 + Queues + AI/vector seams with `ingest_status()`. |
 | Hyperdrive | `HyperdrivePostgres(HyperdriveConfig.from_binding(env.HYPERDRIVE)).query(PostgresQuery(...))`. |
 | Agents SDK | `AgentSession.run(message) -> AgentRunResult` with typed messages, tools, and Durable Object session routing. |
+| Streaming composition | `ByteStream.iter_lines()` -> `JsonlReader.records()` -> `aiter_batches()` -> checkpointed sink. |
 
 ## Design rule
 
