@@ -90,7 +90,7 @@ These examples are useful, but they contain a local stand-in, deterministic tran
 
 See:
 
-- [`LESSONS_LEARNED.md`](LESSONS_LEARNED.md)
+- [`docs/lessons-learned.md`](docs/lessons-learned.md)
 - [`docs/pythonic-rubric.md`](docs/pythonic-rubric.md)
 - [`docs/cloudflare-python-api-shape.md`](docs/cloudflare-python-api-shape.md)
 - [`docs/s3-python-library-research.md`](docs/s3-python-library-research.md)
