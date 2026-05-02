@@ -118,7 +118,16 @@ class R2Artifacts:
 
     async def list_keys(self, prefix: str) -> list[str]:
         data = to_py(await self.raw.list(to_js({"prefix": prefix})))
-        return [str(item["key"]) for item in data.get("objects", [])]
+        objects = (
+            data.get("objects", []) if isinstance(data, dict) else getattr(data, "objects", [])
+        )
+        keys: list[str] = []
+        for item in objects:
+            py_item = to_py(item)
+            key = py_item.get("key") if isinstance(py_item, dict) else getattr(item, "key", None)
+            if key is not None:
+                keys.append(str(key))
+        return keys
 
     async def stream_from_url(self, *, url: str, key: str) -> ArchiveVerification:
         response = await js.fetch(url)
@@ -435,8 +444,9 @@ class Default(WorkerEntrypoint):
             response = {"query": term, "tracks": tracks, "status": status}
             if not tracks:
                 response["hint"] = (
-                    "No D1 track rows matched. Run scripts/hvsc_full_pipeline.py "
-                    "to unpack the real archive, build the catalog, and import D1."
+                    "No D1 track rows matched. Click the browser run-all button or call "
+                    "POST /ingest/start then POST /ingest/next until complete to import "
+                    "the published R2 shard catalog into local D1."
                 )
             return Response.json(response)
 

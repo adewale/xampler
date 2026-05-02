@@ -22,6 +22,7 @@ def main() -> int:
     parser.add_argument("bucket")
     parser.add_argument("--key", default=DEFAULT_KEY)
     parser.add_argument("--file", type=Path, default=ARCHIVE)
+    parser.add_argument("--local", action="store_true", help="Upload to local R2 instead of remote")
     args = parser.parse_args()
     if not args.file.exists():
         raise SystemExit(f"missing archive: {args.file}")
@@ -38,6 +39,7 @@ def main() -> int:
             str(args.file),
             "--content-type",
             "application/x-7z-compressed",
+            "--local" if args.local else "--remote",
         ],
         check=True,
         cwd=EXAMPLE,

@@ -17,6 +17,7 @@ def main() -> int:
     parser.add_argument("bucket")
     parser.add_argument("--catalog", type=Path, default=CATALOG)
     parser.add_argument("--prefix", default="hvsc/84/catalog")
+    parser.add_argument("--local", action="store_true", help="Upload to local R2 instead of remote")
     args = parser.parse_args()
     for path in sorted(args.catalog.rglob("*.jsonl")):
         key = f"{args.prefix}/{path.relative_to(args.catalog).as_posix()}"
@@ -33,6 +34,7 @@ def main() -> int:
                 str(path),
                 "--content-type",
                 "application/x-ndjson",
+                "--local" if args.local else "--remote",
             ],
             check=True,
             cwd=EXAMPLE,

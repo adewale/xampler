@@ -21,6 +21,7 @@ def main() -> int:
     parser.add_argument("--remote-d1", action="store_true")
     parser.add_argument("--skip-download", action="store_true")
     parser.add_argument("--skip-upload", action="store_true")
+    parser.add_argument("--local-upload", action="store_true")
     parser.add_argument(
         "--limit",
         type=int,
@@ -36,8 +37,9 @@ def main() -> int:
         build += ["--limit", str(args.limit)]
     run(build)
     if args.bucket and not args.skip_upload:
-        run(["uv", "run", "python", "scripts/hvsc_upload_archive.py", args.bucket])
-        run(["uv", "run", "python", "scripts/hvsc_upload_catalog.py", args.bucket])
+        local_flag = ["--local"] if args.local_upload else []
+        run(["uv", "run", "python", "scripts/hvsc_upload_archive.py", args.bucket, *local_flag])
+        run(["uv", "run", "python", "scripts/hvsc_upload_catalog.py", args.bucket, *local_flag])
     import_cmd = [
         "uv",
         "run",

@@ -54,10 +54,12 @@ To build a real catalog from the full archive, see [`../docs/datasets.md`](../do
 
 ```bash
 uv run python scripts/hvsc_download_unpack.py
-uv run python scripts/hvsc_build_catalog.py
+uv run python scripts/hvsc_build_catalog.py --shard-size 500
 uv run python scripts/hvsc_upload_archive.py xampler-datasets
 uv run python scripts/hvsc_upload_catalog.py xampler-datasets
 ```
+
+The upload scripts target remote Cloudflare R2 by default. Add `--local` only when you intentionally want to seed Wrangler's local R2 store.
 
 Run the automated verifier:
 

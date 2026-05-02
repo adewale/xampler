@@ -41,7 +41,7 @@ uv run python scripts/hvsc_download_unpack.py
 Build catalogs from the unpacked tree:
 
 ```bash
-uv run python scripts/hvsc_build_catalog.py
+uv run python scripts/hvsc_build_catalog.py --shard-size 500
 ```
 
 Upload the raw archive to your R2 bucket:
@@ -56,7 +56,7 @@ Upload generated catalogs:
 uv run python scripts/hvsc_upload_catalog.py xampler-datasets
 ```
 
-These commands require Wrangler to be authenticated for your Cloudflare account.
+These commands require Wrangler to be authenticated for your Cloudflare account. Uploads target remote Cloudflare R2 by default; add `--local` to the upload commands only when you intentionally want to seed Wrangler's local R2 store.
 
 ## How examples reuse the bucket
 
