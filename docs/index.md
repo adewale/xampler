@@ -35,3 +35,4 @@ Long-term docs are grouped by purpose. Older planning snapshots live in [`archiv
 - [`project/gaps-explained.md`](project/gaps-explained.md)
 - [`project/shared-wrapper-candidates.md`](project/shared-wrapper-candidates.md)
 - [`project/api-surface-consistency-audit.md`](project/api-surface-consistency-audit.md)
+- [`project/api-surface-follow-up-audit.md`](project/api-surface-follow-up-audit.md)

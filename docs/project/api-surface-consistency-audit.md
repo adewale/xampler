@@ -105,7 +105,7 @@ And a uniform route convention:
 
 ## 4. Streaming helper reuse
 
-`xampler.streaming` already contains:
+`xampler.streaming` contains:
 
 - `ByteStream`
 - `RecordStream`
@@ -115,7 +115,7 @@ And a uniform route convention:
 - `StreamCheckpoint`
 - `AgentEvent`
 
-But no example imports it yet. The Gutenberg example duplicates the same classes locally. That means the strongest composability story is documented but not reused.
+The Gutenberg example now imports these shared helpers, so the original duplication is fixed there. Follow-up audit: [`api-surface-follow-up-audit.md`](api-surface-follow-up-audit.md).
 
 ### Current streaming usage
 
