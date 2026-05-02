@@ -8,6 +8,8 @@ This document tracks how realistically each Cloudflare primitive example is test
 2. **Local runtime verification** — `uv run pywrangler dev` is started and HTTP/WebSocket/email/queue behavior is exercised. Pages is the exception because Pages Functions are not Python Workers.
 3. **Cloudflare resource realism** — the example uses the real primitive semantics, not just an in-memory stand-in.
 
+Remote checks live in `scripts/verify_remote_examples.py`. They are separate from local checks, are skipped unless explicitly enabled, and may consume real Cloudflare resources or paid product usage.
+
 ## Realism levels
 
 | Level | Meaning |
@@ -32,7 +34,7 @@ This document tracks how realistically each Cloudflare primitive example is test
 | Workers Assets | `examples/start/static-assets` | 4 | `uv run python scripts/verify_examples.py examples/start/static-assets` | Starts Worker locally, verifies the static asset is served by Workers Assets instead of Python, and verifies a dynamic Python route under `/api/status`, proving static/dynamic routing separation. | Add cache/header assertions and SPA/not-found routing examples. |
 | Durable Objects | `examples/state-events/durable-object-counter` | 4 | `uv run python scripts/verify_examples.py examples/state-events/durable-object-counter` | Starts Worker locally, resets two named counters, increments them independently, and verifies persisted state plus named-object isolation. | Verify concurrent increments, alarms, and WebSocket hibernation patterns. |
 | Cron Triggers | `examples/state-events/cron-trigger` | 4 | `uv run python scripts/verify_examples.py examples/state-events/cron-trigger` | Starts Worker locally, verifies health route, hits Wrangler's local `/cdn-cgi/handler/scheduled` endpoint, and keeps job logic typed/testable via dataclasses. | Persist an observable side effect and verify it through storage/log capture. |
-| Workers AI | `examples/ai-agents/workers-ai-inference` | 4 | `uv run python scripts/verify_examples.py examples/ai-agents/workers-ai-inference` | Starts Worker locally and verifies typed request/response handling through deterministic `/demo`; real `/` keeps the Workers AI binding path. | Remote/deployed AI verification with an account token and deterministic prompt. |
+| Workers AI | `examples/ai-agents/workers-ai-inference` | 4 local / 5 remote | Local: `uv run python scripts/verify_examples.py examples/ai-agents/workers-ai-inference`; remote: `XAMPLER_RUN_REMOTE=1 XAMPLER_REMOTE_WORKERS_AI=1 CLOUDFLARE_ACCOUNT_ID=... CLOUDFLARE_API_TOKEN=... uv run python scripts/verify_remote_examples.py workers-ai` | Local starts Worker and verifies typed request/response handling through deterministic `/demo`; remote calls the real Workers AI binding route and may incur usage. | Add deployed metadata assertions and CI secret profile. |
 | Workflows | `examples/state-events/workflows-pipeline` | 4 | `uv run python scripts/verify_examples.py examples/state-events/workflows-pipeline` | Starts Worker locally and verifies typed `WorkflowStart`/`WorkflowStatus` through deterministic `/demo/start` and `/demo/status/<id>`; real `/start` keeps Workflow binding path. | Verify real workflow instance creation/status in local or deployed runtime. |
 | Queues | `examples/state-events/queues-producer-consumer` | 4 | `uv run python scripts/verify_examples.py examples/state-events/queues-producer-consumer` | Starts Worker locally, verifies producer enqueue, exercises consumer ack/retry, and verifies deterministic dead-letter decision after retries. | Verify deployed queue delivery and real DLQ routing. |
 | Vectorize | `examples/ai-agents/vectorize-search` | 4 | `uv run python scripts/verify_examples.py examples/ai-agents/vectorize-search` | Starts Worker locally and verifies deterministic vector search with dimension validation, typed matches, metadata, and result ordering; real routes keep Vectorize binding paths. | Remote index verification for `/upsert`, `/query`, and `query_by_id`. |
@@ -62,10 +64,44 @@ This document tracks how realistically each Cloudflare primitive example is test
 | 1 | 0 | — |
 | 0 | 0 | — |
 
+## Remote verifier profiles
+
+These profiles are intentionally skipped by default:
+
+```bash
+uv run python scripts/verify_remote_examples.py --list
+```
+
+To run the Workers AI paid/remote profile:
+
+```bash
+XAMPLER_RUN_REMOTE=1 \
+XAMPLER_REMOTE_WORKERS_AI=1 \
+CLOUDFLARE_ACCOUNT_ID=... \
+CLOUDFLARE_API_TOKEN=... \
+uv run python scripts/verify_remote_examples.py workers-ai
+```
+
+Other remote profiles are scaffolded around deployed URLs so they can be added without changing the local verifier contract:
+
+- `ai-gateway`
+- `vectorize`
+- `browser-rendering`
+- `hyperdrive`
+- `r2-sql`
+- `r2-data-catalog`
+- `images`
+- `analytics-engine`
+- `queues-dlq`
+- `service-bindings`
+- `websockets`
+
+Each requires `XAMPLER_RUN_REMOTE=1`, a profile enable flag, and profile-specific URL or credential environment variables. Missing configuration produces a clean `SKIP`, not a failure.
+
 ## Highest-priority testing work
 
 1. **Promote level-3 examples to level 4**: add richer deterministic local harnesses, not just single endpoint checks.
-2. **Add env-gated remote profiles** for Browser Rendering, AI Gateway, R2 SQL, R2 Data Catalog, Hyperdrive, Agents, and Email Routing.
+2. **Fill out env-gated remote profiles** beyond the Workers AI starter profile, preserving clean skips when credentials/resources are absent.
 3. **Bring Queues, Chatroom WebSockets, and Service Bindings to level 4/5** with true multi-process or WebSocket clients.
 4. **Keep R2 at level 4+**: the JPEG byte-for-byte upload/download fixture is the current gold standard for realistic local verification.
 

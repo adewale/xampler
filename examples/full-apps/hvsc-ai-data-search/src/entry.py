@@ -1,6 +1,7 @@
 from __future__ import annotations
 
 import json
+from collections.abc import AsyncIterator
 from dataclasses import asdict, dataclass
 from pathlib import PurePosixPath
 from typing import Any
@@ -9,6 +10,8 @@ from urllib.parse import parse_qs, urlparse
 import js  # type: ignore[import-not-found]
 from cfboundary.ffi import d1_null, is_js_missing, to_js, to_py
 from workers import Response, WorkerEntrypoint  # type: ignore[import-not-found]
+
+from xampler.streaming import ByteStream, JsonlReader
 
 HVSC_ARCHIVE_KEY = "hvsc/84/raw/HVSC_84-all-of-them.7z"
 HVSC_ARCHIVE_URL = "https://boswme.home.xs4all.nl/HVSC/HVSC_84-all-of-them.7z"
@@ -110,6 +113,22 @@ class R2Artifacts:
         if is_js_missing(obj):
             return None
         return str(await obj.text())
+
+    async def iter_bytes(self, key: str) -> AsyncIterator[bytes]:
+        obj = await self.raw.get(key)
+        if is_js_missing(obj):
+            return
+        reader = obj.body.getReader()
+        while True:
+            chunk = await reader.read()
+            if bool(getattr(chunk, "done", False)):
+                break
+            value = getattr(chunk, "value", None)
+            if value is not None:
+                yield bytes(to_py(value))
+
+    def byte_stream(self, key: str) -> ByteStream:
+        return ByteStream(self.iter_bytes(key))
 
     async def verify_catalog(self, key: str = HVSC_CATALOG_KEY) -> CatalogVerification:
         obj = await self.raw.head(key)
@@ -354,19 +373,18 @@ class HvscPipeline:
         key: str = HVSC_CATALOG_KEY,
         limit: int = 0,
     ) -> dict[str, Any]:
-        text = await self.r2.read_text(key)
-        if text is None:
+        catalog = await self.r2.verify_catalog(key)
+        if not catalog.exists:
             return {"key": key, "tracks": 0, "error": "catalog object not found in R2"}
 
         count = 0
-        for line in text.splitlines():
-            if not line.strip():
-                continue
-            await self.db.save_track(Track(**json.loads(line)))
+        records = JsonlReader(self.r2.byte_stream(key).iter_lines()).records()
+        async for record in records:
+            await self.db.save_track(Track(**record))
             count += 1
             if limit and count >= limit:
                 break
-        return {"key": key, "tracks": count, "limited": bool(limit)}
+        return {"key": key, "tracks": count, "limited": bool(limit), "streamed": True}
 
     async def catalog_status(self) -> dict[str, Any]:
         catalog = await self.verify_catalog()

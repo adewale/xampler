@@ -1,7 +1,8 @@
 {
   "include": [
     "examples/state-events/workflows-pipeline/src",
-    "examples/storage-data/r2-data-catalog/src"
+    "examples/storage-data/r2-data-catalog/src",
+    "examples/ai-agents/workers-ai-inference/src"
   ],
   "exclude": [
     "**/.venv",

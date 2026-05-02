@@ -199,6 +199,15 @@ uv run pytest -q
 
 `uv run pyright` checks the shared `xampler/` package. `uv run pyright -p pyright.examples.json` checks a small allowlist of stable example files. The tiny stubs in `typings/` only teach pyright the minimum shape of runtime modules such as `workers.Response`, `WorkerEntrypoint`, and `js.fetch`; they are not a replacement for Cloudflare runtime types and should stay small.
 
+Remote verifiers are separate because they can use real Cloudflare resources and cost money. They never run by default:
+
+```bash
+uv run python scripts/verify_remote_examples.py --list
+XAMPLER_RUN_REMOTE=1 XAMPLER_REMOTE_WORKERS_AI=1 \
+  CLOUDFLARE_ACCOUNT_ID=... CLOUDFLARE_API_TOKEN=... \
+  uv run python scripts/verify_remote_examples.py workers-ai
+```
+
 Run and verify an example locally with `uv` + `pywrangler`:
 
 ```bash

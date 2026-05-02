@@ -1,12 +1,14 @@
 from __future__ import annotations
 
-import json
-from dataclasses import asdict, dataclass
+from dataclasses import dataclass
 from typing import Any
 from urllib.parse import urlparse
 
 from cfboundary.ffi import to_js, to_py
-from workers import Response, WorkerEntrypoint
+from workers import Response, WorkerEntrypoint  # type: ignore[import-not-found]
+
+from xampler.response import jsonable
+from xampler.types import DemoTransport
 
 
 @dataclass(frozen=True)
@@ -48,12 +50,15 @@ class AIService:
         return TextGenerationResponse.from_workers_ai(result)
 
 
-class DemoAIService:
+class DemoAIService(DemoTransport[TextGenerationRequest, TextGenerationResponse]):
     """Deterministic local substitute for verifier coverage without account AI."""
 
-    async def generate_text(self, request: TextGenerationRequest) -> TextGenerationResponse:
+    async def run(self, request: TextGenerationRequest) -> TextGenerationResponse:
         text = f"Workers AI response for: {request.prompt}"
         return TextGenerationResponse(text=text, raw={"response": text, "demo": True})
+
+    async def generate_text(self, request: TextGenerationRequest) -> TextGenerationResponse:
+        return await self.run(request)
 
 
 class Default(WorkerEntrypoint):
@@ -64,11 +69,7 @@ class Default(WorkerEntrypoint):
 
         if path == "/demo":
             result = await DemoAIService().generate_text(request_data)
-            return json_response(asdict(result))
+            return Response.json(jsonable(result))
 
         result = await AIService(self.env.AI).generate_text(request_data)
-        return json_response(asdict(result))
-
-
-def json_response(data: Any) -> Response:
-    return Response(json.dumps(data), headers={"content-type": "application/json"})
+        return Response.json(jsonable(result))

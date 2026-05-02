@@ -403,11 +403,7 @@ def verify(example: Example, port: int, timeout: float) -> int:
             verify_chatroom_websocket(port)
         return 0
     finally:
-        os.killpg(proc.pid, signal.SIGTERM)
-        try:
-            proc.wait(timeout=10)
-        except subprocess.TimeoutExpired:
-            os.killpg(proc.pid, signal.SIGKILL)
+        terminate_process_group(proc)
 
 
 def verify_chatroom_websocket(port: int) -> None:
@@ -463,13 +459,21 @@ def verify_service_binding_rpc(port: int, timeout: float) -> int:
         return 0
     finally:
         for proc in (ts_proc, py_proc):
-            if proc is None:
-                continue
-            os.killpg(proc.pid, signal.SIGTERM)
-            try:
-                proc.wait(timeout=10)
-            except subprocess.TimeoutExpired:
-                os.killpg(proc.pid, signal.SIGKILL)
+            terminate_process_group(proc)
+
+
+def terminate_process_group(proc: subprocess.Popen[bytes]) -> None:
+    try:
+        os.killpg(proc.pid, signal.SIGTERM)
+    except (ProcessLookupError, PermissionError):
+        return
+    try:
+        proc.wait(timeout=10)
+    except subprocess.TimeoutExpired:
+        try:
+            os.killpg(proc.pid, signal.SIGKILL)
+        except (ProcessLookupError, PermissionError):
+            return
 
 
 def wait_until_ready(port: int, timeout: float, path: str = "/") -> None:
