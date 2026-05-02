@@ -194,8 +194,8 @@ TODO:
 ## Cross-cutting TODOs
 
 - [x] Add `scripts/prepare_remote_examples.py` with profile-specific, idempotent setup.
-- [ ] Prefer `wrangler login`/Wrangler OAuth for resource creation whenever Cloudflare supports it.
-- [ ] Keep secrets out of generated files; temporary `.dev.vars` must be restored or deleted.
-- [ ] Separate three phases: `prepare`, `verify`, and `cleanup`.
-- [ ] Never auto-create paid resources unless `XAMPLER_RUN_REMOTE=1` and a profile-specific prepare flag are set.
-- [ ] Update `docs/runtime/remote-verification.md` once each profile has a real prepare path.
+- [x] Prefer `wrangler login`/Wrangler OAuth for resource creation whenever Cloudflare supports it.
+- [x] Keep secrets out of generated files by using `wrangler secret put` for prepared deployed Workers.
+- [ ] Separate three phases fully: `prepare`, `verify`, and `cleanup`.
+- [x] Never auto-create paid resources unless `XAMPLER_RUN_REMOTE=1` and `XAMPLER_PREPARE_REMOTE=1` are set.
+- [x] Update `docs/runtime/remote-verification.md` for prepared profiles.

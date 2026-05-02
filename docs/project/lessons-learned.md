@@ -295,3 +295,45 @@ The skill-shaped examples are intentionally close to Cloudflare product vocabula
 7. **Local emulation gaps** — Wrangler/Miniflare does not fully emulate every account-backed product. Some bindings are explicitly “not supported” locally and can only be shape-tested or accessed remotely.
 
 Lesson: “works for real” requires more than code. It requires credentials, resources, topology, entitlements, and sometimes deployed infrastructure. Xampler should make the path explicit, skip cleanly when prerequisites are absent, and separate local realism from remote realism.
+
+## 25. Cloudflare examples prefer platform setup over test harness cleverness
+
+Looking at Cloudflare's official `python-workers-examples` clarified an important pattern: their examples are small, direct, and shaped around the platform's normal workflow. They do not try to synthesize every prerequisite in application code. They use Wrangler configuration, bindings, deployment, and `.dev.vars`/secrets where appropriate.
+
+What changed:
+
+- Added `scripts/prepare_remote_examples.py` for explicit, env-gated remote preparation.
+- Prepared Vectorize by creating the real index with Wrangler, deploying the Worker, and verifying `/describe`, `/upsert`, and `/query` against the deployed route.
+- Prepared Queues/DLQ by creating both queues and deploying the producer/consumer Worker.
+- Prepared Service Bindings by deploying the Python provider first and the TypeScript consumer second.
+- Prepared WebSockets by deploying the Durable Object chatroom Worker and running a real two-client broadcast verifier against the deployed route.
+- Prepared R2 SQL and R2 Data Catalog prerequisites by creating/enabling an R2 bucket/catalog and recording discovered state.
+
+Lesson: prefer Cloudflare's normal control plane for prerequisites. Use Wrangler for resources and deployment, Worker bindings when a product has a Python-usable binding, and Worker secrets for runtime REST credentials.
+
+## 26. Bindings beat REST tokens, but not every product has a Python-usable binding path
+
+`wrangler login` is enough for many binding/resource/deploy operations because Wrangler owns the control-plane call. It is not enough when Worker code itself calls a REST API that requires a bearer token.
+
+What changed:
+
+- Vectorize moved from fragile `wrangler dev --remote` verification to a deployed Worker with a real Vectorize binding.
+- Service Bindings and Durable Object WebSockets now verify deployed topology rather than requiring manually supplied URLs.
+- Browser Rendering stayed REST-backed for now because Cloudflare's binding path is Puppeteer/Playwright-oriented and not yet ergonomic from Python Workers.
+- R2 SQL and R2 Data Catalog stayed REST-backed because these examples exercise product REST APIs and token-authenticated Iceberg/R2 SQL endpoints.
+
+Lesson: for every product, ask first: “Is there a Worker binding that Python can use directly?” If yes, prefer binding + Wrangler-managed prep. If no, keep REST credentials explicit and put them into deployed Workers with `wrangler secret put`, not committed config or ad-hoc local state.
+
+## 27. Remote verification should have three phases: prepare, verify, cleanup
+
+Running remote checks safely requires more structure than local smoke tests.
+
+What changed:
+
+- Remote preparation now requires both `XAMPLER_RUN_REMOTE=1` and `XAMPLER_PREPARE_REMOTE=1`.
+- Prepared URLs and discovered identifiers are written to `.xampler-remote-state.json`, which is ignored by Git.
+- Remote verification reads prepared state so users do not need to manually copy deployed URLs for prepared profiles.
+- REST-backed Workers now use deployed Worker secrets instead of temporary local `.dev.vars` for remote verification.
+- The HTTP verifier sends a stable User-Agent after deployed Workers returned Cloudflare `1010` bot-signature errors to default Python urllib requests.
+
+Lesson: local verifier state and remote account state are different things. Remote examples should make lifecycle explicit: prepare resources, verify behavior, and eventually add cleanup for disposable resources.

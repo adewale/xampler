@@ -6,7 +6,7 @@ Last reviewed: 2026-05-02.
 
 Xampler now substantially meets the original direction: it is a GitHub-hosted collection of executable Python Workers examples, covers a broad set of Cloudflare Developer Platform primitives, uses Pythonic wrappers around bindings, distinguishes real verification from demo seams, and includes realistic shared datasets in R2.
 
-The biggest remaining gaps are remote/account-backed verification, wiring direct R2 streams into more end-to-end pipelines, missing Cache/Analytics/Images product examples, and reducing per-example wrapper duplication into shared typed helpers only after APIs stabilize. See [`gaps-explained.md`](gaps-explained.md) for details.
+The biggest remaining gaps are completing token-backed/deployed remote verification, wiring direct R2 streams into more end-to-end pipelines, missing Cache/Analytics/Images product examples, and reducing per-example wrapper duplication into shared typed helpers only after APIs stabilize. See [`gaps-explained.md`](gaps-explained.md) for details.
 
 ## Goal-by-goal assessment
 
@@ -15,7 +15,7 @@ The biggest remaining gaps are remote/account-backed verification, wiring direct
 | GitHub-hosted collection of Pythonic executable Cloudflare Python Workers examples | Met | Examples live under `examples/` and are verified through `scripts/verify_examples.py`. | Keep examples green after reorg. |
 | Cover Cloudflare primitives | Mostly met | Workers, R2, KV, D1, Assets, DO, Cron, AI, Workflows, Queues, Vectorize, Pages, Browser Rendering, Email, AI Gateway, R2 SQL, R2 Data Catalog, Hyperdrive, Agents, streaming composition. | Still missing Analytics Engine, Cache API direct example, Turnstile, Rate Limiting, Stream, Calls, Pub/Sub, Workers for Platforms, Tail Workers. |
 | Pythonic API surface | Met and improving | Service wrappers, resource handles, dataclasses, typed results, `.raw`, shared `xampler.streaming`, `pyright` strict for shared package. | Lift stable wrappers into `xampler/` gradually; add more Protocol/NewType/Annotated typing. |
-| Test realism scoring | Met | `docs/api/primitive-test-realism.md`; README no-lies and demo-seams sections. | More level-4/5 remote checks for account-backed products. |
+| Test realism scoring | Met | `docs/api/primitive-test-realism.md`; README no-lies and demo-seams sections; prepared remote profiles for Vectorize, Queues/DLQ, Service Bindings, WebSockets, Browser Rendering, R2 SQL, and R2 Data Catalog. | More token-backed runs in CI and richer product assertions. |
 | Scoring out of 10/10/5 | Met | README primitive metrics and API/test docs. | Keep synchronized after changes. |
 | Product/primitive-first naming | Superseded | We intentionally moved away from numbering/product-first flat folders to user-journey grouping. | New structure should stabilize before more docs churn. |
 | R2 JPEG upload/download of `BreakingThe35.jpeg` | Met | R2 verifier uploads/streams/byte-compares fixture. | None. |
@@ -45,7 +45,7 @@ The biggest remaining gaps are remote/account-backed verification, wiring direct
 
 ## What is weakest
 
-- Account-backed products often verify only local demo shape, not real Cloudflare remote behavior.
+- Some account-backed products still verify only local demo shape, but prepared remote verification now covers several real deployed paths.
 - Streaming helpers are shared, but most primitive wrappers do not yet consume them.
 - Direct Cloudflare Images product coverage is still missing; binary response is not Images.
 - Folder reorg is clearer but new enough that external links and habits may lag.
@@ -54,14 +54,14 @@ The biggest remaining gaps are remote/account-backed verification, wiring direct
 
 | Gap | Meaning | Next move |
 |---|---|---|
-| Remote verification for account-backed products | Local demo transports prove wrapper shape, not real Browser Rendering/AI Gateway/Vectorize/etc. behavior. | Add `--remote` profiles that require credentials and assert product-specific metadata. |
+| Remote verification for account-backed products | Several profiles now prepare resources/deploy Workers, but AI Gateway, Hyperdrive, Images, Analytics Engine, and richer R2/Queue assertions still need work. | Run token-backed profiles in CI/secrets and add product-specific metadata/assertions. |
 | End-to-end R2 stream pipelines | `/zip-demo` reads the real R2 object body and unzips it, while `/demo` remains a compact sample-text pipeline. | Feed extracted Gutenberg records into the same checkpoint/batch pipeline. |
 | Missing Cache/Analytics/Images examples | Common production products are not represented as first-class examples. | Add direct Cache API, Workers Analytics Engine, and Cloudflare Images examples. |
 | Wrapper duplication | Examples repeat service/dataclass/status/demo patterns locally. | Lift only stable boring helpers into `xampler/`; keep product hero logic local. |
 
 ## Next priorities
 
-1. Add env-gated remote verification profiles for Browser Rendering, AI Gateway, R2 SQL, R2 Data Catalog, Hyperdrive, Workers AI, Vectorize, Agents, Service Bindings, WebSockets, and Queues/DLQ.
+1. Finish and run env-gated remote verification for remaining products: AI Gateway, Hyperdrive, Images, Analytics Engine, richer R2 SQL/Data Catalog, and real Queue DLQ polling.
 2. Add a true non-seekable archive streaming example if a suitable format/library is chosen.
 3. Add direct Cache API and Analytics Engine examples.
 4. Add Cloudflare Images product example separate from binary response.

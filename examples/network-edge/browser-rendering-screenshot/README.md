@@ -1,6 +1,17 @@
 # Browser Rendering 18 — Screenshot
 
-Uses the Browser Rendering REST API from a Python Worker. Set `ACCOUNT_ID` and secret `CF_API_TOKEN`.
+Uses the Browser Rendering REST API from a Python Worker.
+
+Local `/demo` verification is deterministic. For real remote verification, run the prepared deployed flow; the prepare script infers `ACCOUNT_ID` from `wrangler whoami`, stores `ACCOUNT_ID` and `CF_API_TOKEN` as Worker secrets, deploys the Worker, and records the deployed URL.
+
+```bash
+npx --yes wrangler login
+CLOUDFLARE_API_TOKEN=... \
+XAMPLER_RUN_REMOTE=1 XAMPLER_PREPARE_REMOTE=1 \
+  uv run python scripts/prepare_remote_examples.py browser-rendering
+XAMPLER_RUN_REMOTE=1 XAMPLER_REMOTE_BROWSER_RENDERING=1 \
+  uv run python scripts/verify_remote_examples.py browser-rendering
+```
 
 ## Cloudflare docs
 

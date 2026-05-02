@@ -122,7 +122,7 @@ These examples are useful, but they contain a local stand-in, deterministic tran
 | `examples/network-edge/email-worker-router` | HTTP route verifies policy; it is not a real Email Routing event. |
 | `examples/ai-agents/ai-gateway-chat` | `/demo` mimics OpenAI-compatible shape; real gateway call needs credentials. |
 | `examples/storage-data/r2-sql` | `/demo` verifies guarded SQL shaping; real R2 SQL is account-backed. |
-| `examples/storage-data/r2-data-catalog` | `/demo` is a fixture catalog; real Iceberg catalog verification is still needed. |
+| `examples/storage-data/r2-data-catalog` | `/demo` is a fixture catalog; prepared remote verification can call a deployed Worker against a real Iceberg catalog. |
 | `examples/storage-data/hyperdrive-postgres` | `/demo` does not connect to Postgres through Hyperdrive. |
 | `examples/ai-agents/agents-sdk-tools` | Demonstrates Agents-like shape with Durable Objects; not direct Cloudflare Agents SDK interop yet. |
 | `examples/ai-agents/langchain-style-chain` | LCEL-style chain is verified; it is not yet a real LangChain package workload. |

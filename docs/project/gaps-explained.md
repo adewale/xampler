@@ -8,26 +8,20 @@ This explains the main gaps called out in the original-goals audit and what each
 
 Many Cloudflare products cannot be fully exercised by local Miniflare/Wrangler alone. Browser Rendering, AI Gateway, Workers AI, Vectorize, R2 SQL, R2 Data Catalog, Hyperdrive, Email Routing, and Agents-like flows all need real account resources, tokens, indexes, gateways, databases, routes, or paid/product entitlements.
 
-Xampler currently uses two verification layers:
+Xampler now uses three verification layers:
 
 1. **Deterministic local demo transport** — proves our Python API shape, dataclasses, validation, and response handling.
 2. **Real route retained** — keeps the actual Cloudflare binding/API vocabulary in the example.
+3. **Env-gated remote preparation and verification** — `scripts/prepare_remote_examples.py` creates resources/deploys Workers where possible, and `scripts/verify_remote_examples.py` calls the real deployed route.
 
-What is missing is a third layer:
+Prepared profiles now cover Vectorize, Queues/DLQ, Service Bindings, Durable Object WebSockets, Browser Rendering, R2 SQL, and R2 Data Catalog. REST-backed products still require explicit product tokens during preparation, stored with `wrangler secret put` rather than committed files.
 
-```bash
-uv run python scripts/verify_examples.py examples/ai-agents/ai-gateway-chat --remote
-```
+Remaining work:
 
-That remote profile should:
-
-- require explicit environment variables such as `CLOUDFLARE_ACCOUNT_ID` or product-specific tokens;
-- create or target known test resources;
-- call the real deployed/local-remote binding route;
-- assert product-specific metadata, not just HTTP 200;
-- skip cleanly when credentials are absent.
-
-Without this, Tier 1 examples are honest about API shape but not yet full proof that the account-backed Cloudflare product worked end to end.
+- run token-backed profiles in CI/secrets;
+- add product-specific metadata assertions, not just HTTP 200;
+- add cleanup for disposable remote resources;
+- finish AI Gateway, Hyperdrive, Images, Analytics Engine, and richer Queue DLQ polling.
 
 ## Real R2 zip streaming and unzipping
 
@@ -77,9 +71,9 @@ The current `examples/streaming/binary-response` should remain, but it should ne
 | Gap | What changed | Remaining caveat |
 |---|---|---|
 | Direct Cloudflare docs links | Every example README now has a `Cloudflare docs` section with product links. | Keep links current as products move. |
-| Full local Service Bindings verifier | `verify_examples.py examples/network-edge/service-bindings-rpc/ts` starts the Python provider and TypeScript consumer; TS invokes Python via Service Binding. | Still needs deployed verification. |
-| True WebSocket broadcast verifier | Chatroom verifier opens two real WebSocket clients and checks broadcast delivery. | Still needs deployed verification. |
-| Queue retry/DLQ semantics | Queue verifier checks producer, consumer ack/retry, and deterministic dead-letter decision. | Real deployed Queue DLQ routing still needs credentials/resources. |
+| Full local and deployed Service Bindings verifier | `verify_examples.py examples/network-edge/service-bindings-rpc/ts` starts the Python provider and TypeScript consumer locally; remote prep deploys Python provider first, TS consumer second, then verifies deployed Service Binding RPC. | Add richer RPC payload/error compatibility checks. |
+| True local and deployed WebSocket broadcast verifier | Chatroom verifier opens two real WebSocket clients locally; remote prep deploys the Durable Object Worker and verifies broadcast against the deployed URL. | Add hibernation/reconnect persistence checks. |
+| Queue retry/DLQ semantics | Queue verifier checks producer, consumer ack/retry, and deterministic dead-letter decision; remote prep creates queues/DLQ and deploys the Worker. | Real deployed Queue DLQ routing still needs bounded async polling. |
 | Direct R2 object-body unzip | Gutenberg `/zip-demo` reads the R2 object's `ReadableStream`, buffers the streamed zip bytes for Python `zipfile`, and reads the first HTML entry. | Python `zipfile` still needs a seekable buffer for the central directory; a true non-seekable ZIP parser would require a different library/format constraint. |
 
 ## Wrapper duplication not yet lifted into shared typed package

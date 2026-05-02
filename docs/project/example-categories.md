@@ -40,7 +40,7 @@ These examples preserve the real product route or binding shape, but local verif
 
 ## Remote/paid/account-backed examples
 
-These need Cloudflare credentials, deployed URLs, or product entitlements for full realism. See [`../runtime/remote-verification.md`](../runtime/remote-verification.md).
+These need Cloudflare credentials, deployed URLs, product entitlements, or prepared account resources for full realism. See [`../runtime/remote-verification.md`](../runtime/remote-verification.md). Several profiles now have explicit preparation paths in `scripts/prepare_remote_examples.py` so users can rely on `wrangler login` plus product-specific tokens instead of manually copying deployed URLs.
 
 - Workers AI
 - AI Gateway
