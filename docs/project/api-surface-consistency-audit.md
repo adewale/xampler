@@ -62,7 +62,7 @@ Product wrappers such as `R2Bucket`, `D1Database`, and `VectorIndex` should move
 | Drift | Example | Suggested convention |
 |---|---|---|
 | Binding facade sometimes named by product only | `BrowserRendering`, `AIGateway`, `R2DataCatalog` | Either allow product nouns for product clients, or rename consistently to `BrowserRenderingClient`, `AIGatewayClient`, `R2DataCatalogClient`. |
-| `Namespace` is too generic | R2 Data Catalog `Namespace` | Rename to `CatalogNamespace` if extracted/shared. |
+| Generic namespace names | R2 Data Catalog now uses `CatalogNamespace`. | Keep product-qualified names when a concept could appear in multiple products. |
 | Demo/fake words both used | `DemoVectorIndex`, `FakeQueueBatch` | Use `Demo*` for deterministic product stand-ins; reserve `Fake*` for tiny test harness objects that mimic raw platform messages. |
 | State/status names vary | `StreamCheckpoint`, `WorkflowStatus`, `QueueBatchResult`, HVSC ingest state dicts | Create shared `OperationState`, `Checkpoint`, `BatchResult` vocabulary. |
 | Resource handle suffix varies | `KVKey`, `R2ObjectRef`, `TableRef`, `AgentSession` | Prefer `*Ref` for passive handles and `*Session` only for active conversational/stateful sessions. |
@@ -121,7 +121,7 @@ But no example imports it yet. The Gutenberg example duplicates the same classes
 
 | Example | Current state | Recommendation |
 |---|---|---|
-| `streaming/gutenberg-stream-composition` | Has local `ByteStream`, `RecordStream`, `JsonlReader`, `StreamCheckpoint`, `AgentEvent`, `aiter_batches`. Also directly streams R2 ZIP body in `/zip-demo`. | Replace local helper definitions with imports from `xampler.streaming`; add `readable_stream_chunks` to shared module if pyright-safe. |
+| `streaming/gutenberg-stream-composition` | Imports `ByteStream`, `JsonlReader`, `StreamCheckpoint`, `AgentEvent`, `aiter_batches`, and `async_enumerate` from `xampler.streaming`. Still keeps JS R2 `ReadableStream` conversion local because it is Workers-specific. | Add `readable_stream_chunks` to shared module if pyright-safe. |
 | `storage-data/r2-object-storage` | Has R2-specific stream helpers in `r2_pythonic.py`. | Return or adapt to shared `ByteStream` where useful; keep R2-specific body conversion local or in a boundary helper. |
 | `full-apps/hvsc-ai-data-search` | Uses shard-oriented ingestion and D1 progress, not shared stream types. | Model catalog shard reads as `ByteStream -> JsonlReader -> aiter_batches`. |
 | `ai-agents/*` | AI/agent streams are demonstrated as local async iterators in Gutenberg only. | Reuse `AgentEvent` and `stream_text()` vocabulary in AI/Agents examples. |
@@ -129,9 +129,8 @@ But no example imports it yet. The Gutenberg example duplicates the same classes
 
 ## Proposed cleanup order
 
-1. Convert Gutenberg to import from `xampler.streaming`.
-2. Add `xampler.response` and `xampler.status`; replace the most duplicated local status/result helpers.
-3. Introduce shared Protocols only: `BindingService`, `ResourceRef`, `DemoTransport`, `RemoteVerifier`.
-4. Normalize naming in new examples immediately; avoid mass-renaming old examples unless touching them anyway.
-5. Add remote verifier profiles so `Demo*` remains clearly separate from real product verification.
-6. Only then extract stable product wrappers, starting with R2/D1/KV because they have the best local realism.
+1. Add `xampler.response` and `xampler.status`; replace the most duplicated local status/result helpers.
+2. Introduce shared Protocols only: `BindingService`, `ResourceRef`, `DemoTransport`, `RemoteVerifier`.
+3. Normalize naming in new examples immediately; avoid mass-renaming old examples unless touching them anyway.
+4. Add remote verifier profiles so `Demo*` remains clearly separate from real product verification.
+5. Only then extract stable product wrappers, starting with R2/D1/KV because they have the best local realism.

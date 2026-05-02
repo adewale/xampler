@@ -10,13 +10,13 @@ Xampler should lift only stable, boring, repeated concepts into `xampler/`. Prod
 |---|---|
 | `xampler.streaming` | `ByteStream`, `RecordStream`, `JsonlReader`, `aiter_batches`, `StreamCheckpoint`, `AgentEvent`. |
 | `xampler.types` | `JsonObject`, `R2Key`, `QueueName`, `WorkflowId`, `VectorId`, `AgentId`, `SupportsRaw`, `DemoTransport`, `RemoteVerifier`. |
+| `xampler.status` | `OperationState`, `Progress`, `Checkpoint`, generic `BatchResult`. |
+| `xampler.response` | `jsonable()` and `error_payload()` helpers for dataclass/native response payloads. |
 
 ## Best candidates to extract next
 
 | Candidate module | Repeated concepts | Why now |
 |---|---|---|
-| `xampler.response` | JSON/text/error response helpers, content-type constants | Repeated in many `entry.py` files and low risk. |
-| `xampler.status` | `OperationState`, `Progress`, `Checkpoint`, `BatchResult` | HVSC, Workflows, Agents, streaming, queues all use status/progress. |
 | `xampler.testing` | verifier process helpers, remote-skip conventions, env guards | `scripts/verify_examples.py` is growing custom cases. |
 | `xampler.bindings` | tiny base `BindingService`, `ResourceHandle`, `SupportsRaw` | Common wrapper shape without hiding product vocabulary. |
 | `xampler.demo` | `DemoTransport` conventions and route naming | Account-backed products use the same real/demo split. |

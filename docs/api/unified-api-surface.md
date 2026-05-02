@@ -94,7 +94,7 @@ The target is not to type every Cloudflare `JsProxy` directly. The target is to 
 | Email Workers | `IncomingEmail`; `EmailDecision`; inspect/forward/reject policy; HTTP policy fixture; deployed `email()` handler path. |
 | AI Gateway | OpenAI-compatible chat messages; `ChatRequest`; `ChatChoice`; gateway transport; deterministic gateway transport. |
 | R2 SQL | Query object; read-only guard; single-table safety; automatic `LIMIT`; `explain()` route; deterministic SQL client. |
-| R2 Data Catalog | `Namespace`; `TableRef`; Iceberg REST client; namespaces/tables listing; deterministic fixture catalog. |
+| R2 Data Catalog | `CatalogNamespace`; `TableRef`; Iceberg REST client; namespaces/tables listing; deterministic fixture catalog. |
 | Pages | Static `public/`; file-routed Function; `pages dev` verifier; explicit note that Python Pages Functions are not supported today. |
 | HVSC AI/data app | Pipeline service composes R2 + D1 + Queues + AI/vector seams; shard ingestion; progress/status; browser run-all/search flow. |
 | Hyperdrive | `HyperdriveConfig.from_binding`; typed Postgres query/result; production/demo client split; `/config`, `/query`, `/demo`. |

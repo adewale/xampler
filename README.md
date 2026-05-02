@@ -170,7 +170,7 @@ Coverage and Pythonic API scores are out of 10. Test realism is out of 5; see [`
 | Tier 1 — Gold standard | Browser Rendering | 6.2 | 8.2 | 3 |
 | Tier 1 — Gold standard | Email Workers | 6.5 | 8.3 | 3 |
 | Tier 1 — Gold standard | AI Gateway | 6.5 | 8.4 | 3 |
-| Tier 1 — Gold standard | R2 Data Catalog | 6.8 | 8.3 | 3 |
+| Tier 1 — Gold standard | R2 Data Catalog | 6.8 | 8.4 | 3 |
 | Tier 1 — Gold standard | LangChain/package orchestration | 6.2 | 8.1 | 3 |
 | Tier 1 — Gold standard | Hyperdrive | 6.5 | 8.4 | 3 |
 | Tier 1 — Gold standard | Agents SDK | 6.8 | 8.6 | 3 |

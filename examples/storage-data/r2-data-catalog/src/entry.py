@@ -10,7 +10,7 @@ from workers import Response, WorkerEntrypoint  # type: ignore[import-not-found]
 
 
 @dataclass(frozen=True)
-class Namespace:
+class CatalogNamespace:
     name: str
 
 
@@ -44,7 +44,9 @@ class DemoR2DataCatalog:
     raw = None
 
     async def list_namespaces(self) -> dict[str, Any]:
-        return {"namespaces": [asdict(Namespace("hvsc")), asdict(Namespace("examples"))]}
+        return {
+            "namespaces": [asdict(CatalogNamespace("hvsc")), asdict(CatalogNamespace("examples"))]
+        }
 
     async def list_tables(self, namespace: str) -> dict[str, Any]:
         return {"tables": [asdict(TableRef(namespace=namespace, name="tracks"))]}
