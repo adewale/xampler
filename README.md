@@ -50,6 +50,38 @@ examples/full-apps/hvsc-ai-data-search/
 | [`examples/network-edge/outbound-websocket-consumer/`](examples/network-edge/outbound-websocket-consumer) | WebSockets | WebSocket example scaffold and session model direction. |
 | [`examples/state-events/durable-object-chatroom/`](examples/state-events/durable-object-chatroom) | Durable Objects + WebSockets | Chatroom durable object scaffold. |
 
+## Composable API surface
+
+The target shape is small Python wrappers that compose like normal async Python: R2 produces bytes, stream helpers turn bytes into records, batches go to D1/Queues/Vectorize, and AI/Agents/WebSockets can consume or emit typed events.
+
+```python
+archive = await R2Bucket(env.ARTIFACTS).object("gutenberg/100/raw/pg100-h.zip").read_stream()
+
+async for batch in aiter_batches(unzip(archive).entry("pg100-h.html").iter_lines(), size=500):
+    rows = [TextRecord.from_line(line) for line in batch]
+    await D1Database(env.DB).table("gutenberg_lines").insert_many(rows)
+    await QueueService(env.JOBS).send_json({"kind": "indexed-batch", "rows": len(rows)})
+
+summary = await WorkersAI(env.AI).run(Summarize(lines=rows[:20]))
+await AgentSession(env.AGENT, "shakespeare").emit({"type": "summary", "data": summary})
+```
+
+That exact high-level API is still aspirational, but the pieces exist today:
+
+- [`examples/streaming/gutenberg-stream-composition`](examples/streaming/gutenberg-stream-composition) reads a real R2 ZIP body stream, unzips it, models byte/text/line/record streams, batches, checkpoints, AI chunks, agent events, and WebSocket events.
+- [`examples/full-apps/hvsc-ai-data-search`](examples/full-apps/hvsc-ai-data-search) composes R2 datasets, D1 ingestion state/search, Queue-style jobs, Workers AI, and Vectorize seams into an interactive app.
+- [`examples/state-events/queues-producer-consumer`](examples/state-events/queues-producer-consumer), [`examples/ai-agents/agents-sdk-tools`](examples/ai-agents/agents-sdk-tools), and [`examples/network-edge/service-bindings-rpc`](examples/network-edge/service-bindings-rpc) show typed jobs, durable sessions/tools, and cross-worker RPC boundaries.
+
+Reusable wrapper ideas across examples:
+
+1. **Service wrappers** around bindings: `R2Bucket`, `D1Database`, `QueueService`, `VectorIndex`, `AgentSession`.
+2. **Resource handles** for named things: object keys, KV keys, Durable Object refs, workflow instances.
+3. **Dataclasses and typed results** instead of loose dicts at the application boundary.
+4. **Async iteration** for streams, pages, records, batches, events, and WebSockets.
+5. **Checkpoint/progress records** for long-running imports and pipelines.
+6. **Explicit demo/remote seams** so local verification is deterministic without hiding real Cloudflare vocabulary.
+7. **`.raw` escape hatches** and `cfboundary` conversion at the JS/Python boundary only.
+
 ## Best no-lies examples
 
 These are the best starting points because they do something easy to explain and their verifier exercises the real local Cloudflare primitive path rather than a fake/demo transport.
@@ -75,7 +107,7 @@ These examples are useful, but they contain a local stand-in, deterministic tran
 | `examples/ai-agents/vectorize-search` | `/demo` verifies vector API shape locally; real Vectorize needs an account index. |
 | `examples/state-events/workflows-pipeline` | `/demo/*` fakes start/status; real workflow runtime verification is still needed. |
 | `examples/state-events/queues-producer-consumer` | Producer is real locally; consumer delivery uses a deterministic harness. |
-| `examples/network-edge/service-bindings-rpc` | Python provider is verified; full two-worker RPC flow is not one-command verified yet. |
+| `examples/network-edge/service-bindings-rpc` | Local two-worker RPC is verified; deployed cross-worker verification still needs account resources. |
 | `examples/network-edge/outbound-websocket-consumer` | `/demo/status` does not open the public Jetstream socket. |
 | `examples/network-edge/browser-rendering-screenshot` | `/demo` returns screenshot metadata, not a real browser screenshot. |
 | `examples/network-edge/email-worker-router` | HTTP route verifies policy; it is not a real Email Routing event. |
@@ -86,7 +118,7 @@ These examples are useful, but they contain a local stand-in, deterministic tran
 | `examples/ai-agents/agents-sdk-tools` | Demonstrates Agents-like shape with Durable Objects; not direct Cloudflare Agents SDK interop yet. |
 | `examples/ai-agents/langchain-style-chain` | LCEL-style chain is verified; it is not yet a real LangChain package workload. |
 | `examples/full-apps/hvsc-ai-data-search` | R2/D1/Queue paths are real locally, but AI and Vectorize are deterministic seams. |
-| `examples/streaming/gutenberg-stream-composition` | Golden zip is real in R2, but `/demo` currently streams sample text instead of unzipping the archive. |
+| `examples/streaming/gutenberg-stream-composition` | `/zip-demo` streams/unzips the real R2 ZIP; `/demo` still uses compact sample text for the checkpointed pipeline. |
 | `examples/streaming/binary-response` | Binary response is real, but it is not Cloudflare Images product coverage. |
 
 ## Pythonic API principles
@@ -133,7 +165,7 @@ Coverage and Pythonic API scores are out of 10. Test realism is out of 5; see [`
 | Tier 1 — Gold standard | Workflows | 7.2 | 8.5 | 4 |
 | Tier 1 — Gold standard | R2 SQL | 6.5 | 8.4 | 4 |
 | Tier 1 — Gold standard | HVSC AI/data app | 8.6 | 9.0 | 4.5 |
-| Tier 1 — Gold standard | Service Bindings / RPC | 6.8 | 8.3 | 3 |
+| Tier 1 — Gold standard | Service Bindings / RPC | 6.8 | 8.3 | 4 |
 | Tier 1 — Gold standard | Outbound WebSockets | 7.0 | 8.2 | 3 |
 | Tier 1 — Gold standard | Browser Rendering | 6.2 | 8.2 | 3 |
 | Tier 1 — Gold standard | Email Workers | 6.5 | 8.3 | 3 |
@@ -142,7 +174,7 @@ Coverage and Pythonic API scores are out of 10. Test realism is out of 5; see [`
 | Tier 1 — Gold standard | LangChain/package orchestration | 6.2 | 8.1 | 3 |
 | Tier 1 — Gold standard | Hyperdrive | 6.5 | 8.4 | 3 |
 | Tier 1 — Gold standard | Agents SDK | 6.8 | 8.6 | 3 |
-| Tier 1 — Gold standard | Streaming composition | 7.2 | 8.8 | 3 |
+| Tier 1 — Gold standard | Streaming composition | 7.6 | 8.8 | 4 |
 
 ## Requirements
 
