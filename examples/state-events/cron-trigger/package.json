@@ -1,12 +1,1 @@
-{
-  "name": "xampler-examples/state-events/cron-trigger",
-  "private": true,
-  "scripts": {
-    "dev": "uv run pywrangler dev",
-    "deploy": "uv run pywrangler deploy",
-    "start": "uv run pywrangler dev"
-  },
-  "devDependencies": {
-    "wrangler": "latest"
-  }
-}
+{"name":"xampler-state-events-cron-trigger","private":true,"scripts":{"dev":"uv run pywrangler dev","deploy":"uv run pywrangler deploy","start":"uv run pywrangler dev"},"devDependencies":{"wrangler":"latest"}}

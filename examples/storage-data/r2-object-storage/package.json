@@ -1,13 +1,1 @@
-{
-  "name": "xampler-01-r2",
-  "private": true,
-  "scripts": {
-    "dev": "uv run pywrangler dev",
-    "deploy": "uv run pywrangler deploy",
-    "typegen": "wrangler types",
-    "start": "uv run pywrangler dev"
-  },
-  "devDependencies": {
-    "wrangler": "latest"
-  }
-}
+{"name":"xampler-storage-data-r2-object-storage","private":true,"scripts":{"dev":"uv run pywrangler dev","deploy":"uv run pywrangler deploy","typegen":"wrangler types","start":"uv run pywrangler dev"},"devDependencies":{"wrangler":"latest"}}

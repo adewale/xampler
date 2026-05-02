@@ -199,7 +199,7 @@ EXAMPLES = {
             )
         ],
     ),
-    "examples/network-edge/service-bindings-rpc-py": Example(
+    "examples/network-edge/service-bindings-rpc/py": Example(
         "examples/network-edge/service-bindings-rpc/py",
         [Check("/", contains="service binding rpc")],
         needs_setup="Python provider is locally verified; TS client shows cross-worker binding.",

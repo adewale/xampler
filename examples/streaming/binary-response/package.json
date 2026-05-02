@@ -1,12 +1,1 @@
-{
-  "name": "xampler-examples/streaming/binary-response",
-  "private": true,
-  "scripts": {
-    "dev": "uv run pywrangler dev",
-    "deploy": "uv run pywrangler deploy",
-    "start": "uv run pywrangler dev"
-  },
-  "devDependencies": {
-    "wrangler": "latest"
-  }
-}
+{"name":"xampler-streaming-binary-response","private":true,"scripts":{"dev":"uv run pywrangler dev","deploy":"uv run pywrangler deploy","start":"uv run pywrangler dev"},"devDependencies":{"wrangler":"latest"}}

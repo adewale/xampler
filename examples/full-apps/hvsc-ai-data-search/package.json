@@ -1,12 +1,1 @@
-{
-  "name": "xampler-examples/full-apps/hvsc-ai-data-search",
-  "private": true,
-  "scripts": {
-    "dev": "uv run pywrangler dev",
-    "deploy": "uv run pywrangler deploy",
-    "start": "uv run pywrangler dev"
-  },
-  "devDependencies": {
-    "wrangler": "latest"
-  }
-}
+{"name":"xampler-full-apps-hvsc-ai-data-search","private":true,"scripts":{"dev":"uv run pywrangler dev","deploy":"uv run pywrangler deploy","start":"uv run pywrangler dev"},"devDependencies":{"wrangler":"latest"}}

@@ -30,7 +30,7 @@ Scores use [`docs/pythonic-rubric.md`](pythonic-rubric.md). They consider readab
 | `examples/state-events/workflows-pipeline` | Workflows | Runnable with runtime support | verifier listed | 7.75 | Real workflow entrypoint and `/start`/`/status`. Needs verified workflow run and `WorkflowInstance` handle. |
 | `examples/network-edge/htmlrewriter-opengraph` | HTMLRewriter | Runnable | verifier listed | 7.75 | Has metadata model and executable response, but should use real `HTMLRewriter` boundary instead of prebuilt HTML. |
 | `examples/streaming/binary-response` | Binary response | Verified | `uv run python scripts/verify_examples.py examples/streaming/binary-response` | 8.2 | Dependency-free deterministic PNG bytes with content-type and signature verification. |
-| `examples/network-edge/service-bindings-rpc` | Service bindings / RPC | Verified provider | `uv run python scripts/verify_examples.py examples/network-edge/service-bindings-rpc-py` | 8.3 | Python RPC service plus TS client config; provider is locally verified. Needs full two-worker verifier. |
+| `examples/network-edge/service-bindings-rpc` | Service bindings / RPC | Verified provider | `uv run python scripts/verify_examples.py examples/network-edge/service-bindings-rpc/py` | 8.3 | Python RPC service plus TS client config; provider is locally verified. Needs full two-worker verifier. |
 | `examples/network-edge/outbound-websocket-consumer` | Outbound WebSockets + Durable Objects | Verified | `uv run python scripts/verify_examples.py examples/network-edge/outbound-websocket-consumer` | 8.2 | Real outbound WebSocket consumer plus deterministic `/demo/status` verifier. |
 | `examples/state-events/durable-object-chatroom` | Durable Objects + WebSockets | Runnable/browser-verifiable | verifier listed for page | 8.0 | Real chatroom page and DO WebSocket room. Needs automated WebSocket client verification. |
 
@@ -51,7 +51,7 @@ uv run python scripts/verify_examples.py examples/streaming/binary-response
 uv run python scripts/verify_examples.py examples/network-edge/htmlrewriter-opengraph
 uv run python scripts/verify_examples.py examples/state-events/cron-trigger
 uv run python scripts/verify_examples.py examples/ai-agents/langchain-style-chain
-uv run python scripts/verify_examples.py examples/network-edge/service-bindings-rpc-py
+uv run python scripts/verify_examples.py examples/network-edge/service-bindings-rpc/py
 uv run python scripts/verify_examples.py examples/network-edge/outbound-websocket-consumer
 uv run python scripts/verify_examples.py examples/network-edge/browser-rendering-screenshot
 uv run python scripts/verify_examples.py examples/network-edge/email-worker-router

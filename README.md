@@ -111,6 +111,7 @@ See:
 - [`docs/project-structure-and-naming.md`](docs/project-structure-and-naming.md)
 - [`docs/cloudflare-doc-links.md`](docs/cloudflare-doc-links.md)
 - [`docs/wrapper-consistency-audit.md`](docs/wrapper-consistency-audit.md)
+- [`docs/internal-consistency-audit.md`](docs/internal-consistency-audit.md)
 - [`docs/datasets.md`](docs/datasets.md)
 - [`docs/dataset-reuse-coverage.md`](docs/dataset-reuse-coverage.md)
 - [`docs/cloudflare-best-practices-alignment.md`](docs/cloudflare-best-practices-alignment.md)

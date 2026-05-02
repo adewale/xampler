@@ -1,1 +1,1 @@
-{"scripts":{"dev":"uv run pywrangler dev","deploy":"uv run pywrangler deploy"},"devDependencies":{"wrangler":"latest"}}
+{"scripts":{"dev":"uv run pywrangler dev","deploy":"uv run pywrangler deploy"},"devDependencies":{"wrangler":"latest"},"name":"xampler-streaming-gutenberg-stream-composition"}
