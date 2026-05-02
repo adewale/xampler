@@ -37,7 +37,7 @@ Then use the numbered buttons in the page:
 1. Verify the full archive object in R2.
 2. Ingest release metadata.
 3. Verify a generated `tracks.jsonl` catalog object in R2.
-4. Pull a small catalog JSONL from R2 into D1, if you uploaded one.
+4. Import all catalog shards from R2 into D1 while the browser shows progress.
 5. Search the D1 catalog for arbitrary terms such as `jeroen`, `maniacs`, `hubbard`, or any composer/file present in the imported catalog.
 
 You can also open <http://localhost:9595/search?q=sid> or <http://localhost:9595/tracks?q=jeroen>.

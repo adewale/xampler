@@ -19,6 +19,7 @@ def main() -> int:
     parser.add_argument("--unpacked", type=Path, default=UNPACKED)
     parser.add_argument("--catalog", type=Path, default=CATALOG)
     parser.add_argument("--limit", type=int, default=0, help="0 means no limit")
+    parser.add_argument("--shard-size", type=int, default=500)
     args = parser.parse_args()
 
     args.catalog.mkdir(parents=True, exist_ok=True)
@@ -32,6 +33,7 @@ def main() -> int:
     )
     sample = [track for track in tracks if "jeroen" in track["search_text"].lower()][:100]
     write_jsonl(args.catalog / "sample-jeroen.jsonl", sample)
+    write_shards(args.catalog / "shards", tracks, args.shard_size)
     print(f"wrote {len(tracks):,} tracks to {args.catalog}")
     return 0
 
@@ -62,9 +64,18 @@ def infer_composer(rel: str) -> str:
 
 
 def write_jsonl(path: Path, rows: list[dict]) -> None:
+    path.parent.mkdir(parents=True, exist_ok=True)
     with path.open("w", encoding="utf-8") as out:
         for row in rows:
             out.write(json.dumps(row, ensure_ascii=False) + "\n")
+
+
+def write_shards(path: Path, rows: list[dict], shard_size: int) -> None:
+    path.mkdir(parents=True, exist_ok=True)
+    for old in path.glob("*.jsonl"):
+        old.unlink()
+    for index, start in enumerate(range(0, len(rows), shard_size)):
+        write_jsonl(path / f"{index:04d}.jsonl", rows[start : start + shard_size])
 
 
 if __name__ == "__main__":

@@ -14,6 +14,7 @@ HVSC_ARCHIVE_KEY = "hvsc/84/raw/HVSC_84-all-of-them.7z"
 HVSC_ARCHIVE_URL = "https://boswme.home.xs4all.nl/HVSC/HVSC_84-all-of-them.7z"
 HVSC_ARCHIVE_SIZE = 83_748_140
 HVSC_CATALOG_KEY = "hvsc/84/catalog/tracks.jsonl"
+HVSC_SHARDS_PREFIX = "hvsc/84/catalog/shards/"
 
 HVSC_VERSION_84 = {
     "version": 84,
@@ -115,6 +116,10 @@ class R2Artifacts:
         exists = not is_js_missing(obj)
         return CatalogVerification(key=key, size=int(obj.size) if exists else 0, exists=exists)
 
+    async def list_keys(self, prefix: str) -> list[str]:
+        data = to_py(await self.raw.list(to_js({"prefix": prefix})))
+        return [str(item["key"]) for item in data.get("objects", [])]
+
     async def stream_from_url(self, *, url: str, key: str) -> ArchiveVerification:
         response = await js.fetch(url)
         expected_size = int(response.headers.get("content-length") or 0)
@@ -178,6 +183,44 @@ class D1Database:
             track.composer,
             track.search_text,
         )
+
+    async def save_ingest_state(
+        self,
+        *,
+        status: str,
+        shard_keys: list[str],
+        completed_shards: int = 0,
+        imported_rows: int = 0,
+    ) -> None:
+        await self.execute(
+            "INSERT OR REPLACE INTO ingest_state "
+            "(dataset, status, total_shards, completed_shards, imported_rows, shard_keys) "
+            "VALUES ('hvsc-84', ?, ?, ?, ?, ?)",
+            status,
+            len(shard_keys),
+            completed_shards,
+            imported_rows,
+            json.dumps(shard_keys),
+        )
+
+    async def get_ingest_state(self) -> dict[str, Any]:
+        rows = await self.execute("SELECT * FROM ingest_state WHERE dataset = 'hvsc-84'")
+        if not rows:
+            return {
+                "status": "not_started",
+                "total_shards": 0,
+                "completed_shards": 0,
+                "imported_rows": 0,
+                "shard_keys": [],
+            }
+        row = rows[0]
+        return {
+            "status": row["status"],
+            "total_shards": int(row["total_shards"]),
+            "completed_shards": int(row["completed_shards"]),
+            "imported_rows": int(row["imported_rows"]),
+            "shard_keys": json.loads(str(row["shard_keys"])),
+        }
 
     async def search_tracks(self, query: str) -> list[Track]:
         rows = await self.execute(
@@ -262,6 +305,40 @@ class HvscPipeline:
     async def verify_catalog(self, key: str = HVSC_CATALOG_KEY) -> CatalogVerification:
         return await self.r2.verify_catalog(key)
 
+    async def start_ingest(self, prefix: str = HVSC_SHARDS_PREFIX) -> dict[str, Any]:
+        shard_keys = await self.r2.list_keys(prefix)
+        shard_keys = sorted(key for key in shard_keys if key.endswith(".jsonl"))
+        if not shard_keys:
+            return {"status": "error", "error": f"no shards found at {prefix}"}
+        await self.db.save_ingest_state(status="running", shard_keys=shard_keys)
+        return await self.db.get_ingest_state()
+
+    async def ingest_next_shard(self) -> dict[str, Any]:
+        state = await self.db.get_ingest_state()
+        keys = list(state["shard_keys"])
+        completed = int(state["completed_shards"])
+        if completed >= len(keys):
+            await self.db.save_ingest_state(
+                status="complete",
+                shard_keys=keys,
+                completed_shards=completed,
+                imported_rows=int(state["imported_rows"]),
+            )
+            return await self.db.get_ingest_state()
+        result = await self.ingest_catalog_from_r2(key=keys[completed])
+        imported_rows = int(state["imported_rows"]) + int(result.get("tracks", 0))
+        status = "complete" if completed + 1 >= len(keys) else "running"
+        await self.db.save_ingest_state(
+            status=status,
+            shard_keys=keys,
+            completed_shards=completed + 1,
+            imported_rows=imported_rows,
+        )
+        return await self.db.get_ingest_state()
+
+    async def ingest_status(self) -> dict[str, Any]:
+        return await self.db.get_ingest_state()
+
     async def ingest_catalog_from_r2(
         self,
         *,
@@ -321,6 +398,16 @@ class Default(WorkerEntrypoint):
         if path == "/ingest-fixture":
             release_result = await pipeline.ingest(HvscRelease.from_api(HVSC_VERSION_84))
             return Response.json({"release": release_result})
+
+        if path == "/ingest/start":
+            prefix = query.get("prefix", [HVSC_SHARDS_PREFIX])[0]
+            return Response.json(await pipeline.start_ingest(prefix))
+
+        if path == "/ingest/next":
+            return Response.json(await pipeline.ingest_next_shard())
+
+        if path == "/ingest/status":
+            return Response.json(await pipeline.ingest_status())
 
         if path == "/catalog/status":
             return Response.json(await pipeline.catalog_status())
@@ -410,7 +497,7 @@ def index_html() -> str:
       <button id="step3" onclick="catalogVerify()">3. Verify catalog JSONL in R2</button>
     </li>
     <li>
-      <button id="step4" onclick="catalogIngest()">4. Pull catalog JSONL into D1</button>
+      <button id="step4" onclick="shardedIngest()">4. Import all R2 catalog shards into D1</button>
     </li>
     <li>
       <input id="q" value="maniacs" aria-label="search query">
@@ -489,8 +576,18 @@ def index_html() -> str:
     async function catalogIngest() {
       document.getElementById('output').textContent = 'Pulling catalog JSONL from R2 into D1...';
       const path = '/catalog/ingest-r2?key=' + catalogKey();
-      const params = '&limit=' + limit() + '&fallback=sample';
+      const params = '&limit=' + limit();
       return await show(await fetch(path + params, { method: 'POST' }));
+    }
+    async function shardedIngest() {
+      let state = await show(await fetch('/ingest/start', { method: 'POST' }));
+      if (state.error) throw new Error(state.error);
+      while (state.status !== 'complete') {
+        const msg = 'Importing shard ' + state.completed_shards + ' of ' + state.total_shards;
+        document.getElementById('output').textContent = msg;
+        state = await show(await fetch('/ingest/next', { method: 'POST' }));
+      }
+      return state;
     }
     async function search(q) {
       return await show(await fetch('/tracks?q=' + encodeURIComponent(q)));

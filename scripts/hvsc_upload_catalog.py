@@ -18,8 +18,8 @@ def main() -> int:
     parser.add_argument("--catalog", type=Path, default=CATALOG)
     parser.add_argument("--prefix", default="hvsc/84/catalog")
     args = parser.parse_args()
-    for path in sorted(args.catalog.glob("*.jsonl")):
-        key = f"{args.prefix}/{path.name}"
+    for path in sorted(args.catalog.rglob("*.jsonl")):
+        key = f"{args.prefix}/{path.relative_to(args.catalog).as_posix()}"
         subprocess.run(
             [
                 "uv",
