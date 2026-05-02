@@ -183,7 +183,7 @@ class Default(WorkerEntrypoint):
         pipeline = HvscPipeline(self.env)
 
         if path == "/":
-            return Response("HVSC AI/data pipeline: POST /ingest-fixture then GET /search?q=sid\n")
+            return Response(index_html(), headers={"content-type": "text/html; charset=utf-8"})
 
         if path == "/ingest-fixture":
             return Response.json(await pipeline.ingest(HvscRelease.from_api(HVSC_VERSION_84)))
@@ -199,3 +199,59 @@ class Default(WorkerEntrypoint):
         for message in batch.messages:
             print(f"indexed HVSC job {to_py(message.body)}")
             message.ack()
+
+
+def index_html() -> str:
+    return """<!doctype html>
+<html lang="en">
+<head>
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1">
+  <title>HVSC AI/Data Pipeline</title>
+  <style>
+    body { font-family: system-ui, sans-serif; max-width: 820px; }
+    body { margin: 3rem auto; padding: 0 1rem; }
+    button { margin: .25rem; padding: .7rem 1rem; border: 0; }
+    button { border-radius: .5rem; background: #2563eb; color: white; cursor: pointer; }
+    button.secondary { background: #475569; }
+    input { padding: .65rem; min-width: 14rem; }
+    pre { background: #0f172a; color: #e2e8f0; padding: 1rem; }
+    pre { border-radius: .5rem; overflow: auto; }
+  </style>
+</head>
+<body>
+  <h1>HVSC AI/data pipeline</h1>
+  <p>Use real HVSC release metadata to exercise R2, D1, Queues, and AI/Vectorize seams.</p>
+
+  <p>
+    <button onclick="ingest()">1. Ingest HVSC fixture</button>
+    <button class="secondary" onclick="search('sid')">Search SID</button>
+    <button class="secondary" onclick="search('commodore')">Search Commodore</button>
+    <button class="secondary" onclick="search('hvsc')">Search HVSC</button>
+  </p>
+
+  <p>
+    <input id="q" value="sid" aria-label="search query">
+    <button onclick="search(document.getElementById('q').value)">Search custom query</button>
+  </p>
+
+  <pre id="output">Click “Ingest HVSC fixture”, then search.</pre>
+
+  <script>
+    async function show(response) {
+      const text = await response.text();
+      try {
+        document.getElementById('output').textContent = JSON.stringify(JSON.parse(text), null, 2);
+      } catch {
+        document.getElementById('output').textContent = text;
+      }
+    }
+    async function ingest() {
+      await show(await fetch('/ingest-fixture', { method: 'POST' }));
+    }
+    async function search(q) {
+      await show(await fetch('/search?q=' + encodeURIComponent(q)));
+    }
+  </script>
+</body>
+</html>"""
