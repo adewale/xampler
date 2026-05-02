@@ -54,19 +54,32 @@ def verify_size(path: Path) -> None:
 
 def extract(archive: Path, destination: Path) -> None:
     destination.mkdir(parents=True, exist_ok=True)
+
+    # HVSC's 7z archive currently uses BCJ2. Python's py7zr can read many 7z
+    # archives but does not support BCJ2, so prefer the native 7-Zip binary when
+    # it is available and only use py7zr as a fallback for compatible archives.
+    seven_zip = shutil.which("7z") or shutil.which("7zz")
+    if seven_zip:
+        subprocess.run([seven_zip, "x", str(archive), f"-o{destination}", "-y"], check=True)
+        return
+
     try:
         import py7zr  # type: ignore[import-not-found]
 
         with py7zr.SevenZipFile(archive) as zf:
             zf.extractall(destination)
         return
-    except ImportError:
-        pass
-
-    seven_zip = shutil.which("7z") or shutil.which("7zz")
-    if not seven_zip:
-        raise SystemExit("Install py7zr or 7z/7zz to extract the archive")
-    subprocess.run([seven_zip, "x", str(archive), f"-o{destination}", "-y"], check=True)
+    except ImportError as exc:
+        raise SystemExit(
+            "Install 7-Zip to extract HVSC: `brew install p7zip` "
+            "or install a `7zz` binary on PATH."
+        ) from exc
+    except Exception as exc:
+        raise SystemExit(
+            "py7zr could not extract this archive, likely because HVSC uses "
+            "BCJ2 compression. Install native 7-Zip with `brew install p7zip` "
+            "and rerun the pipeline."
+        ) from exc
 
 
 if __name__ == "__main__":
