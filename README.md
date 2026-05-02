@@ -102,6 +102,7 @@ See:
 - [`docs/top-10-improvement-plan.md`](docs/top-10-improvement-plan.md)
 - [`docs/primitive-test-realism.md`](docs/primitive-test-realism.md)
 - [`docs/pythonic-tooling.md`](docs/pythonic-tooling.md)
+- [`docs/python-workers-runtime-guidance.md`](docs/python-workers-runtime-guidance.md)
 - [`docs/streaming-api.md`](docs/streaming-api.md)
 - [`docs/native-python-workers-comparison.md`](docs/native-python-workers-comparison.md)
 - [`docs/project-structure-and-naming.md`](docs/project-structure-and-naming.md)

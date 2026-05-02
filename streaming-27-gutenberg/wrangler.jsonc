@@ -3,7 +3,8 @@
   "name": "xampler-streaming-27-gutenberg",
   "main": "src/entry.py",
   "compatibility_date": "2026-05-01",
-  "compatibility_flags": ["python_workers"],
+  "compatibility_flags": ["python_workers", "python_dedicated_snapshot"],
+  "limits": { "cpu_ms": 60000 },
   "r2_buckets": [
     { "binding": "ARTIFACTS", "bucket_name": "xampler-datasets", "remote": true }
   ],
