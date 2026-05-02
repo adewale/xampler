@@ -441,7 +441,13 @@ class Default(WorkerEntrypoint):
             term = query.get("q", ["jeroen"])[0]
             tracks = [asdict(track) for track in await pipeline.search_tracks(term)]
             status = await pipeline.catalog_status()
-            response = {"query": term, "tracks": tracks, "status": status}
+            response = {
+                "query": term,
+                "count": len(tracks),
+                "tracks": tracks,
+                "status": status,
+                "ready": int(status["d1_tracks"]) > 0,
+            }
             if not tracks:
                 response["hint"] = (
                     "No D1 track rows matched. Click the browser run-all button or call "
@@ -489,6 +495,12 @@ def index_html() -> str:
     .progress { background: #e2e8f0; border-radius: 999px; overflow: hidden; height: 1rem; }
     .bar { background: #16a34a; height: 100%; width: 0%; transition: width .2s; }
     #progressText { margin: .5rem 0 1rem; color: #334155; }
+    #results { margin: 1rem 0; }
+    .result { border: 1px solid #cbd5e1; border-radius: .6rem; padding: .8rem; }
+    .result + .result { margin-top: .6rem; }
+    .result h3 { margin: 0 0 .25rem; font-size: 1rem; }
+    .result p { margin: .2rem 0; color: #334155; }
+    .muted { color: #64748b; }
   </style>
 </head>
 <body>
@@ -513,10 +525,10 @@ def index_html() -> str:
       <button id="step4" onclick="shardedIngest()">4. Import all R2 catalog shards into D1</button>
     </li>
     <li>
-      <input id="q" value="maniacs" aria-label="search query">
-      <button id="step5" onclick="search(document.getElementById('q').value)">
-        5. Search D1 catalog
-      </button>
+      <form id="searchForm">
+        <input id="q" value="maniacs" aria-label="search query" autocomplete="off">
+        <button id="step5" type="submit">5. Search D1 catalog</button>
+      </form>
     </li>
   </ol>
 
@@ -539,6 +551,9 @@ def index_html() -> str:
 
   <div class="progress"><div id="progressBar" class="bar"></div></div>
   <p id="progressText">0% — not started</p>
+  <div id="results" aria-live="polite">
+    <p class="muted">Search results will appear here after the catalog is imported.</p>
+  </div>
   <pre id="output">Start at button 1. Use button 4 after uploading catalog JSONL to R2.</pre>
 
   <script>
@@ -561,7 +576,9 @@ def index_html() -> str:
       try { data = JSON.parse(text); } catch {}
       if (!response.ok) {
         const message = typeof data === 'string' ? data : JSON.stringify(data, null, 2);
-        throw new Error(message);
+        const error = new Error(message);
+        error.status = response.status;
+        throw error;
       }
       return data;
     }
@@ -618,6 +635,21 @@ def index_html() -> str:
       const params = '&limit=' + limit();
       return await show(await fetch(path + params, { method: 'POST' }));
     }
+    async function ingestNextWithRetry() {
+      for (let attempt = 0; attempt < 5; attempt++) {
+        try {
+          return await readResponse(await fetch('/ingest/next', { method: 'POST' }));
+        } catch (error) {
+          if (error.status === 503 || String(error).toLowerCase().includes('restart')) {
+            output('Worker restarted mid-import; retrying shard...');
+            await new Promise(resolve => setTimeout(resolve, 1000));
+            continue;
+          }
+          throw error;
+        }
+      }
+      throw new Error('Worker kept restarting during shard import. Try again.');
+    }
     async function shardedIngest() {
       let state = await show(await fetch('/ingest/start', { method: 'POST' }), {
         compactIngest: true,
@@ -631,15 +663,62 @@ def index_html() -> str:
           output('Importing shard ' + next + ' of ' + state.total_shards + '...');
           lastRenderedShard = state.completed_shards;
         }
-        state = await readResponse(await fetch('/ingest/next', { method: 'POST' }));
+        state = await ingestNextWithRetry();
         setProgress(state.completed_shards, state.total_shards, state.imported_rows);
         await new Promise(resolve => setTimeout(resolve, 25));
       }
       output(JSON.stringify(compactIngestState(state), null, 2));
       return state;
     }
+    function setResults(html) {
+      document.getElementById('results').innerHTML = html;
+    }
+    function escapeHtml(value) {
+      return String(value ?? '').replace(/[&<>"']/g, char => ({
+        '&': '&amp;', '<': '&lt;', '>': '&gt;', '"': '&quot;', "'": '&#39;'
+      }[char]));
+    }
+    function renderSearch(data) {
+      const query = escapeHtml(data.query || '');
+      const status = data.status || {};
+      if (!data.ready) {
+        setResults('<p class="muted">Preparing the catalog before searching…</p>');
+        return;
+      }
+      if (!data.tracks || data.tracks.length === 0) {
+        setResults('<p>No HVSC tracks matched <strong>' + query + '</strong>.</p>');
+        return;
+      }
+      const rows = data.tracks.map(track => (
+        '<article class="result">' +
+          '<h3>' + escapeHtml(track.title || track.filename) + '</h3>' +
+          '<p><strong>File:</strong> ' + escapeHtml(track.path) + '</p>' +
+          (track.composer ? '<p><strong>Composer:</strong> ' +
+            escapeHtml(track.composer) + '</p>' : '') +
+        '</article>'
+      )).join('');
+      setResults(
+        '<p>Showing ' + data.tracks.length + ' of ' + status.d1_tracks +
+        ' imported tracks matching <strong>' + query + '</strong>.</p>' + rows
+      );
+    }
     async function search(q) {
-      return await show(await fetch('/tracks?q=' + encodeURIComponent(q)));
+      const term = (q || '').trim();
+      if (!term) {
+        setResults('<p class="muted">Enter a search term.</p>');
+        return null;
+      }
+      let data = await show(await fetch('/tracks?q=' + encodeURIComponent(term)));
+      if (!data.ready) {
+        setResults(
+          '<p class="muted">Preparing the full HVSC catalog in local D1. ' +
+          'Search will run automatically when import finishes.</p>'
+        );
+        await step('step4', shardedIngest);
+        data = await show(await fetch('/tracks?q=' + encodeURIComponent(term)));
+      }
+      renderSearch(data);
+      return data;
     }
     async function archiveIngest() {
       document.getElementById('output').textContent = 'Streaming ~80 MiB archive to local R2...';
@@ -648,6 +727,23 @@ def index_html() -> str:
     async function archiveVerify() {
       return await show(await fetch('/archive/verify'));
     }
+    document.getElementById('searchForm').addEventListener('submit', event => {
+      event.preventDefault();
+      step('step5', () => search(document.getElementById('q').value));
+    });
+    async function refreshStatus() {
+      try {
+        const state = await readResponse(await fetch('/ingest/status'));
+        setProgress(state.completed_shards, state.total_shards, state.imported_rows);
+        if (state.status === 'complete') {
+          setResults(
+            '<p class="muted">Catalog ready. Try searches like jeroen, maniacs, ' +
+            'hubbard, or galway.</p>'
+          );
+        }
+      } catch {}
+    }
+    refreshStatus();
     async function runAll() {
       const runButton = document.getElementById('runAll');
       runButton.disabled = true;
