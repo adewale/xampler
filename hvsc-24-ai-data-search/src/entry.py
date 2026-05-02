@@ -622,7 +622,7 @@ def index_html() -> str:
         await step('step1', archiveVerify);
         await step('step2', ingest);
         await step('step3', catalogVerify);
-        await step('step4', catalogIngest);
+        await step('step4', shardedIngest);
         await step('step5', () => search(document.getElementById('q').value || 'maniacs'));
         runButton.className = 'done';
         runButton.textContent = '✓ Dataset ready — arbitrary D1 catalog search is enabled';
