@@ -126,8 +126,8 @@ wheels = [
 
 [[package]]
 name = "cfboundary"
-version = "0.1.10"
-source = { git = "https://github.com/adewale/cfboundary?rev=v0.1.10#6defd2046f22e9ae37129ad5e7af2f92d9d4cae9" }
+version = "0.1.11"
+source = { git = "https://github.com/adewale/cfboundary?rev=v0.1.11#5eff700bdc6022484674fe8d33dbe385a4c38e3e" }
 
 [[package]]
 name = "cffi"
@@ -580,7 +580,7 @@ dev = [
 ]
 
 [package.metadata]
-requires-dist = [{ name = "cfboundary", git = "https://github.com/adewale/cfboundary?rev=v0.1.10" }]
+requires-dist = [{ name = "cfboundary", git = "https://github.com/adewale/cfboundary?rev=v0.1.11" }]
 
 [package.metadata.requires-dev]
 dev = [
