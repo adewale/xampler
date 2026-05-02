@@ -6,7 +6,7 @@ Last reviewed: 2026-05-02.
 
 Xampler now substantially meets the original direction: it is a GitHub-hosted collection of executable Python Workers examples, covers a broad set of Cloudflare Developer Platform primitives, uses Pythonic wrappers around bindings, distinguishes real verification from demo seams, and includes realistic shared datasets in R2.
 
-The biggest remaining gaps are remote/account-backed verification, direct real streaming from large R2 objects into pipelines, and reducing per-example wrapper duplication into shared typed helpers only after APIs stabilize.
+The biggest remaining gaps are remote/account-backed verification, direct real streaming from large R2 objects into pipelines, missing Cache/Analytics/Images product examples, and reducing per-example wrapper duplication into shared typed helpers only after APIs stabilize. See [`gaps-explained.md`](gaps-explained.md) for details.
 
 ## Goal-by-goal assessment
 
@@ -49,6 +49,15 @@ The biggest remaining gaps are remote/account-backed verification, direct real s
 - Streaming helpers are shared, but most primitive wrappers do not yet consume them.
 - Direct Cloudflare Images product coverage is still missing; binary response is not Images.
 - Folder reorg is clearer but new enough that external links and habits may lag.
+
+## Remaining gaps explained briefly
+
+| Gap | Meaning | Next move |
+|---|---|---|
+| Remote verification for account-backed products | Local demo transports prove wrapper shape, not real Browser Rendering/AI Gateway/Vectorize/etc. behavior. | Add `--remote` profiles that require credentials and assert product-specific metadata. |
+| Real R2 zip streaming/unzipping | Gutenberg zip is real in R2, but the demo pipeline currently streams sample text. | Stream actual R2 object chunks, test bounded unzip strategies, checkpoint extracted records. |
+| Missing Cache/Analytics/Images examples | Common production products are not represented as first-class examples. | Add direct Cache API, Workers Analytics Engine, and Cloudflare Images examples. |
+| Wrapper duplication | Examples repeat service/dataclass/status/demo patterns locally. | Lift only stable boring helpers into `xampler/`; keep product hero logic local. |
 
 ## Next priorities
 

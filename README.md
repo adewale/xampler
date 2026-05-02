@@ -123,6 +123,7 @@ See:
 - [`docs/index.md`](docs/index.md)
 - [`docs/project/composite-example-backlog.md`](docs/project/composite-example-backlog.md)
 - [`docs/project/original-goals-audit.md`](docs/project/original-goals-audit.md)
+- [`docs/project/gaps-explained.md`](docs/project/gaps-explained.md)
 
 The short version:
 

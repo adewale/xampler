@@ -32,3 +32,4 @@ Long-term docs are grouped by purpose. Older planning snapshots live in [`archiv
 - [`project/wrapper-consistency-audit.md`](project/wrapper-consistency-audit.md)
 - [`project/composite-example-backlog.md`](project/composite-example-backlog.md)
 - [`project/original-goals-audit.md`](project/original-goals-audit.md)
+- [`project/gaps-explained.md`](project/gaps-explained.md)

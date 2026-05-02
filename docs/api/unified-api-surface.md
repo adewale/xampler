@@ -40,38 +40,66 @@ progress = await pipeline.ingest_status()
 raw = r2.raw
 ```
 
-## Primitive hero surfaces
+## Reused concepts
 
-| Primitive | Smallest hero surface |
+The API surface is deliberately small. A few concepts repeat across products so examples compose instead of becoming unrelated wrappers.
+
+| Concept | Reused as | Why it composes |
+|---|---|---|
+| Service wrapper | `R2Bucket`, `D1Database`, `QueueService`, `AIService`, `VectorIndex`, `HyperdrivePostgres` | One object owns the binding/client and boundary conversion. |
+| Resource handle | `bucket.object(key)`, `kv.key(name)`, `workflow.instance(id)`, `room("name")` | Handles are cheap, passable references with domain verbs. |
+| Dataclass input | `QueueJob`, `VectorQuery`, `TextGenerationRequest`, `PostgresQuery`, `AgentMessage` | A typed result from one primitive can become another primitive's input. |
+| Dataclass result/status | `VectorQueryResult`, `WorkflowStatus`, `StreamCheckpoint`, `AgentRunResult` | Long-running and composed flows can report state without raw dictionaries. |
+| Async iteration | `iter_objects`, `iter_keys`, `iter_lines`, `AgentSession.stream()` | Streams and pagination use Python's native `async for` shape. |
+| Context manager | R2 multipart upload | Lifecycle-bound work uses `async with` for cleanup/abort semantics. |
+| Demo transport | `DemoAIService`, `DemoAIGateway`, `DemoPostgres`, `DemoAgent` | Account-backed APIs are locally verifiable without pretending the remote service ran. |
+| `.raw` escape hatch | `service.raw`, `handle.raw`, `session.raw` | New Cloudflare APIs remain reachable before wrappers catch up. |
+
+## Type-system leverage
+
+Xampler uses modern Python typing to make examples teachable and checkable:
+
+- `dataclass(frozen=True)` for immutable request/result payloads.
+- `Protocol` for swappable real/demo transports and Runnable-style chains.
+- `TypeVar` and generic helpers in `xampler.streaming` for typed streams and batches.
+- `Literal` for finite states and event kinds such as `"running"`, `"complete"`, `"token"`, `"tool_call"`.
+- `Any` is kept at the JavaScript/Cloudflare boundary; business logic should convert to typed Python values quickly.
+- `pyright` runs in strict mode for the shared `xampler/` package so reusable helpers do not silently drift.
+
+The target is not to type every Cloudflare `JsProxy` directly. The target is to contain `Any` at the boundary, convert with `cfboundary`, and expose typed Python values from wrappers.
+
+## Expanded primitive hero surfaces
+
+| Primitive | Hero features surfaced in Xampler |
 |---|---|
-| Workers | `return json_response({"ok": True})` — tiny request/response entrypoint. |
-| R2 | `async with bucket.multipart(key) as upload: ...`; `bucket.object(key).read_bytes()`; `async for obj in bucket.iter_objects(prefix)`. |
-| KV | `kv.key(name).write_json(value)`; `await kv.key(name).read_json()`; `async for key in kv.iter_keys(prefix)`. |
-| D1 | `db.statement(sql).bind(...).one_as(Model)`; indexed query plans; D1 null conversion at boundary. |
-| FastAPI / ASGI | Normal `FastAPI()` routes behind a Worker `fetch()` adapter. |
-| LangChain/package orchestration | `PromptChain(PromptTemplate(), DemoModel()).invoke(PromptInput(...))` behind `PromptService`. |
-| Workers Assets | No Python for static files; Python only handles dynamic `/api/*`. |
-| Durable Objects | `namespace.named("counter").increment()` routes to one stateful object. |
-| Cron Triggers | `ScheduledJob.run(ScheduledEventInfo(...)) -> ScheduledRunResult`. |
-| Workers AI | `ai.generate_text(TextGenerationRequest(...)) -> TextGenerationResponse`. |
-| Workflows | `workflow.start(payload) -> WorkflowInstance`; `await instance.status()`. |
-| HTMLRewriter | `OpenGraphRewriter(OpenGraphPage(...)).transform(html)`. |
-| Binary responses | Worker returns deterministic PNG bytes with content type and binary verification. |
-| Service Bindings / RPC | `await env.CODE.highlight_code(code)` exposed as a typed Python method. |
-| Outbound WebSockets | Durable Object owns socket; `GET /demo/status` proves session/status shape. |
-| Durable Objects + WebSockets | Room Durable Object owns sockets/history; `ChatMessage` is persisted and broadcast. |
-| Queues | `queue.send(QueueJob(...), QueueSendOptions(...))`; consumer wraps `QueueMessage.ack()/retry()`. |
-| Vectorize | `index.upsert([Vector(...)])`; `index.query(VectorQuery(...)) -> VectorQueryResult`. |
-| Browser Rendering | `renderer.screenshot(ScreenshotRequest(...)) -> ScreenshotResult` or image bytes. |
-| Email Workers | `EmailRouter.decide(IncomingEmail(...)) -> EmailDecision`; deployed path calls `forward()/setReject()`. |
-| AI Gateway | `gateway.chat(ChatRequest(...))` with OpenAI-compatible messages plus demo transport. |
-| R2 SQL | `client.query(R2SqlQuery(sql)).explain()` with read-only/single-table guards. |
-| R2 Data Catalog | `catalog.list_namespaces()`; `catalog.list_tables(namespace) -> list[TableRef]`. |
-| Pages | Static `public/` plus file-routed Functions, verified with `pages dev`. |
-| HVSC AI/data app | `HvscPipeline` composes R2 + D1 + Queues + AI/vector seams with `ingest_status()`. |
-| Hyperdrive | `HyperdrivePostgres(HyperdriveConfig.from_binding(env.HYPERDRIVE)).query(PostgresQuery(...))`. |
-| Agents SDK | `AgentSession.run(message) -> AgentRunResult` with typed messages, tools, and Durable Object session routing. |
-| Streaming composition | `ByteStream.iter_lines()` -> `JsonlReader.records()` -> `aiter_batches()` -> checkpointed sink. |
+| Workers | Class-based `WorkerEntrypoint`; request parsing via Python stdlib; typed response helpers; JSON/text/binary responses; no legacy `on_fetch`. |
+| R2 | Object handles; text/JSON/bytes helpers; metadata and HTTP metadata; listing and async iteration; streaming reads; byte-for-byte JPEG fixture; multipart `async with`; `.raw`. |
+| KV | Key handles; text/JSON helpers; exists/delete; list and async key iteration; platform aliases; missing-key behavior. |
+| D1 | Statement handles; bound parameters; `one`, `all`, `one_as(Model)`; D1 null conversion; indexed query plan route; local setup automation. |
+| FastAPI / ASGI | Normal `FastAPI()` routes; ASGI bridge; environment access through ASGI scope; local framework verification. |
+| LangChain/package orchestration | `PromptInput`/`PromptOutput`; `PromptTemplate`; Runnable-style `PromptChain.invoke`; service boundary around package orchestration. |
+| Workers Assets | Static assets do not wake Python; dynamic `/api/*` route does; verifier proves static/dynamic separation. |
+| Durable Objects | Namespace wrapper; named-object handle; storage-backed state; typed ref methods; named-object isolation verification. |
+| Cron Triggers | `ScheduledEventInfo`; `ScheduledRunResult`; job service object; local scheduled handler endpoint. |
+| Workers AI | Typed text-generation request/result; service wrapper; deterministic demo service; real binding route retained. |
+| Workflows | Workflow service; start/status shapes; instance handle; typed status result; durable-step vocabulary; demo status polling. |
+| HTMLRewriter | Metadata dataclass; escaped OpenGraph injection; transformation wrapper; executable edge HTML response. |
+| Binary responses | Dependency-free PNG bytes; content-type and PNG signature verification; teaches binary response correctness, not Cloudflare Images. |
+| Service Bindings / RPC | Python RPC method; TypeScript service binding client; local provider verification; cross-worker vocabulary retained. |
+| Outbound WebSockets | Durable Object owns outbound socket; alarm-managed reconnect; Pyodide proxy callbacks; deterministic status seam. |
+| Durable Objects + WebSockets | Room Durable Object; WebSocket hibernation API; browser client; persisted message history; deterministic room send/history route. |
+| Queues | Typed job dataclass; send options; batch sends; consumer `QueueMessage`; ack/retry/backoff; deterministic consumer harness. |
+| Vectorize | Typed vectors; dimension validation; upsert; query/query-by-id; get/delete; typed matches/results; deterministic local search. |
+| Browser Rendering | `ScreenshotRequest`; `ScreenshotResult`; REST screenshot client; deterministic renderer; real API route shape. |
+| Email Workers | `IncomingEmail`; `EmailDecision`; inspect/forward/reject policy; HTTP policy fixture; deployed `email()` handler path. |
+| AI Gateway | OpenAI-compatible chat messages; `ChatRequest`; `ChatChoice`; gateway transport; deterministic gateway transport. |
+| R2 SQL | Query object; read-only guard; single-table safety; automatic `LIMIT`; `explain()` route; deterministic SQL client. |
+| R2 Data Catalog | `Namespace`; `TableRef`; Iceberg REST client; namespaces/tables listing; deterministic fixture catalog. |
+| Pages | Static `public/`; file-routed Function; `pages dev` verifier; explicit note that Python Pages Functions are not supported today. |
+| HVSC AI/data app | Pipeline service composes R2 + D1 + Queues + AI/vector seams; shard ingestion; progress/status; browser run-all/search flow. |
+| Hyperdrive | `HyperdriveConfig.from_binding`; typed Postgres query/result; production/demo client split; `/config`, `/query`, `/demo`. |
+| Agents SDK | Typed messages; tool calls; run result; deterministic tool; Durable Object session routing; `AgentSession` raw wrapper shape. |
+| Streaming composition | `ByteStream.iter_bytes/text/lines`; `JsonlReader.records`; `RecordStream`; `aiter_batches`; `StreamCheckpoint`; AI/agent/WebSocket event streams. |
 
 ## Design rule
 
