@@ -17,6 +17,7 @@ Long-term docs are grouped by purpose. Older planning snapshots live in [`archiv
 - [`runtime/python-workers-runtime-guidance.md`](runtime/python-workers-runtime-guidance.md)
 - [`runtime/pythonic-tooling.md`](runtime/pythonic-tooling.md)
 - [`runtime/cloudflare-doc-links.md`](runtime/cloudflare-doc-links.md)
+- [`runtime/remote-verification.md`](runtime/remote-verification.md)
 - [`runtime/cloudflare-best-practices-alignment.md`](runtime/cloudflare-best-practices-alignment.md)
 
 ## Data and streaming
@@ -29,6 +30,7 @@ Long-term docs are grouped by purpose. Older planning snapshots live in [`archiv
 
 - [`project/lessons-learned.md`](project/lessons-learned.md)
 - [`project/project-structure-and-naming.md`](project/project-structure-and-naming.md)
+- [`project/example-categories.md`](project/example-categories.md)
 - [`project/wrapper-consistency-audit.md`](project/wrapper-consistency-audit.md)
 - [`project/composite-example-backlog.md`](project/composite-example-backlog.md)
 - [`project/original-goals-audit.md`](project/original-goals-audit.md)

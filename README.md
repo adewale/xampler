@@ -82,6 +82,15 @@ Reusable wrapper ideas across examples:
 6. **Explicit demo/remote seams** so local verification is deterministic without hiding real Cloudflare vocabulary.
 7. **`.raw` escape hatches** and `cfboundary` conversion at the JS/Python boundary only.
 
+## Categories
+
+See [`docs/project/example-categories.md`](docs/project/example-categories.md) for the full categorization. Short version:
+
+- **Best local/no-lies:** hello Worker, R2, KV, D1, Assets, Pages, Durable Objects, Cron, Queues, WebSockets/chatroom, binary/streaming examples.
+- **Deterministic demo seams:** Workers AI, AI Gateway, Vectorize, Workflows, Browser Rendering, Email, R2 SQL, R2 Data Catalog, Hyperdrive, Agents, LangChain, and parts of HVSC.
+- **Remote/paid/account-backed:** Workers AI, AI Gateway, Vectorize, Browser Rendering, Hyperdrive, R2 SQL, R2 Data Catalog, Images, Analytics Engine, deployed Queues/DLQ, deployed Service Bindings, deployed WebSockets.
+- **Composition:** Gutenberg streaming, HVSC AI/data search, Service Bindings RPC, Durable Object chatroom.
+
 ## Best no-lies examples
 
 These are the best starting points because they do something easy to explain and their verifier exercises the real local Cloudflare primitive path rather than a fake/demo transport.
@@ -199,7 +208,7 @@ uv run pytest -q
 
 `uv run pyright` checks the shared `xampler/` package. `uv run pyright -p pyright.examples.json` checks a small allowlist of stable example files. The tiny stubs in `typings/` only teach pyright the minimum shape of runtime modules such as `workers.Response`, `WorkerEntrypoint`, and `js.fetch`; they are not a replacement for Cloudflare runtime types and should stay small.
 
-Remote verifiers are separate because they can use real Cloudflare resources and cost money. They never run by default:
+Remote verifiers are separate because they can use real Cloudflare resources and cost money. They never run by default. See [`docs/runtime/remote-verification.md`](docs/runtime/remote-verification.md):
 
 ```bash
 uv run python scripts/verify_remote_examples.py --list
