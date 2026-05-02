@@ -347,32 +347,20 @@ PROFILES: dict[str, RemoteProfile] = {
             retry_delay=5.0,
         ),
     ),
-    "browser-rendering": worker_profile(
+    "browser-rendering": deployed_profile(
         "browser-rendering",
-        "Calls the real Browser Rendering REST API from the Worker.",
-        example_path="examples/network-edge/browser-rendering-screenshot",
-        ready_path="/demo",
-        checks=(RemoteCheck("/?url=https%3A%2F%2Fexample.com"),),
-        dev_vars={"ACCOUNT_ID": "CLOUDFLARE_ACCOUNT_ID", "CF_API_TOKEN": "CLOUDFLARE_API_TOKEN"},
+        "Calls a deployed Worker that uses the real Browser Rendering REST API.",
+        RemoteCheck("/?url=https%3A%2F%2Fexample.com"),
     ),
-    "r2-sql": worker_profile(
+    "r2-sql": deployed_profile(
         "r2-sql",
-        "Calls the real R2 SQL REST API from the Worker.",
-        example_path="examples/storage-data/r2-sql",
-        required_env=("CLOUDFLARE_ACCOUNT_ID", "WRANGLER_R2_SQL_AUTH_TOKEN"),
-        checks=(
-            RemoteCheck(
-                "/",
-                method="POST",
-                body=b'{"sql":"SHOW DATABASES"}',
-                headers=json_headers,
-            ),
+        "Calls a deployed Worker that uses the real R2 SQL REST API.",
+        RemoteCheck(
+            "/",
+            method="POST",
+            body=b'{"sql":"SHOW DATABASES"}',
+            headers=json_headers,
         ),
-        dev_vars={
-            "ACCOUNT_ID": "CLOUDFLARE_ACCOUNT_ID",
-            "BUCKET_NAME": "XAMPLER_R2_SQL_BUCKET",
-            "CF_API_TOKEN": "WRANGLER_R2_SQL_AUTH_TOKEN",
-        },
     ),
     "ai-gateway": worker_profile(
         "ai-gateway",
@@ -392,17 +380,10 @@ PROFILES: dict[str, RemoteProfile] = {
             "OPENAI_API_KEY": "OPENAI_API_KEY",
         },
     ),
-    "r2-data-catalog": worker_profile(
+    "r2-data-catalog": deployed_profile(
         "r2-data-catalog",
-        "Calls a real R2 Data Catalog/Iceberg REST endpoint from the Worker.",
-        example_path="examples/storage-data/r2-data-catalog",
-        required_env=("XAMPLER_R2_DATA_CATALOG_URI", "XAMPLER_R2_DATA_CATALOG_TOKEN"),
-        ready_path="/demo",
-        checks=(RemoteCheck("/"),),
-        dev_vars={
-            "CATALOG_URI": "XAMPLER_R2_DATA_CATALOG_URI",
-            "CATALOG_TOKEN": "XAMPLER_R2_DATA_CATALOG_TOKEN",
-        },
+        "Calls a deployed Worker that uses a real R2 Data Catalog/Iceberg endpoint.",
+        RemoteCheck("/"),
     ),
     "hyperdrive": deployed_profile(
         "hyperdrive",

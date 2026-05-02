@@ -3,6 +3,5 @@
   "name": "xampler-network-edge-browser-rendering-screenshot",
   "main": "src/entry.py",
   "compatibility_date": "2026-05-01",
-  "compatibility_flags": ["python_workers"],
-  "vars": {"ACCOUNT_ID": "REPLACE_WITH_ACCOUNT_ID"}
+  "compatibility_flags": ["python_workers"]
 }

@@ -24,7 +24,7 @@ uv run python scripts/prepare_remote_examples.py --list
 uv run python scripts/prepare_remote_examples.py vectorize
 ```
 
-Prepared deployed URLs are written to `.xampler-remote-state.json`, which is ignored by Git. The remote verifier reads that file, so you do not need to manually export URL variables for prepared profiles.
+Prepared deployed URLs and discovered resource identifiers are written to `.xampler-remote-state.json`, which is ignored by Git. The remote verifier reads that file, so you do not need to manually export URL variables for prepared profiles. For REST-backed Workers, preparation sets Worker secrets with `wrangler secret put` and then deploys the Worker; secrets are not written to the state file.
 
 ## List profiles
 
@@ -41,16 +41,16 @@ uv run python scripts/verify_remote_examples.py vectorize --show-env
 
 ## Profiles that run real mechanisms from the examples
 
-These profiles start the example Worker and call its real route. Binding-backed products use Wrangler remote dev where possible; REST-backed products use `.dev.vars` generated temporarily from your shell environment.
+These profiles call the example's real route. Binding-backed products prefer deployed Workers or Wrangler-managed bindings. REST-backed products use Worker secrets set during preparation instead of checking secrets into the repo.
 
 | Profile | Mechanism | Required environment beyond `XAMPLER_RUN_REMOTE=1` |
 |---|---|---|
 | `workers-ai` | real Workers AI binding through Wrangler remote dev | `XAMPLER_REMOTE_WORKERS_AI=1`; authenticate with `wrangler login` first. |
 | `vectorize` | deployed Worker with real Vectorize binding; runs describe/upsert/query | `XAMPLER_REMOTE_VECTORIZE=1`; prepare with `scripts/prepare_remote_examples.py vectorize`. |
-| `browser-rendering` | real Browser Rendering REST API from the Worker | `XAMPLER_REMOTE_BROWSER_RENDERING=1`, `CLOUDFLARE_API_TOKEN`; preflight with `scripts/prepare_remote_examples.py browser-rendering`. `CLOUDFLARE_ACCOUNT_ID` is inferred from `wrangler whoami` when possible. |
-| `r2-sql` | real R2 SQL REST API from the Worker | `XAMPLER_REMOTE_R2_SQL=1`, `WRANGLER_R2_SQL_AUTH_TOKEN`; bucket/catalog prep exists, token remains required. `CLOUDFLARE_ACCOUNT_ID` is inferred from `wrangler whoami` when possible. |
+| `browser-rendering` | deployed Worker using the real Browser Rendering REST API | `XAMPLER_REMOTE_BROWSER_RENDERING=1`; prepare with `CLOUDFLARE_API_TOKEN` via `scripts/prepare_remote_examples.py browser-rendering`. `CLOUDFLARE_ACCOUNT_ID` is inferred from `wrangler whoami` when possible. |
+| `r2-sql` | deployed Worker using the real R2 SQL REST API | `XAMPLER_REMOTE_R2_SQL=1`; prepare with `WRANGLER_R2_SQL_AUTH_TOKEN` via `scripts/prepare_remote_examples.py r2-sql`. `CLOUDFLARE_ACCOUNT_ID` is inferred from `wrangler whoami` when possible. |
 | `ai-gateway` | real AI Gateway endpoint from the Worker | `XAMPLER_REMOTE_AI_GATEWAY=1`, `CLOUDFLARE_ACCOUNT_ID`, `CLOUDFLARE_API_TOKEN`, `XAMPLER_AI_GATEWAY_ID`, `OPENAI_API_KEY` |
-| `r2-data-catalog` | real Iceberg/R2 Data Catalog endpoint from the Worker | `XAMPLER_REMOTE_R2_DATA_CATALOG=1`, `XAMPLER_R2_DATA_CATALOG_TOKEN`; catalog URI can come from prepared state or `XAMPLER_R2_DATA_CATALOG_URI`. |
+| `r2-data-catalog` | deployed Worker using the real Iceberg/R2 Data Catalog endpoint | `XAMPLER_REMOTE_R2_DATA_CATALOG=1`; prepare with `XAMPLER_R2_DATA_CATALOG_TOKEN` or `WRANGLER_R2_SQL_AUTH_TOKEN` via `scripts/prepare_remote_examples.py r2-data-catalog`. |
 
 Example:
 

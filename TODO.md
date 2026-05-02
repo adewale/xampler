@@ -83,13 +83,14 @@ Docs pattern:
 
 Current state:
 
-- The Python example uses the REST API, so Worker code needs `ACCOUNT_ID` and `CF_API_TOKEN` in `.dev.vars`.
+- The Python example uses the REST API, so deployed Worker code needs `ACCOUNT_ID` and `CF_API_TOKEN` as Worker secrets.
+- The prepare script infers account ID from Wrangler, sets secrets with `wrangler secret put`, deploys the Worker, and records the URL.
 
 TODO:
 
-- [ ] Decide whether to keep REST API coverage or add a Browser Rendering binding variant.
-- [ ] If REST stays: add a prep/preflight command that reads account ID from Wrangler where possible, then clearly asks only for the API token.
-- [ ] If binding variant is possible from Python Workers: add a `browser` binding and verify through Wrangler auth instead of a Worker-held API token.
+- [x] Decide whether to keep REST API coverage or add a Browser Rendering binding variant. Keep REST for now because the binding path is Puppeteer/Playwright-oriented and not yet ergonomic from Python Workers.
+- [x] If REST stays: add a prep command that reads account ID from Wrangler where possible, asks only for the API token, sets Worker secrets, deploys, and records the URL.
+- [ ] Revisit a `browser` binding variant if Python Workers can use the Browser Rendering binding directly without JS Puppeteer/Playwright glue.
 
 ### `r2-sql`
 
@@ -114,7 +115,8 @@ TODO:
 
 - [x] Add a prepare script that creates the bucket and enables catalog idempotently.
 - [ ] Add a tiny seed pipeline/table or documented fixture so `SHOW DATABASES` is not the only real query.
-- [x] Use Cloudflare's `WRANGLER_R2_SQL_AUTH_TOKEN` env name where possible; map it to Worker `.dev.vars` only for REST-backed Worker tests.
+- [x] Use Cloudflare's `WRANGLER_R2_SQL_AUTH_TOKEN` env name where possible; map it to Worker secrets for deployed REST-backed Worker tests.
+- [x] Deploy the R2 SQL Worker from prepare after setting Worker secrets.
 - [ ] Keep token creation manual unless Cloudflare exposes a safe Wrangler OAuth flow for this permission.
 
 ### `r2-data-catalog`
@@ -130,6 +132,7 @@ TODO:
 - [x] Reuse the `r2-sql` bucket/catalog prepare step where possible.
 - [ ] Add a small namespace/table creation path or a read-only catalog smoke test.
 - [x] Record `XAMPLER_R2_DATA_CATALOG_URI` equivalent in prepared state and document/export the token requirement.
+- [x] Deploy the R2 Data Catalog Worker from prepare after setting `CATALOG_URI` and `CATALOG_TOKEN` secrets.
 - [ ] Keep catalog token manual unless a safe Wrangler-backed token path exists.
 
 ### `queues-dlq`

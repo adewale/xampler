@@ -24,9 +24,9 @@ PROFILE_DESCRIPTIONS: dict[str, str] = {
     "queues-dlq": "Create Queues/DLQ and deploy the Queue producer/consumer Worker.",
     "service-bindings": "Deploy Python provider then TypeScript consumer for Service Bindings RPC.",
     "websockets": "Deploy the Durable Object chatroom Worker for real WebSocket checks.",
-    "browser-rendering": "Preflight Browser Rendering REST credentials.",
-    "r2-sql": "Create R2 bucket/catalog prerequisites for R2 SQL.",
-    "r2-data-catalog": "Create R2 bucket/catalog prerequisites for R2 Data Catalog.",
+    "browser-rendering": "Set Browser Rendering secrets and deploy the REST-backed Worker.",
+    "r2-sql": "Create R2 bucket/catalog, set R2 SQL secret, and deploy the Worker.",
+    "r2-data-catalog": "Create R2 bucket/catalog, set catalog secrets, and deploy the Worker.",
 }
 
 
@@ -145,6 +145,30 @@ def deploy_wrangler(example: str) -> str:
     return parse_deploy_url(proc.stdout)
 
 
+def set_secret(example: str, name: str, value: str) -> None:
+    cwd = ROOT / example
+    print("$", " ".join(["npx", "--yes", "wrangler", "secret", "put", name]), f"(cwd={cwd})")
+    proc = subprocess.run(
+        ["npx", "--yes", "wrangler", "secret", "put", name],
+        cwd=cwd,
+        input=value + "\n",
+        text=True,
+        stdout=subprocess.PIPE,
+        stderr=subprocess.STDOUT,
+        check=True,
+    )
+    if proc.stdout:
+        print(proc.stdout.rstrip())
+
+
+def token_env(*names: str) -> str | None:
+    for name in names:
+        value = os.environ.get(name)
+        if value:
+            return value
+    return None
+
+
 def prepare_queues_dlq() -> None:
     require_remote_prepare("queues-dlq")
     ensure_queue("xampler-jobs")
@@ -179,13 +203,17 @@ def prepare_browser_rendering() -> None:
     account_id = os.environ.get("CLOUDFLARE_ACCOUNT_ID") or account_id_from_wrangler()
     if not account_id:
         raise SystemExit("Could not determine CLOUDFLARE_ACCOUNT_ID from env or wrangler whoami.")
-    if not os.environ.get("CLOUDFLARE_API_TOKEN"):
+    token = token_env("CLOUDFLARE_API_TOKEN")
+    if not token:
         raise SystemExit(
             "Browser Rendering REST verification still needs CLOUDFLARE_API_TOKEN "
             "with Browser Rendering permission."
         )
-    print(f"Browser Rendering preflight ready for account {account_id}.")
-    print("Remote verifier will write ACCOUNT_ID and CF_API_TOKEN to a temporary .dev.vars file.")
+    example = "examples/network-edge/browser-rendering-screenshot"
+    set_secret(example, "ACCOUNT_ID", account_id)
+    set_secret(example, "CF_API_TOKEN", token)
+    url = deploy_pyworker(example)
+    record_url("browser-rendering", url)
 
 
 def ensure_r2_bucket(name: str) -> None:
@@ -209,7 +237,7 @@ def enable_catalog(name: str) -> str:
     return get_proc.stdout
 
 
-def prepare_r2_catalog_prereqs(profile: str) -> None:
+def prepare_r2_catalog_prereqs(profile: str) -> tuple[str, str | None, str | None]:
     require_remote_prepare(profile)
     bucket = os.environ.get("XAMPLER_R2_SQL_BUCKET", "xampler-r2-sql")
     ensure_r2_bucket(bucket)
@@ -225,13 +253,51 @@ def prepare_r2_catalog_prereqs(profile: str) -> None:
     )
     state.setdefault("r2-sql", {})["bucket"] = bucket
     save_state(state)
-    print("Next required secret step:")
-    print(
-        "  export WRANGLER_R2_SQL_AUTH_TOKEN=...  "
-        "# token with R2 SQL/Data Catalog/R2 permissions"
+    return (
+        bucket,
+        catalog_uri_match.group(1).strip() if catalog_uri_match else None,
+        warehouse_match.group(1).strip() if warehouse_match else None,
     )
-    print("  export XAMPLER_R2_DATA_CATALOG_TOKEN=...  # same token if allowed by its permissions")
-    print("  export XAMPLER_R2_DATA_CATALOG_URI=...    # from catalog get/enable output")
+
+
+def prepare_r2_sql() -> None:
+    bucket, _catalog_uri, _warehouse = prepare_r2_catalog_prereqs("r2-sql")
+    account_id = os.environ.get("CLOUDFLARE_ACCOUNT_ID") or account_id_from_wrangler()
+    if not account_id:
+        raise SystemExit("Could not determine CLOUDFLARE_ACCOUNT_ID from env or wrangler whoami.")
+    token = token_env("WRANGLER_R2_SQL_AUTH_TOKEN")
+    if not token:
+        raise SystemExit(
+            "R2 SQL remote verification still needs WRANGLER_R2_SQL_AUTH_TOKEN "
+            "with R2 SQL/Data Catalog/R2 permissions."
+        )
+    example = "examples/storage-data/r2-sql"
+    set_secret(example, "ACCOUNT_ID", account_id)
+    set_secret(example, "CF_API_TOKEN", token)
+    # BUCKET_NAME remains a plain non-secret var in wrangler.jsonc. Keep state in case
+    # the verifier/user overrides with XAMPLER_R2_SQL_BUCKET.
+    state = load_state()
+    state.setdefault("r2-sql", {})["bucket"] = bucket
+    save_state(state)
+    url = deploy_pyworker(example)
+    record_url("r2-sql", url)
+
+
+def prepare_r2_data_catalog() -> None:
+    _bucket, catalog_uri, _warehouse = prepare_r2_catalog_prereqs("r2-data-catalog")
+    token = token_env("XAMPLER_R2_DATA_CATALOG_TOKEN", "WRANGLER_R2_SQL_AUTH_TOKEN")
+    if not token:
+        raise SystemExit(
+            "R2 Data Catalog remote verification still needs XAMPLER_R2_DATA_CATALOG_TOKEN "
+            "or WRANGLER_R2_SQL_AUTH_TOKEN with Data Catalog permissions."
+        )
+    if not catalog_uri:
+        raise SystemExit("Could not determine R2 Data Catalog URI from wrangler catalog output.")
+    example = "examples/storage-data/r2-data-catalog"
+    set_secret(example, "CATALOG_URI", catalog_uri)
+    set_secret(example, "CATALOG_TOKEN", token)
+    url = deploy_pyworker(example)
+    record_url("r2-data-catalog", url)
 
 
 def prepare_all() -> None:
@@ -253,8 +319,8 @@ PREPARE = {
     "service-bindings": prepare_service_bindings,
     "websockets": prepare_websockets,
     "browser-rendering": prepare_browser_rendering,
-    "r2-sql": lambda: prepare_r2_catalog_prereqs("r2-sql"),
-    "r2-data-catalog": lambda: prepare_r2_catalog_prereqs("r2-data-catalog"),
+    "r2-sql": prepare_r2_sql,
+    "r2-data-catalog": prepare_r2_data_catalog,
     "all": prepare_all,
 }
 

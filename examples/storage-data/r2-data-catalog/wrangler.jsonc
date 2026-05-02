@@ -3,6 +3,5 @@
   "name": "xampler-storage-data-r2-data-catalog",
   "main": "src/entry.py",
   "compatibility_date": "2026-05-01",
-  "compatibility_flags": ["python_workers"],
-  "vars": {"CATALOG_URI": "REPLACE_WITH_CATALOG_URI"}
+  "compatibility_flags": ["python_workers"]
 }
