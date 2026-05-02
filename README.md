@@ -212,8 +212,8 @@ Remote verifiers are separate because they can use real Cloudflare resources and
 
 ```bash
 uv run python scripts/verify_remote_examples.py --list
+wrangler login
 XAMPLER_RUN_REMOTE=1 XAMPLER_REMOTE_WORKERS_AI=1 \
-  CLOUDFLARE_ACCOUNT_ID=... CLOUDFLARE_API_TOKEN=... \
   uv run python scripts/verify_remote_examples.py workers-ai
 ```
 

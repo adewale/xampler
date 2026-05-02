@@ -8,9 +8,9 @@ Remote profiles may cost money. Every profile requires all of the following:
 
 1. `XAMPLER_RUN_REMOTE=1`
 2. a profile-specific enable flag, for example `XAMPLER_REMOTE_WORKERS_AI=1`
-3. profile-specific credentials or deployed URLs
+3. either normal Wrangler authentication (`wrangler login`) or profile-specific credentials/deployed URLs
 
-If anything is missing, the verifier prints `SKIP ...` and exits successfully.
+If anything is missing, the verifier prints `SKIP ...` and exits successfully. For profiles that use Wrangler remote bindings, `wrangler login` is the intended local developer credential path; `CLOUDFLARE_API_TOKEN` is mainly for CI or for examples whose Worker code calls Cloudflare REST APIs directly.
 
 ## List profiles
 
@@ -31,8 +31,8 @@ These profiles start the example Worker and call its real route. Binding-backed 
 
 | Profile | Mechanism | Required environment beyond `XAMPLER_RUN_REMOTE=1` |
 |---|---|---|
-| `workers-ai` | real Workers AI binding through Wrangler remote dev | `XAMPLER_REMOTE_WORKERS_AI=1`, `CLOUDFLARE_ACCOUNT_ID`, `CLOUDFLARE_API_TOKEN` |
-| `vectorize` | real Vectorize binding through Wrangler remote dev; runs describe/upsert/query | `XAMPLER_REMOTE_VECTORIZE=1`, `CLOUDFLARE_ACCOUNT_ID`, `CLOUDFLARE_API_TOKEN` |
+| `workers-ai` | real Workers AI binding through Wrangler remote dev | `XAMPLER_REMOTE_WORKERS_AI=1`; authenticate with `wrangler login` first. |
+| `vectorize` | real Vectorize binding through Wrangler remote dev; runs describe/upsert/query | `XAMPLER_REMOTE_VECTORIZE=1`; authenticate with `wrangler login` first and ensure the configured Vectorize index exists. |
 | `browser-rendering` | real Browser Rendering REST API from the Worker | `XAMPLER_REMOTE_BROWSER_RENDERING=1`, `CLOUDFLARE_ACCOUNT_ID`, `CLOUDFLARE_API_TOKEN` |
 | `r2-sql` | real R2 SQL REST API from the Worker | `XAMPLER_REMOTE_R2_SQL=1`, `CLOUDFLARE_ACCOUNT_ID`, `CLOUDFLARE_API_TOKEN` |
 | `ai-gateway` | real AI Gateway endpoint from the Worker | `XAMPLER_REMOTE_AI_GATEWAY=1`, `CLOUDFLARE_ACCOUNT_ID`, `CLOUDFLARE_API_TOKEN`, `XAMPLER_AI_GATEWAY_ID`, `OPENAI_API_KEY` |
@@ -41,10 +41,9 @@ These profiles start the example Worker and call its real route. Binding-backed 
 Example:
 
 ```bash
+wrangler login
 export XAMPLER_RUN_REMOTE=1
 export XAMPLER_REMOTE_VECTORIZE=1
-export CLOUDFLARE_ACCOUNT_ID=...
-export CLOUDFLARE_API_TOKEN=...
 uv run python scripts/verify_remote_examples.py vectorize
 ```
 

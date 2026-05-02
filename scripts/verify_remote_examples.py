@@ -210,6 +210,7 @@ PROFILES: dict[str, RemoteProfile] = {
         "workers-ai",
         "Calls the real Workers AI binding route through Wrangler remote dev.",
         example_path="examples/ai-agents/workers-ai-inference",
+        required_env=(),
         ready_path="/demo",
         remote_bindings=True,
         checks=(RemoteCheck("/", contains="text"),),
@@ -218,6 +219,7 @@ PROFILES: dict[str, RemoteProfile] = {
         "vectorize",
         "Uses the real Vectorize binding through Wrangler remote dev.",
         example_path="examples/ai-agents/vectorize-search",
+        required_env=(),
         ready_path="/demo",
         remote_bindings=True,
         checks=(
