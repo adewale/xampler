@@ -8,6 +8,7 @@ import subprocess
 from pathlib import Path
 
 ROOT = Path(__file__).resolve().parents[1]
+EXAMPLE = ROOT / "hvsc-24-ai-data-search"
 CATALOG = ROOT / ".data" / "hvsc" / "84" / "catalog"
 
 
@@ -34,6 +35,7 @@ def main() -> int:
                 "application/x-ndjson",
             ],
             check=True,
+            cwd=EXAMPLE,
         )
     return 0
 
