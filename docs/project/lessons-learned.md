@@ -183,3 +183,115 @@ What changed:
 - Shard import retries transient local Worker restarts.
 
 Lesson: complex examples should guide the user through state transitions. If a feature depends on setup, the UI should either perform the setup or explain the exact next action in-place.
+
+## 18. The shared API surface should be earned by reuse
+
+Early on, many wrappers lived only inside individual examples. That was good for readability, but it made repeated ideas drift: status fields, JSON responses, stream helpers, demo transports, and `.raw` escape hatches all appeared with small differences.
+
+What changed:
+
+- Added `xampler.streaming` with `ByteStream`, `RecordStream`, `JsonlReader`, `aiter_batches`, `async_enumerate`, `StreamCheckpoint`, and `AgentEvent`.
+- Added `xampler.status` with `OperationState`, `Progress`, `Checkpoint`, and `BatchResult`.
+- Added `xampler.response` with `jsonable()` and `error_payload()`.
+- Added `xampler.types` with `NewType` ids/keys, `SupportsRaw`, `DemoTransport`, and `RemoteVerifier`.
+- Converted Gutenberg streaming and HVSC catalog ingestion to use `xampler.streaming`.
+- Converted Workflows and Workers AI to use shared status/response/demo-transport ideas.
+
+Lesson: do not extract whole product clients too early. Extract boring, repeated contracts first, then promote product wrappers only after several examples need the same shape.
+
+## 19. The best API shape is compositional, not monolithic
+
+The strongest pattern is:
+
+```text
+Cloudflare binding/client -> small service wrapper -> resource handle -> typed dataclass -> async stream/batch/status
+```
+
+This lets examples compose naturally:
+
+```text
+R2 object body -> ByteStream -> JsonlReader -> batches -> D1 writes -> Queue job -> AI/vector/agent event
+```
+
+What changed:
+
+- `examples/streaming/gutenberg-stream-composition` demonstrates R2 object-body streaming, ZIP reading, byte/text/line streams, batches, checkpoints, and AI/agent/WebSocket event shapes.
+- `examples/full-apps/hvsc-ai-data-search` now streams JSONL catalog data from R2 into D1 using shared streaming helpers.
+- The top-level README now shows an aspirational composition snippet so readers understand the direction.
+
+Lesson: Xampler should not become a giant SDK façade that hides Cloudflare. It should provide small Pythonic pieces that preserve platform vocabulary and compose with normal Python idioms.
+
+## 20. Naming policy matters more than mass renaming
+
+We saw drift between names like `QueueService`, `R2SqlClient`, `BrowserRendering`, `R2ObjectRef`, `AgentSession`, `DemoVectorIndex`, and `FakeQueueBatch`.
+
+What changed:
+
+- Documented the naming policy in `docs/api/unified-api-surface.md`.
+- Renamed generic R2 Data Catalog `Namespace` to `CatalogNamespace`.
+
+Lesson: suffixes should mean something:
+
+- `*Service` for native Worker binding/action facades.
+- `*Client` for REST/API-token clients.
+- product nouns when the official product name is the clearest facade.
+- `*Ref` for passive handles.
+- `*Session` for active stateful/conversational interactions.
+- `Demo*` for deterministic product stand-ins.
+- `Fake*` only for tiny raw test harness objects.
+
+## 21. Avoid compatibility baggage while the shared API is young
+
+A strange-looking re-export appeared briefly while canonicalizing `OperationState`:
+
+```python
+from .status import OperationState as OperationState
+```
+
+That pattern can be used to signal an intentional re-export, but it made the code harder to read.
+
+What changed:
+
+- `OperationState` now lives only in `xampler.status`.
+- `xampler.types.OperationState` is not preserved as a compatibility alias.
+
+Lesson: Xampler's shared package is still pre-stable. It is better to keep one clear import path than preserve every transient path with compatibility shims.
+
+## 22. Tiny local typings are a bridge, not an API
+
+Strict pyright on every example immediately exposed missing runtime typing for `workers`, `js`, bindings, Durable Objects, and runtime-provided base classes.
+
+What changed:
+
+- Kept strict pyright for `xampler/`.
+- Added `pyright.examples.json` for a small allowlist of stable examples.
+- Added tiny `typings/workers.pyi` and `typings/js.pyi` stubs.
+
+Lesson: the stubs are not product wrappers, compatibility layers, or official runtime definitions. They only give pyright enough shape to check selected example code. Keep them tiny, and prefer official Cloudflare/Python Workers stubs if they become sufficient.
+
+## 23. Demo seams are acceptable only if the real path is explicit
+
+Many Cloudflare products cannot be fully exercised by local Wrangler alone. Workers AI, Vectorize, AI Gateway, Browser Rendering, R2 SQL, R2 Data Catalog, Hyperdrive, Email Routing, Analytics Engine, Images, Queues/DLQ, Service Bindings, and deployed WebSockets all need real account resources, deployed Workers, external providers, product entitlements, or paid usage for full realism.
+
+What changed:
+
+- Local examples keep deterministic `/demo` routes for account-backed products.
+- Added `scripts/verify_remote_examples.py` for explicitly enabled paid/remote checks.
+- Added remote profiles that run real mechanisms where possible: Workers AI, Vectorize, Browser Rendering, R2 SQL, AI Gateway, and R2 Data Catalog.
+- Added deployed-URL remote profiles for products that need a deployed app shape: Hyperdrive, Images, Analytics Engine, Queues/DLQ, Service Bindings, and WebSockets.
+
+Lesson: a demo seam is fine when it is labeled, locally useful, and paired with a real route or remote verifier. It is not fine to claim the remote product ran when only deterministic Python did.
+
+## 24. Why the skilled examples cannot all “just work for real”
+
+The skill-shaped examples are intentionally close to Cloudflare product vocabulary, but several barriers stop them from being fully real by default:
+
+1. **Credentials and secrets** — real AI Gateway, Browser Rendering, R2 SQL, Data Catalog, Images, and account APIs need account IDs, API tokens, gateway IDs, provider keys, or catalog tokens.
+2. **Provisioned resources** — Vectorize indexes, Queues/DLQs, Hyperdrive configs, D1/R2 resources, service bindings, and Durable Object migrations must exist in the user's account.
+3. **Deployed topology** — Service Bindings, Email Workers, Queue delivery/DLQ behavior, WebSocket durability, and some Hyperdrive flows need deployed Workers or multiple Workers wired together. Local single-process verification is not equivalent.
+4. **Paid/product entitlements** — Browser Rendering, Workers AI, Images, Stream/media-style products, and some AI/provider calls can incur cost or require enabled account features.
+5. **External systems** — Hyperdrive needs a real Postgres database; AI Gateway often needs provider credentials; Email Workers need routing configuration; Analytics needs a dataset/query path.
+6. **Runtime constraints** — Python Workers run through Pyodide. Some Python libraries expect native sockets, filesystem behavior, C extensions, or long-lived processes that do not map cleanly to Workers.
+7. **Local emulation gaps** — Wrangler/Miniflare does not fully emulate every account-backed product. Some bindings are explicitly “not supported” locally and can only be shape-tested or accessed remotely.
+
+Lesson: “works for real” requires more than code. It requires credentials, resources, topology, entitlements, and sometimes deployed infrastructure. Xampler should make the path explicit, skip cleanly when prerequisites are absent, and separate local realism from remote realism.
