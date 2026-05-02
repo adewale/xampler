@@ -1,6 +1,6 @@
 # Lessons Learned
 
-Last updated: 2026-05-01.
+Last updated: 2026-05-02.
 
 This project is building Pythonic, executable Cloudflare examples. These are the lessons learned so far.
 
@@ -158,3 +158,28 @@ What changed:
 - `docs/top-10-improvement-plan.md` identifies the next action for each key primitive.
 
 Lesson: every low score should point to the next PR.
+
+## 16. Local and remote resource intent must be explicit
+
+Wrangler can target local or remote resources, and the difference is easy to miss in long-running dataset scripts.
+
+What changed:
+
+- HVSC dataset upload scripts now default to remote Cloudflare R2.
+- `--local` is opt-in for intentionally seeding Wrangler's local R2 store.
+- The published HVSC catalog shards are verified in remote `xampler-datasets` before browser ingestion.
+
+Lesson: data publication scripts should make production/remote intent explicit and should verify the exact bucket/prefix they expect later examples to consume.
+
+## 17. Browser examples need product UX, not just endpoint buttons
+
+The HVSC page initially had working endpoints, but search still felt broken because users saw raw JSON, had to know the setup order, and could trigger repeated output repainting.
+
+What changed:
+
+- The HVSC browser flow now has a stable progress indicator that avoids flashing large JSON blobs.
+- Search renders result cards instead of only dumping API responses.
+- Submitting a search before import automatically prepares the catalog and reruns the search.
+- Shard import retries transient local Worker restarts.
+
+Lesson: complex examples should guide the user through state transitions. If a feature depends on setup, the UI should either perform the setup or explain the exact next action in-place.
