@@ -542,16 +542,34 @@ def index_html() -> str:
   <pre id="output">Start at button 1. Use button 4 after uploading catalog JSONL to R2.</pre>
 
   <script>
-    async function show(response) {
+    function output(text) {
+      const el = document.getElementById('output');
+      if (el.textContent !== text) el.textContent = text;
+    }
+    function compactIngestState(data) {
+      if (!data || !Array.isArray(data.shard_keys)) return data;
+      const copy = { ...data };
+      copy.shard_count = data.shard_keys.length;
+      copy.first_shard = data.shard_keys[0] || null;
+      copy.last_shard = data.shard_keys[data.shard_keys.length - 1] || null;
+      delete copy.shard_keys;
+      return copy;
+    }
+    async function readResponse(response) {
       const text = await response.text();
-      try {
-        const data = JSON.parse(text);
-        document.getElementById('output').textContent = JSON.stringify(data, null, 2);
-        return data;
-      } catch {
-        document.getElementById('output').textContent = text;
-        return text;
+      let data = text;
+      try { data = JSON.parse(text); } catch {}
+      if (!response.ok) {
+        const message = typeof data === 'string' ? data : JSON.stringify(data, null, 2);
+        throw new Error(message);
       }
+      return data;
+    }
+    async function show(response, options = {}) {
+      const data = await readResponse(response);
+      const rendered = options.compactIngest ? compactIngestState(data) : data;
+      output(typeof rendered === 'string' ? rendered : JSON.stringify(rendered, null, 2));
+      return data;
     }
     function setStep(id, state) {
       const el = document.getElementById(id);
@@ -601,16 +619,23 @@ def index_html() -> str:
       return await show(await fetch(path + params, { method: 'POST' }));
     }
     async function shardedIngest() {
-      let state = await show(await fetch('/ingest/start', { method: 'POST' }));
+      let state = await show(await fetch('/ingest/start', { method: 'POST' }), {
+        compactIngest: true,
+      });
       if (state.error) throw new Error(state.error);
       setProgress(state.completed_shards, state.total_shards, state.imported_rows);
+      let lastRenderedShard = state.completed_shards;
       while (state.status !== 'complete') {
-        const msg = 'Importing shard ' + (state.completed_shards + 1) + ' of ';
-        document.getElementById('output').textContent = msg + state.total_shards;
-        state = await show(await fetch('/ingest/next', { method: 'POST' }));
+        if (state.completed_shards !== lastRenderedShard) {
+          const next = Math.min(state.completed_shards + 1, state.total_shards);
+          output('Importing shard ' + next + ' of ' + state.total_shards + '...');
+          lastRenderedShard = state.completed_shards;
+        }
+        state = await readResponse(await fetch('/ingest/next', { method: 'POST' }));
         setProgress(state.completed_shards, state.total_shards, state.imported_rows);
         await new Promise(resolve => setTimeout(resolve, 25));
       }
+      output(JSON.stringify(compactIngestState(state), null, 2));
       return state;
     }
     async function search(q) {
