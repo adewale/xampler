@@ -335,6 +335,7 @@ EXAMPLES = {
             Check("/tracks?q=jeroen", contains="d1_tracks"),
             Check("/archive/verify", contains='"verified"'),
             Check("/catalog/verify-r2", contains='"exists"'),
+            Check("/catalog/ingest-sample", method="POST", contains='"streamed"'),
         ],
         needs_setup=(
             "Initializes local D1 and uses deterministic AI/vector logic over HVSC metadata."

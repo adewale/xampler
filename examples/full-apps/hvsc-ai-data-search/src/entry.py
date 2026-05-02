@@ -18,6 +18,28 @@ HVSC_ARCHIVE_URL = "https://boswme.home.xs4all.nl/HVSC/HVSC_84-all-of-them.7z"
 HVSC_ARCHIVE_SIZE = 83_748_140
 HVSC_CATALOG_KEY = "hvsc/84/catalog/tracks.jsonl"
 HVSC_SHARDS_PREFIX = "hvsc/84/catalog/shards/"
+HVSC_SAMPLE_CATALOG_KEY = "hvsc/84/catalog/sample.jsonl"
+HVSC_SAMPLE_CATALOG = [
+    {
+        "id": "hvsc:84:jeroen_tel:cybernoid_ii",
+        "version": 84,
+        "path": "MUSICIANS/J/Jeroen_Tel/Cybernoid_II.sid",
+        "filename": "Cybernoid_II.sid",
+        "title": "Cybernoid II",
+        "composer": "Jeroen Tel",
+        "search_text": "Jeroen Tel Cybernoid II Commodore 64 C64 SID",
+    },
+    {
+        "id": "hvsc:84:maniacs_of_noise:last_ninja_3",
+        "version": 84,
+        "path": "MUSICIANS/M/Maniacs_of_Noise/Last_Ninja_3.sid",
+        "filename": "Last_Ninja_3.sid",
+        "title": "Last Ninja 3",
+        "composer": "Maniacs of Noise",
+        "search_text": "Maniacs of Noise Last Ninja 3 Commodore 64 C64 SID",
+    },
+]
+HVSC_SAMPLE_CATALOG_JSONL = "\n".join(json.dumps(record) for record in HVSC_SAMPLE_CATALOG)
 
 HVSC_VERSION_84 = {
     "version": 84,
@@ -102,6 +124,13 @@ class R2Artifacts:
             key,
             json.dumps(value),
             to_js({"httpMetadata": {"contentType": "application/json"}}),
+        )
+
+    async def write_text(self, key: str, value: str, *, content_type: str = "text/plain") -> None:
+        await self.raw.put(
+            key,
+            value,
+            to_js({"httpMetadata": {"contentType": content_type}}),
         )
 
     async def read_json(self, key: str) -> Any | None:
@@ -367,6 +396,14 @@ class HvscPipeline:
     async def ingest_status(self) -> dict[str, Any]:
         return await self.db.get_ingest_state()
 
+    async def ingest_sample_catalog(self) -> dict[str, Any]:
+        await self.r2.write_text(
+            HVSC_SAMPLE_CATALOG_KEY,
+            HVSC_SAMPLE_CATALOG_JSONL,
+            content_type="application/x-ndjson",
+        )
+        return await self.ingest_catalog_from_r2(key=HVSC_SAMPLE_CATALOG_KEY)
+
     async def ingest_catalog_from_r2(
         self,
         *,
@@ -448,6 +485,9 @@ class Default(WorkerEntrypoint):
             limit = int(query.get("limit", ["0"])[0] or 0)
             result = await pipeline.ingest_catalog_from_r2(key=key, limit=limit)
             return Response.json(result)
+
+        if path == "/catalog/ingest-sample":
+            return Response.json(await pipeline.ingest_sample_catalog())
 
         if path == "/archive/ingest":
             return Response.json(asdict(await pipeline.ingest_archive()))
