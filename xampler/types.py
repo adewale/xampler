@@ -1,7 +1,7 @@
 from __future__ import annotations
 
 from collections.abc import Awaitable, Callable
-from typing import Any, Literal, NewType, Protocol, runtime_checkable
+from typing import Any, NewType, Protocol, runtime_checkable
 
 type JsonScalar = str | int | float | bool | None
 type JsonValue = JsonScalar | list[JsonValue] | dict[str, JsonValue]
@@ -13,9 +13,6 @@ QueueName = NewType("QueueName", str)
 WorkflowId = NewType("WorkflowId", str)
 VectorId = NewType("VectorId", str)
 AgentId = NewType("AgentId", str)
-
-type OperationState = Literal["not_started", "running", "complete", "failed"]
-
 
 @runtime_checkable
 class SupportsRaw(Protocol):
@@ -31,3 +28,19 @@ class RemoteVerifier(Protocol):
 
 
 type ProgressCallback = Callable[[int, int], Awaitable[None]]
+
+__all__ = [
+    "AgentId",
+    "DemoTransport",
+    "JsonObject",
+    "JsonScalar",
+    "JsonValue",
+    "KVKeyName",
+    "ProgressCallback",
+    "QueueName",
+    "R2Key",
+    "RemoteVerifier",
+    "SupportsRaw",
+    "VectorId",
+    "WorkflowId",
+]

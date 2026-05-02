@@ -1,0 +1,3 @@
+from typing import Any
+
+async def fetch(url: str, init: object = ...) -> Any: ...

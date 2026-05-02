@@ -1,11 +1,14 @@
 from __future__ import annotations
 
 import asyncio
-from dataclasses import asdict, dataclass
-from typing import Any
+from dataclasses import dataclass
+from typing import Any, cast
 from urllib.parse import urlparse
 
 from workers import Response, WorkerEntrypoint, WorkflowEntrypoint  # type: ignore[import-not-found]
+
+from xampler.response import jsonable
+from xampler.status import OperationState
 
 
 @dataclass(frozen=True)
@@ -16,8 +19,8 @@ class WorkflowStart:
 @dataclass(frozen=True)
 class WorkflowStatus:
     instance_id: str
-    status: str
-    raw: Any | None = None
+    status: OperationState
+    raw: object | None = None
 
 
 class Pipeline(WorkflowEntrypoint):
@@ -48,13 +51,13 @@ class WorkflowInstance:
         self.raw = raw
 
     async def status(self) -> WorkflowStatus:
-        raw_status = await self.raw.status()
-        status = (
-            str(raw_status.get("status", raw_status))
-            if isinstance(raw_status, dict)
-            else str(raw_status)
-        )
-        return WorkflowStatus(instance_id=self.id, status=status, raw=raw_status)
+        raw_status = cast(object, await self.raw.status())
+        raw_state: object = raw_status
+        if isinstance(raw_status, dict):
+            mapping = cast(dict[object, object], raw_status)
+            raw_state = mapping.get("status", "running")
+        status = parse_workflow_state(raw_state)
+        return WorkflowStatus(instance_id=self.id, status=status, raw=cast(object, raw_status))
 
 
 class WorkflowService:
@@ -72,6 +75,13 @@ class WorkflowService:
 
     async def status(self, instance_id: str) -> WorkflowStatus:
         return await (await self.instance(instance_id)).status()
+
+
+def parse_workflow_state(value: object) -> OperationState:
+    state = str(value)
+    if state in {"not_started", "running", "complete", "failed"}:
+        return cast(OperationState, state)
+    return "running"
 
 
 class DemoWorkflowService:
@@ -92,18 +102,18 @@ class Default(WorkerEntrypoint):
         url = urlparse(str(request.url))
 
         if url.path == "/demo/start":
-            return Response.json(asdict(await DemoWorkflowService().start()))
+            return Response.json(jsonable(await DemoWorkflowService().start()))
 
         if url.path.startswith("/demo/status/"):
             instance_id = url.path.removeprefix("/demo/status/")
-            return Response.json(asdict(await DemoWorkflowService().status(instance_id)))
+            return Response.json(jsonable(await DemoWorkflowService().status(instance_id)))
 
         service = WorkflowService(self.env.PIPELINE)
         if url.path == "/start":
-            return Response.json(asdict(await service.start()))
+            return Response.json(jsonable(await service.start()))
 
         if url.path.startswith("/status/"):
             instance_id = url.path.removeprefix("/status/")
-            return Response.json(asdict(await service.status(instance_id)))
+            return Response.json(jsonable(await service.status(instance_id)))
 
         return Response("Use /start, then /status/<workflow_id>. Demo: /demo/start.\n")

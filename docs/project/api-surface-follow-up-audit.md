@@ -9,7 +9,7 @@ This follow-up audits the repository after the first cleanup pass (`xampler.stat
 | Area | Status after cleanup | Remaining issue | Priority |
 |---|---|---|---|
 | Shared streaming helpers | Improved: Gutenberg now imports `xampler.streaming`; no local `ByteStream`/`JsonlReader` duplicates remain in examples. | Adoption is still narrow: only one example imports shared streaming helpers. R2/HVSC/AI/WebSocket examples still use their own stream/event shapes. | High |
-| Shared status/response helpers | Improved: `xampler.status` and `xampler.response` exist and pass strict pyright. | No example imports them yet; `OperationState` is duplicated between `xampler.types` and `xampler.status`. | High |
+| Shared status/response helpers | Improved: `xampler.status` and `xampler.response` exist and pass strict pyright. | Workflows now consumes them; broader adoption is still low. | Medium |
 | Local wrappers | Mostly unchanged by design. | Product wrappers remain local in nearly every example. That is good for teaching, but repeated patterns still drift. | Medium |
 | Naming uniformity | Improved: R2 Data Catalog now uses `CatalogNamespace`. | Product clients are still mixed: `BrowserRendering`, `AIGateway`, `R2DataCatalog`, `R2SqlClient`, `AIService`. Need an explicit naming policy. | Medium |
 | Demo transports | Honest and documented. | No examples implement the shared `DemoTransport` Protocol yet; remote verifier profiles are still missing. | High |
@@ -20,7 +20,7 @@ This follow-up audits the repository after the first cleanup pass (`xampler.stat
 
 - `xampler.streaming` imports in examples: **1** (`examples/streaming/gutenberg-stream-composition`).
 - Local streaming-helper duplicates in examples: **0** for `ByteStream`, `RecordStream`, `JsonlReader`, `StreamCheckpoint`, `AgentEvent`, `aiter_batches`, `async_enumerate`.
-- `xampler.status`, `xampler.response`, and `xampler.types` imports in examples: **0**.
+- `xampler.status` / `xampler.response` imports in examples: **1** (`examples/state-events/workflows-pipeline`).
 - `.raw` escape-hatch occurrences across examples/shared package: about **80**, which is expected but should remain intentional.
 - Deterministic/demo mentions across code/docs remain high because many account-backed products still need local seams.
 
@@ -66,17 +66,9 @@ Current state:
 
 Recommendation: the next cleanup should not create more shared modules. It should consume the existing ones in 2-3 representative examples.
 
-### 2. `OperationState` is duplicated
+### 2. `OperationState` is canonicalized
 
-`xampler.types` defines:
-
-```python
-type OperationState = Literal["not_started", "running", "complete", "failed"]
-```
-
-`xampler.status` also defines an equivalent `OperationState`.
-
-Recommendation: keep `OperationState` in `xampler.status` and re-export/import it from `xampler.types`, or remove it from `xampler.types`. Avoid two independent aliases.
+`OperationState` now lives only in `xampler.status`. `xampler.types` no longer re-exports it just for compatibility because the package is not stable enough to justify confusing aliases.
 
 ### 3. Product wrapper naming still has two competing styles
 
@@ -130,12 +122,10 @@ Recommendation: keep the Git dependency for user-facing reproducibility, but add
 
 Recommended order:
 
-1. Remove or re-export duplicate `OperationState` so there is only one canonical alias.
-2. Convert one non-streaming example to consume `xampler.status` and/or `xampler.response`.
-3. Convert Workers AI or R2 SQL demo class to explicitly satisfy `DemoTransport`.
-4. Use `xampler.streaming.ByteStream` in the R2 object wrapper or HVSC shard reader.
-5. Add a documented naming policy to `docs/api/unified-api-surface.md`.
-6. Add a small pyright allowlist for 1-2 stable examples, not the whole tree.
+1. Convert Workers AI or R2 SQL demo class to explicitly satisfy `DemoTransport`.
+2. Use `xampler.streaming.ByteStream` in the R2 object wrapper or HVSC shard reader.
+3. Expand the pyright example allowlist only after the current two examples stay stable.
+4. Add env-gated remote verifier profiles for account-backed products.
 
 ## Verdict
 

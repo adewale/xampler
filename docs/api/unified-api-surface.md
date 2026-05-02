@@ -55,6 +55,22 @@ The API surface is deliberately small. A few concepts repeat across products so 
 | Demo transport | `DemoAIService`, `DemoAIGateway`, `DemoPostgres`, `DemoAgent` | Account-backed APIs are locally verifiable without pretending the remote service ran. |
 | `.raw` escape hatch | `service.raw`, `handle.raw`, `session.raw` | New Cloudflare APIs remain reachable before wrappers catch up. |
 
+## Naming policy
+
+Use product vocabulary, but keep suffixes meaningful:
+
+| Name shape | Use for | Examples |
+|---|---|---|
+| `*Service` | Native Worker binding facade or action boundary. | `QueueService`, `WorkflowService`, `AIService`, `PromptService` |
+| `*Client` | REST/API-token client that calls an HTTP API. | `R2SqlClient`; future `ImagesClient` |
+| Product noun | Official product facade when the product name is already the clearest name. | `AIGateway`, `R2DataCatalog`, `BrowserRendering` |
+| `*Ref` | Passive handle to a named resource. | `R2ObjectRef`, `CounterRef`, `TableRef` |
+| `*Session` | Active conversational or stateful interaction. | `AgentSession`, future `WebSocketSession` |
+| `Demo*` | Deterministic local stand-in for a product or binding. | `DemoAIService`, `DemoVectorIndex`, `DemoPostgres` |
+| `Fake*` | Tiny test harness object that mimics raw platform input, not a product. | `FakeQueueBatch`, `FakeQueueMessage` |
+
+Prefer product-qualified nouns when a generic Cloudflare word would collide across products: `CatalogNamespace`, not `Namespace`.
+
 ## Type-system leverage
 
 Xampler uses modern Python typing to make examples teachable and checkable:

@@ -1,0 +1,14 @@
+{
+  "include": [
+    "examples/state-events/workflows-pipeline/src",
+    "examples/storage-data/r2-data-catalog/src"
+  ],
+  "exclude": [
+    "**/.venv",
+    "**/.venv-workers",
+    "**/python_modules"
+  ],
+  "stubPath": "typings",
+  "pythonVersion": "3.13",
+  "typeCheckingMode": "strict"
+}

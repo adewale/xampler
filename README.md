@@ -193,6 +193,7 @@ Static/local Python checks:
 uv sync
 uv run ruff check .
 uv run pyright
+uv run pyright -p pyright.examples.json
 uv run pytest -q
 ```
 
