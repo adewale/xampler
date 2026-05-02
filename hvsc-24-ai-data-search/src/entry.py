@@ -10,7 +10,7 @@ import js  # type: ignore[import-not-found]
 from cfboundary.ffi import d1_null, is_js_missing, to_js, to_py
 from workers import Response, WorkerEntrypoint  # type: ignore[import-not-found]
 
-HVSC_ARCHIVE_KEY = "hvsc/archives/HVSC_84-all-of-them.7z"
+HVSC_ARCHIVE_KEY = "hvsc/84/raw/HVSC_84-all-of-them.7z"
 HVSC_ARCHIVE_URL = "https://boswme.home.xs4all.nl/HVSC/HVSC_84-all-of-them.7z"
 HVSC_ARCHIVE_SIZE = 83_748_140
 HVSC_CATALOG_KEY = "hvsc/84/catalog/tracks.jsonl"
@@ -42,6 +42,24 @@ SAMPLE_CATALOG_ROWS = [
         "title": "Parallax",
         "composer": "Martin Galway",
         "search_text": "Martin Galway Parallax Commodore 64 C64 SID",
+    },
+    {
+        "id": "hvsc:84:maniacs_of_noise:last_ninja_3",
+        "version": 84,
+        "path": "MUSICIANS/M/Maniacs_of_Noise/Last_Ninja_3.sid",
+        "filename": "Last_Ninja_3.sid",
+        "title": "Last Ninja 3",
+        "composer": "Maniacs of Noise",
+        "search_text": "Maniacs of Noise Last Ninja 3 Commodore 64 C64 SID",
+    },
+    {
+        "id": "hvsc:84:maniacs_of_noise:turbo_outrun",
+        "version": 84,
+        "path": "MUSICIANS/M/Maniacs_of_Noise/Turbo_Outrun.sid",
+        "filename": "Turbo_Outrun.sid",
+        "title": "Turbo Outrun",
+        "composer": "Maniacs of Noise",
+        "search_text": "Maniacs of Noise Turbo Outrun Commodore 64 C64 SID",
     },
 ]
 
@@ -319,6 +337,16 @@ class HvscPipeline:
                 break
         return {"key": key, "tracks": count, "limited": bool(limit)}
 
+    async def catalog_status(self) -> dict[str, Any]:
+        catalog = await self.verify_catalog()
+        rows = await self.db.execute("SELECT COUNT(*) AS count FROM tracks")
+        return {
+            "catalog_key": catalog.key,
+            "catalog_exists_in_r2": catalog.exists,
+            "catalog_size": catalog.size,
+            "d1_tracks": int(rows[0]["count"]) if rows else 0,
+        }
+
     async def search_tracks(self, query: str) -> list[Track]:
         return await self.db.search_tracks(query)
 
@@ -353,6 +381,9 @@ class Default(WorkerEntrypoint):
         if path == "/catalog/ingest-sample":
             return Response.json(await pipeline.ingest_sample_catalog())
 
+        if path == "/catalog/status":
+            return Response.json(await pipeline.catalog_status())
+
         if path == "/catalog/verify-r2":
             key = query.get("key", [HVSC_CATALOG_KEY])[0]
             return Response.json(asdict(await pipeline.verify_catalog(key)))
@@ -363,7 +394,11 @@ class Default(WorkerEntrypoint):
             result = await pipeline.ingest_catalog_from_r2(key=key, limit=limit)
             if result.get("error") and query.get("fallback", ["sample"])[0] == "sample":
                 fallback = await pipeline.ingest_sample_catalog()
-                result = {**result, "fallback": fallback}
+                result = {
+                    **result,
+                    "fallback": fallback,
+                    "warning": "Full R2 catalog missing; loaded bundled sample catalog only.",
+                }
             return Response.json(result)
 
         if path == "/archive/ingest":
@@ -375,7 +410,14 @@ class Default(WorkerEntrypoint):
         if path == "/tracks":
             term = query.get("q", ["jeroen"])[0]
             tracks = [asdict(track) for track in await pipeline.search_tracks(term)]
-            return Response.json({"query": term, "tracks": tracks})
+            status = await pipeline.catalog_status()
+            response = {"query": term, "tracks": tracks, "status": status}
+            if not tracks:
+                response["hint"] = (
+                    "No D1 track rows matched. Run the full catalog upload/import, "
+                    "or try sample terms: jeroen, maniacs, hubbard, galway, sid."
+                )
+            return Response.json(response)
 
         if path == "/search":
             term = query.get("q", ["sid"])[0]
@@ -437,7 +479,7 @@ def index_html() -> str:
       <button id="step4" onclick="catalogIngest()">4. Pull catalog JSONL into D1</button>
     </li>
     <li>
-      <input id="q" value="jeroen" aria-label="search query">
+      <input id="q" value="maniacs" aria-label="search query">
       <button id="step5" onclick="search(document.getElementById('q').value)">
         5. Search D1 catalog
       </button>
@@ -452,6 +494,7 @@ def index_html() -> str:
       <button class="secondary" onclick="search('sid')">Search SID</button>
       <button class="secondary" onclick="search('commodore')">Search Commodore</button>
       <button class="secondary" onclick="search('hvsc')">Search HVSC</button>
+      <button class="secondary" onclick="search('maniacs')">Search Maniacs</button>
     </p>
   </details>
 
@@ -535,7 +578,7 @@ def index_html() -> str:
         await step('step2', ingest);
         await step('step3', catalogVerify);
         await step('step4', catalogIngest);
-        await step('step5', () => search(document.getElementById('q').value || 'jeroen'));
+        await step('step5', () => search(document.getElementById('q').value || 'maniacs'));
         runButton.className = 'done';
         runButton.textContent = '✓ Dataset ready — arbitrary D1 catalog search is enabled';
       } catch (error) {

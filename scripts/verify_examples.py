@@ -259,6 +259,7 @@ EXAMPLES = {
             Check("/ingest-fixture", method="POST", contains="HVSC #84"),
             Check("/search?q=sid", contains="HVSC #84"),
             Check("/tracks?q=jeroen", contains="Jeroen Tel"),
+            Check("/tracks?q=maniacs", contains="Maniacs of Noise"),
             Check("/archive/verify", contains='"verified"'),
             Check("/catalog/verify-r2", contains='"exists"'),
         ],
