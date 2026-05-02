@@ -197,6 +197,8 @@ uv run pyright -p pyright.examples.json
 uv run pytest -q
 ```
 
+`uv run pyright` checks the shared `xampler/` package. `uv run pyright -p pyright.examples.json` checks a small allowlist of stable example files. The tiny stubs in `typings/` only teach pyright the minimum shape of runtime modules such as `workers.Response`, `WorkerEntrypoint`, and `js.fetch`; they are not a replacement for Cloudflare runtime types and should stay small.
+
 Run and verify an example locally with `uv` + `pywrangler`:
 
 ```bash

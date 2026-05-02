@@ -4,6 +4,18 @@ Last reviewed: 2026-05-02.
 
 This captures the Python Workers guidance we apply in Xampler after reviewing the current `python-workers-skill` PRs.
 
+## Type checking and tiny local stubs
+
+The main strict pyright target is the shared `xampler/` package. A second profile, `pyright.examples.json`, checks a small allowlist of stable examples without trying to type the entire Workers runtime surface.
+
+The `typings/` directory contains intentionally tiny `.pyi` stubs for modules that exist in the Python Workers runtime, such as `workers` and `js`. They provide just enough shape for pyright to understand selected examples:
+
+- `Response` and `Response.json(...)`
+- `WorkerEntrypoint`, `WorkflowEntrypoint`, and `DurableObject` base classes
+- a minimal `js.fetch(...)`
+
+These stubs are not product wrappers, not compatibility shims, and not a substitute for official runtime types. Keep them minimal; if official Python Workers type stubs become sufficient, prefer those and delete the local stubs.
+
 ## PR coverage note
 
 I inspected the pull-request refs available from Git for `adewale/python-workers-skill`, including PR heads `1`, `2`, and `3`. That covers both merged/closed work that is now on `main` and the still-open PR heads exposed under `refs/pull/*/head`. The actionable changes for Xampler came mainly from PRs 2 and 3.
