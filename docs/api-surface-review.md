@@ -1,6 +1,6 @@
 # API Surface Review
 
-Last reviewed: 2026-05-01.
+Last reviewed: 2026-05-02.
 
 After raising the Workers AI, Vectorize, Pages, Durable Objects + WebSockets, Workflows, and R2 SQL examples, the repeated API shape is stronger: service wrappers own platform bindings, dataclasses describe inputs/results, deterministic demo services make local verification possible when Cloudflare account resources are required, and real routes keep the official binding/API vocabulary visible.
 
@@ -44,10 +44,26 @@ Concrete lessons now feeding back into the smaller examples:
 | R2 | Runtime-verify multipart upload and add presigned URL/Boto3 companion example. |
 | Queues | Verify real local queue delivery and dead-letter behavior. |
 
+## Second pass after the HVSC browser flow
+
+The later HVSC iterations exposed a UX/API lesson that was not obvious from small examples: long-running or setup-dependent primitives need a status model as much as they need a request model. `R2Artifacts`, `D1Database`, and `HvscPipeline` became more useful once the browser could ask `ingest_status()`, retry shard imports, render compact progress, and search after setup without requiring users to memorize endpoint order.
+
+New cross-cutting API requirements:
+
+- long-running examples should expose typed status/progress results;
+- setup-dependent UI should either perform setup automatically or return the exact next action;
+- account-backed examples should have a local/demo transport and an env-gated remote transport;
+- search/read APIs should return counts and readiness flags, not only raw rows;
+- examples should avoid repainting huge debug payloads during progress loops;
+- `JsProxy` conversion must be defensive for arrays returned by bindings such as R2 `list()`.
+
 ## Design rule reinforced
 
-Every product should expose three layers:
+Every product should expose four layers:
 
 1. Friendly Python surface for common work.
 2. Cloudflare platform vocabulary for docs parity.
-3. `.raw` or low-level escape hatch for newly released platform features.
+3. Status/progress and error models for setup-dependent or long-running work.
+4. `.raw` or low-level escape hatch for newly released platform features.
+
+See [`tier-1-completion-plan.md`](tier-1-completion-plan.md) for the promotion plan and missing primitive inventory.
