@@ -56,6 +56,7 @@ See:
 - [`docs/s3-python-library-research.md`](docs/s3-python-library-research.md)
 - [`docs/api-iteration-log.md`](docs/api-iteration-log.md)
 - [`docs/api-surface-review.md`](docs/api-surface-review.md)
+- [`docs/unified-api-surface.md`](docs/unified-api-surface.md)
 - [`docs/primitives-api-surface.md`](docs/primitives-api-surface.md)
 - [`docs/python-design-patterns.md`](docs/python-design-patterns.md)
 - [`docs/top-10-improvement-plan.md`](docs/top-10-improvement-plan.md)
