@@ -260,6 +260,7 @@ EXAMPLES = {
             Check("/search?q=sid", contains="HVSC #84"),
             Check("/tracks?q=jeroen", contains="Jeroen Tel"),
             Check("/archive/verify", contains='"verified"'),
+            Check("/catalog/verify-r2", contains='"exists"'),
         ],
         needs_setup=(
             "Initializes local D1 and uses deterministic AI/vector logic over HVSC metadata."

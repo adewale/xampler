@@ -13,6 +13,7 @@ from workers import Response, WorkerEntrypoint  # type: ignore[import-not-found]
 HVSC_ARCHIVE_KEY = "hvsc/archives/HVSC_84-all-of-them.7z"
 HVSC_ARCHIVE_URL = "https://boswme.home.xs4all.nl/HVSC/HVSC_84-all-of-them.7z"
 HVSC_ARCHIVE_SIZE = 83_748_140
+HVSC_CATALOG_KEY = "hvsc/84/catalog/tracks.jsonl"
 
 SAMPLE_CATALOG_ROWS = [
     {
@@ -111,6 +112,13 @@ class ArchiveVerification:
     verified: bool
 
 
+@dataclass(frozen=True)
+class CatalogVerification:
+    key: str
+    size: int
+    exists: bool
+
+
 class R2Artifacts:
     def __init__(self, raw: Any):
         self.raw = raw
@@ -123,10 +131,19 @@ class R2Artifacts:
         )
 
     async def read_json(self, key: str) -> Any | None:
+        text = await self.read_text(key)
+        return None if text is None else json.loads(text)
+
+    async def read_text(self, key: str) -> str | None:
         obj = await self.raw.get(key)
         if is_js_missing(obj):
             return None
-        return json.loads(str(await obj.text()))
+        return str(await obj.text())
+
+    async def verify_catalog(self, key: str = HVSC_CATALOG_KEY) -> CatalogVerification:
+        obj = await self.raw.head(key)
+        exists = not is_js_missing(obj)
+        return CatalogVerification(key=key, size=int(obj.size) if exists else 0, exists=exists)
 
     async def stream_from_url(self, *, url: str, key: str) -> ArchiveVerification:
         response = await js.fetch(url)
@@ -279,6 +296,29 @@ class HvscPipeline:
         await self.r2.write_json("hvsc/84/catalog/sample-jeroen.json", rows)
         return {"tracks": len(rows), "contains": "jeroen"}
 
+    async def verify_catalog(self, key: str = HVSC_CATALOG_KEY) -> CatalogVerification:
+        return await self.r2.verify_catalog(key)
+
+    async def ingest_catalog_from_r2(
+        self,
+        *,
+        key: str = HVSC_CATALOG_KEY,
+        limit: int = 0,
+    ) -> dict[str, Any]:
+        text = await self.r2.read_text(key)
+        if text is None:
+            return {"key": key, "tracks": 0, "error": "catalog object not found in R2"}
+
+        count = 0
+        for line in text.splitlines():
+            if not line.strip():
+                continue
+            await self.db.save_track(Track(**json.loads(line)))
+            count += 1
+            if limit and count >= limit:
+                break
+        return {"key": key, "tracks": count, "limited": bool(limit)}
+
     async def search_tracks(self, query: str) -> list[Track]:
         return await self.db.search_tracks(query)
 
@@ -312,6 +352,15 @@ class Default(WorkerEntrypoint):
 
         if path == "/catalog/ingest-sample":
             return Response.json(await pipeline.ingest_sample_catalog())
+
+        if path == "/catalog/verify-r2":
+            key = query.get("key", [HVSC_CATALOG_KEY])[0]
+            return Response.json(asdict(await pipeline.verify_catalog(key)))
+
+        if path == "/catalog/ingest-r2":
+            key = query.get("key", [HVSC_CATALOG_KEY])[0]
+            limit = int(query.get("limit", ["0"])[0] or 0)
+            return Response.json(await pipeline.ingest_catalog_from_r2(key=key, limit=limit))
 
         if path == "/archive/ingest":
             return Response.json(asdict(await pipeline.ingest_archive()))
@@ -361,26 +410,37 @@ def index_html() -> str:
 <body>
   <h1>HVSC AI/data pipeline</h1>
   <p>Use real HVSC release metadata to exercise R2, D1, Queues, and AI/Vectorize seams.</p>
+  <p>The 80 MiB archive itself is not text-searchable until you unpack it locally,
+  build a JSONL catalog, and upload that catalog to R2. These buttons verify each step.</p>
+
+  <ol>
+    <li><button onclick="archiveVerify()">1. Verify full archive object in R2</button></li>
+    <li><button onclick="ingest()">2. Ingest release metadata + bundled sample catalog</button></li>
+    <li><button onclick="catalogVerify()">3. Verify generated catalog JSONL in R2</button></li>
+    <li><button onclick="catalogIngest()">4. Pull catalog JSONL from R2 into D1</button></li>
+    <li>
+      <input id="q" value="jeroen" aria-label="search query">
+      <button onclick="search(document.getElementById('q').value)">5. Search D1 catalog</button>
+    </li>
+  </ol>
+
+  <details>
+    <summary>Optional setup / stress test buttons</summary>
+    <p>
+      <button onclick="archiveIngest()">Stream full 80 MiB archive from HVSC to R2</button>
+      <button class="secondary" onclick="catalogSample()">Ingest bundled sample only</button>
+      <button class="secondary" onclick="search('sid')">Search SID</button>
+      <button class="secondary" onclick="search('commodore')">Search Commodore</button>
+      <button class="secondary" onclick="search('hvsc')">Search HVSC</button>
+    </p>
+  </details>
 
   <p>
-    <button onclick="ingest()">1. Ingest HVSC fixture</button>
-    <button class="secondary" onclick="search('sid')">Search SID</button>
-    <button class="secondary" onclick="search('commodore')">Search Commodore</button>
-    <button class="secondary" onclick="search('hvsc')">Search HVSC</button>
-    <button class="secondary" onclick="search('jeroen')">Search Jeroen</button>
+    <label>Catalog R2 key: <input id="catalogKey" value="hvsc/84/catalog/tracks.jsonl"></label>
+    <label>Import limit: <input id="limit" value="0"></label>
   </p>
 
-  <p>
-    <button onclick="archiveIngest()">Optional: stream full 80 MiB archive to R2</button>
-    <button class="secondary" onclick="archiveVerify()">Verify archive in R2</button>
-  </p>
-
-  <p>
-    <input id="q" value="sid" aria-label="search query">
-    <button onclick="search(document.getElementById('q').value)">Search custom query</button>
-  </p>
-
-  <pre id="output">Click “Ingest HVSC fixture”, then search for “jeroen”.</pre>
+  <pre id="output">Start at button 1. Use button 4 after uploading catalog JSONL to R2.</pre>
 
   <script>
     async function show(response) {
@@ -391,11 +451,28 @@ def index_html() -> str:
         document.getElementById('output').textContent = text;
       }
     }
+    function catalogKey() {
+      return encodeURIComponent(document.getElementById('catalogKey').value);
+    }
+    function limit() {
+      return encodeURIComponent(document.getElementById('limit').value || '0');
+    }
     async function ingest() {
       await show(await fetch('/ingest-fixture', { method: 'POST' }));
     }
+    async function catalogSample() {
+      await show(await fetch('/catalog/ingest-sample', { method: 'POST' }));
+    }
+    async function catalogVerify() {
+      await show(await fetch('/catalog/verify-r2?key=' + catalogKey()));
+    }
+    async function catalogIngest() {
+      document.getElementById('output').textContent = 'Pulling catalog JSONL from R2 into D1...';
+      const path = '/catalog/ingest-r2?key=' + catalogKey() + '&limit=' + limit();
+      await show(await fetch(path, { method: 'POST' }));
+    }
     async function search(q) {
-      await show(await fetch('/search?q=' + encodeURIComponent(q)));
+      await show(await fetch('/tracks?q=' + encodeURIComponent(q)));
     }
     async function archiveIngest() {
       document.getElementById('output').textContent = 'Streaming ~80 MiB archive to local R2...';

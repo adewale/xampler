@@ -24,7 +24,15 @@ Then open <http://localhost:9595/>. In another terminal, ingest the fixture once
 curl -X POST http://localhost:9595/ingest-fixture
 ```
 
-Then open <http://localhost:9595/search?q=sid> or <http://localhost:9595/tracks?q=jeroen>.
+Then use the numbered buttons in the page:
+
+1. Verify the full archive object in R2.
+2. Ingest release metadata plus the bundled sample catalog.
+3. Verify a generated `tracks.jsonl` catalog object in R2.
+4. Pull that catalog JSONL from R2 into D1.
+5. Search the D1 catalog for arbitrary terms such as `jeroen`.
+
+You can also open <http://localhost:9595/search?q=sid> or <http://localhost:9595/tracks?q=jeroen>.
 
 The page also has an optional button to stream the full HVSC archive into local R2:
 
