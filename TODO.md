@@ -20,7 +20,7 @@ These profiles still need a design that is safer or more automated before a norm
 
 ## Prepare prerequisites as part of examples
 
-For the remaining remote profiles, Cloudflare docs suggest concrete setup commands or topology that can be folded into example-specific `prepare` scripts or a future `scripts/prepare_remote_examples.py`.
+For the remaining remote profiles, Cloudflare docs suggest concrete setup commands or topology that can be folded into example-specific prepare paths. `scripts/prepare_remote_examples.py` now exists and covers the first set of Wrangler-managed prerequisites.
 
 ### `workers-ai`
 
@@ -63,14 +63,15 @@ Current result:
 
 TODO:
 
-- [ ] Add a prepare step for `examples/ai-agents/vectorize-search`:
+- [x] Add a prepare step for `examples/ai-agents/vectorize-search`:
 
   ```bash
-  npx wrangler vectorize create xampler-vectorize --dimensions=3 --metric=cosine
+  npx wrangler vectorize create xampler-vectorize --dimensions=32 --metric=cosine
   ```
 
-- [ ] Make the command idempotent: describe/list first, create only if absent.
-- [ ] Ensure fixture vectors and index dimensions stay in sync.
+- [x] Make the command idempotent: describe/list first, create only if absent.
+- [x] Ensure fixture vectors and index dimensions stay in sync.
+- [x] Deploy the Vectorize Worker and record its URL so verification avoids `wrangler dev --remote` 403 preview issues.
 - [ ] Optionally add metadata index creation if future tests use metadata filters.
 
 ### `browser-rendering`
@@ -111,9 +112,9 @@ Docs pattern:
 
 TODO:
 
-- [ ] Add a prepare script that creates the bucket and enables catalog idempotently.
+- [x] Add a prepare script that creates the bucket and enables catalog idempotently.
 - [ ] Add a tiny seed pipeline/table or documented fixture so `SHOW DATABASES` is not the only real query.
-- [ ] Use Cloudflare's `WRANGLER_R2_SQL_AUTH_TOKEN` env name where possible; map it to Worker `.dev.vars` only for REST-backed Worker tests.
+- [x] Use Cloudflare's `WRANGLER_R2_SQL_AUTH_TOKEN` env name where possible; map it to Worker `.dev.vars` only for REST-backed Worker tests.
 - [ ] Keep token creation manual unless Cloudflare exposes a safe Wrangler OAuth flow for this permission.
 
 ### `r2-data-catalog`
@@ -126,9 +127,9 @@ Docs pattern:
 
 TODO:
 
-- [ ] Reuse the `r2-sql` bucket/catalog prepare step where possible.
+- [x] Reuse the `r2-sql` bucket/catalog prepare step where possible.
 - [ ] Add a small namespace/table creation path or a read-only catalog smoke test.
-- [ ] Document how to retrieve and export `XAMPLER_R2_DATA_CATALOG_URI` and `XAMPLER_R2_DATA_CATALOG_TOKEN`.
+- [x] Record `XAMPLER_R2_DATA_CATALOG_URI` equivalent in prepared state and document/export the token requirement.
 - [ ] Keep catalog token manual unless a safe Wrangler-backed token path exists.
 
 ### `queues-dlq`
@@ -155,10 +156,10 @@ Consumer config supports:
 
 TODO:
 
-- [ ] Add a prepare step for `examples/state-events/queues-producer-consumer` that creates both queues if missing.
-- [ ] Deploy the Worker after queue creation.
-- [ ] Replace the deployed-URL-only remote profile with a profile that can deploy or discover the Worker URL.
-- [ ] Verify producer, consumer retry, and DLQ behavior with bounded polling.
+- [x] Add a prepare step for `examples/state-events/queues-producer-consumer` that creates both queues if missing.
+- [x] Deploy the Worker after queue creation.
+- [x] Replace the deployed-URL-only remote profile with a profile that can use prepared state.
+- [ ] Verify real async consumer retry and DLQ behavior with bounded polling. Current remote route verifies deployed producer enqueueing.
 
 ### `service-bindings`
 
@@ -170,9 +171,9 @@ Docs pattern:
 
 TODO:
 
-- [ ] Add a prepare step that deploys `examples/network-edge/service-bindings-rpc/py` first.
-- [ ] Then deploy `examples/network-edge/service-bindings-rpc/ts` with its binding to `xampler-network-edge-service-bindings-rpc-py`.
-- [ ] Make remote verifier call the deployed TS consumer URL instead of requiring `XAMPLER_REMOTE_SERVICE_BINDINGS_URL` manually.
+- [x] Add a prepare step that deploys `examples/network-edge/service-bindings-rpc/py` first.
+- [x] Then deploy `examples/network-edge/service-bindings-rpc/ts` with its binding to `xampler-network-edge-service-bindings-rpc-py`.
+- [x] Make remote verifier call the deployed TS consumer URL from prepared state instead of requiring `XAMPLER_REMOTE_SERVICE_BINDINGS_URL` manually.
 
 ### `websockets`
 
@@ -183,13 +184,13 @@ Docs pattern from our example topology:
 
 TODO:
 
-- [ ] Add a prepare/deploy step for `examples/state-events/durable-object-chatroom`.
-- [ ] Discover or print the deployed workers.dev URL.
-- [ ] Reuse the existing two-client WebSocket broadcast verifier against the deployed URL.
+- [x] Add a prepare/deploy step for `examples/state-events/durable-object-chatroom`.
+- [x] Discover or print the deployed workers.dev URL.
+- [x] Reuse the existing two-client WebSocket broadcast verifier against the deployed URL.
 
 ## Cross-cutting TODOs
 
-- [ ] Add `scripts/prepare_remote_examples.py` with profile-specific, idempotent setup.
+- [x] Add `scripts/prepare_remote_examples.py` with profile-specific, idempotent setup.
 - [ ] Prefer `wrangler login`/Wrangler OAuth for resource creation whenever Cloudflare supports it.
 - [ ] Keep secrets out of generated files; temporary `.dev.vars` must be restored or deleted.
 - [ ] Separate three phases: `prepare`, `verify`, and `cleanup`.

@@ -8,9 +8,23 @@ Remote profiles may cost money. Every profile requires all of the following:
 
 1. `XAMPLER_RUN_REMOTE=1`
 2. a profile-specific enable flag, for example `XAMPLER_REMOTE_WORKERS_AI=1`
-3. either normal Wrangler authentication (`wrangler login`) or profile-specific credentials/deployed URLs
+3. either normal Wrangler authentication (`wrangler login`), prepared resources from `scripts/prepare_remote_examples.py`, or profile-specific credentials/deployed URLs
 
-If anything is missing, the verifier prints `SKIP ...` and exits successfully. For profiles that use Wrangler remote bindings, `wrangler login` is the intended local developer credential path; `CLOUDFLARE_API_TOKEN` is mainly for CI or for examples whose Worker code calls Cloudflare REST APIs directly.
+If anything is missing, the verifier prints `SKIP ...` and exits successfully. For profiles that use Wrangler remote bindings or deploy Workers/resources with Wrangler, `wrangler login` is the intended local developer credential path; `CLOUDFLARE_API_TOKEN` is mainly for CI or for examples whose Worker code calls Cloudflare REST APIs directly.
+
+## Prepare real resources
+
+Some profiles can now prepare their own account resources or deployed Worker URLs. Preparation is also gated because it creates remote resources and may cost money:
+
+```bash
+npx --yes wrangler login
+export XAMPLER_RUN_REMOTE=1
+export XAMPLER_PREPARE_REMOTE=1
+uv run python scripts/prepare_remote_examples.py --list
+uv run python scripts/prepare_remote_examples.py vectorize
+```
+
+Prepared deployed URLs are written to `.xampler-remote-state.json`, which is ignored by Git. The remote verifier reads that file, so you do not need to manually export URL variables for prepared profiles.
 
 ## List profiles
 
@@ -32,33 +46,35 @@ These profiles start the example Worker and call its real route. Binding-backed 
 | Profile | Mechanism | Required environment beyond `XAMPLER_RUN_REMOTE=1` |
 |---|---|---|
 | `workers-ai` | real Workers AI binding through Wrangler remote dev | `XAMPLER_REMOTE_WORKERS_AI=1`; authenticate with `wrangler login` first. |
-| `vectorize` | real Vectorize binding through Wrangler remote dev; runs describe/upsert/query | `XAMPLER_REMOTE_VECTORIZE=1`; authenticate with `wrangler login` first and ensure the configured Vectorize index exists. |
-| `browser-rendering` | real Browser Rendering REST API from the Worker | `XAMPLER_REMOTE_BROWSER_RENDERING=1`, `CLOUDFLARE_ACCOUNT_ID`, `CLOUDFLARE_API_TOKEN` |
-| `r2-sql` | real R2 SQL REST API from the Worker | `XAMPLER_REMOTE_R2_SQL=1`, `CLOUDFLARE_ACCOUNT_ID`, `CLOUDFLARE_API_TOKEN` |
+| `vectorize` | deployed Worker with real Vectorize binding; runs describe/upsert/query | `XAMPLER_REMOTE_VECTORIZE=1`; prepare with `scripts/prepare_remote_examples.py vectorize`. |
+| `browser-rendering` | real Browser Rendering REST API from the Worker | `XAMPLER_REMOTE_BROWSER_RENDERING=1`, `CLOUDFLARE_API_TOKEN`; preflight with `scripts/prepare_remote_examples.py browser-rendering`. `CLOUDFLARE_ACCOUNT_ID` is inferred from `wrangler whoami` when possible. |
+| `r2-sql` | real R2 SQL REST API from the Worker | `XAMPLER_REMOTE_R2_SQL=1`, `WRANGLER_R2_SQL_AUTH_TOKEN`; bucket/catalog prep exists, token remains required. `CLOUDFLARE_ACCOUNT_ID` is inferred from `wrangler whoami` when possible. |
 | `ai-gateway` | real AI Gateway endpoint from the Worker | `XAMPLER_REMOTE_AI_GATEWAY=1`, `CLOUDFLARE_ACCOUNT_ID`, `CLOUDFLARE_API_TOKEN`, `XAMPLER_AI_GATEWAY_ID`, `OPENAI_API_KEY` |
-| `r2-data-catalog` | real Iceberg/R2 Data Catalog endpoint from the Worker | `XAMPLER_REMOTE_R2_DATA_CATALOG=1`, `XAMPLER_R2_DATA_CATALOG_URI`, `XAMPLER_R2_DATA_CATALOG_TOKEN` |
+| `r2-data-catalog` | real Iceberg/R2 Data Catalog endpoint from the Worker | `XAMPLER_REMOTE_R2_DATA_CATALOG=1`, `XAMPLER_R2_DATA_CATALOG_TOKEN`; catalog URI can come from prepared state or `XAMPLER_R2_DATA_CATALOG_URI`. |
 
 Example:
 
 ```bash
-wrangler login
+npx --yes wrangler login
 export XAMPLER_RUN_REMOTE=1
+export XAMPLER_PREPARE_REMOTE=1
+uv run python scripts/prepare_remote_examples.py vectorize
 export XAMPLER_REMOTE_VECTORIZE=1
 uv run python scripts/verify_remote_examples.py vectorize
 ```
 
 ## Deployed URL profiles
 
-The following profiles still require deployed verification routes because the local example is not yet wired to a fully real end-to-end implementation:
+Some deployed URL profiles can be prepared automatically. Others still require a URL because the example is not yet wired to a fully real end-to-end implementation:
 
 | Profile | Enable flag | URL variable | Purpose |
 |---|---|---|---|
 | `hyperdrive` | `XAMPLER_REMOTE_HYPERDRIVE=1` | `XAMPLER_REMOTE_HYPERDRIVE_URL` | Deployed Hyperdrive/Postgres query route. |
 | `images` | `XAMPLER_REMOTE_IMAGES=1` | `XAMPLER_REMOTE_IMAGES_URL` | Deployed Cloudflare Images route. |
 | `analytics-engine` | `XAMPLER_REMOTE_ANALYTICS_ENGINE=1` | `XAMPLER_REMOTE_ANALYTICS_ENGINE_URL` | Deployed Analytics Engine route. |
-| `queues-dlq` | `XAMPLER_REMOTE_QUEUES_DLQ=1` | `XAMPLER_REMOTE_QUEUES_DLQ_URL` | Deployed Queue delivery/DLQ verification routes. |
-| `service-bindings` | `XAMPLER_REMOTE_SERVICE_BINDINGS=1` | `XAMPLER_REMOTE_SERVICE_BINDINGS_URL` | Deployed cross-worker Service Binding route. |
-| `websockets` | `XAMPLER_REMOTE_WEBSOCKETS=1` | `XAMPLER_REMOTE_WEBSOCKETS_URL` | Deployed WebSocket verification route. |
+| `queues-dlq` | `XAMPLER_REMOTE_QUEUES_DLQ=1` | prepared state or `XAMPLER_REMOTE_QUEUES_DLQ_URL` | Creates queues/DLQ, deploys Worker, verifies deployed producer route. |
+| `service-bindings` | `XAMPLER_REMOTE_SERVICE_BINDINGS=1` | prepared state or `XAMPLER_REMOTE_SERVICE_BINDINGS_URL` | Deploys provider then consumer, verifies real cross-worker Service Binding. |
+| `websockets` | `XAMPLER_REMOTE_WEBSOCKETS=1` | prepared state or `XAMPLER_REMOTE_WEBSOCKETS_URL` | Deploys Durable Object chatroom and verifies real two-client WebSocket broadcast. |
 
 ## Local checks are still the default
 

@@ -40,8 +40,11 @@ class R2SqlResult:
 
 
 class R2SqlClient:
-    def __init__(self, *, account_id: str, token: str):
-        self.url = f"https://api.cloudflare.com/client/v4/accounts/{account_id}/r2/sql/query"
+    def __init__(self, *, account_id: str, bucket_name: str, token: str):
+        self.url = (
+            "https://api.sql.cloudflarestorage.com/api/v1/accounts/"
+            f"{account_id}/r2-sql/query/{bucket_name}"
+        )
         self.token = token
 
     async def query(self, query: R2SqlQuery) -> R2SqlResult:
@@ -54,7 +57,7 @@ class R2SqlClient:
                     "authorization": f"Bearer {self.token}",
                     "content-type": "application/json",
                 },
-                "body": json.dumps({"sql": sql}),
+                "body": json.dumps({"query": sql}),
             }),
         )
         return R2SqlResult(sql=sql, data=to_py(await response.json()))
@@ -87,7 +90,11 @@ class Default(WorkerEntrypoint):
         if url.endswith("/demo/explain"):
             return Response.json((await DemoR2SqlClient().explain(query)).__dict__)
 
-        client = R2SqlClient(account_id=str(self.env.ACCOUNT_ID), token=str(self.env.CF_API_TOKEN))
+        client = R2SqlClient(
+            account_id=str(self.env.ACCOUNT_ID),
+            bucket_name=str(self.env.BUCKET_NAME),
+            token=str(self.env.CF_API_TOKEN),
+        )
         try:
             result = await client.query(query)
         except ValueError as exc:

@@ -4,5 +4,5 @@
   "main": "src/entry.py",
   "compatibility_date": "2026-05-01",
   "compatibility_flags": ["python_workers"],
-  "vars": {"ACCOUNT_ID": "REPLACE_WITH_ACCOUNT_ID"}
+  "vars": {"ACCOUNT_ID": "REPLACE_WITH_ACCOUNT_ID", "BUCKET_NAME": "xampler-r2-sql"}
 }

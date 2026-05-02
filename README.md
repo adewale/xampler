@@ -212,9 +212,15 @@ Remote verifiers are separate because they can use real Cloudflare resources and
 
 ```bash
 uv run python scripts/verify_remote_examples.py --list
-wrangler login
+npx --yes wrangler login
 XAMPLER_RUN_REMOTE=1 XAMPLER_REMOTE_WORKERS_AI=1 \
   uv run python scripts/verify_remote_examples.py workers-ai
+
+# Some remote profiles can prepare their own Wrangler-managed prerequisites.
+XAMPLER_RUN_REMOTE=1 XAMPLER_PREPARE_REMOTE=1 \
+  uv run python scripts/prepare_remote_examples.py vectorize
+XAMPLER_RUN_REMOTE=1 XAMPLER_REMOTE_VECTORIZE=1 \
+  uv run python scripts/verify_remote_examples.py vectorize
 ```
 
 Run and verify an example locally with `uv` + `pywrangler`:

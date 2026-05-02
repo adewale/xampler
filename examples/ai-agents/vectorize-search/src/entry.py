@@ -8,6 +8,11 @@ from cfboundary.ffi import to_js, to_py
 from workers import Response, WorkerEntrypoint  # type: ignore[import-not-found]
 
 ReturnMetadata = Literal["none", "indexed", "all"]
+VECTOR_DIMENSIONS = 32
+
+
+def unit_vector(index: int, *, dimensions: int = VECTOR_DIMENSIONS) -> list[float]:
+    return [1.0 if position == index else 0.0 for position in range(dimensions)]
 
 
 @dataclass(frozen=True)
@@ -102,11 +107,11 @@ class VectorIndex:
 
 
 class DemoVectorIndex:
-    def __init__(self, dimensions: int = 3):
+    def __init__(self, dimensions: int = VECTOR_DIMENSIONS):
         self.dimensions = dimensions
         self.vectors = [
-            Vector("doc-1", [1.0, 0.0, 0.0], metadata={"url": "/docs/1"}),
-            Vector("doc-2", [0.0, 1.0, 0.0], metadata={"url": "/docs/2"}),
+            Vector("doc-1", unit_vector(0, dimensions=dimensions), metadata={"url": "/docs/1"}),
+            Vector("doc-2", unit_vector(1, dimensions=dimensions), metadata={"url": "/docs/2"}),
         ]
 
     async def search(self, values: list[float], *, top_k: int = 5) -> VectorQueryResult:
@@ -130,7 +135,7 @@ class Default(WorkerEntrypoint):
         index = VectorIndex(self.env.INDEX)
         path = urlparse(str(request.url)).path
         if path == "/demo":
-            result = await DemoVectorIndex().search([1.0, 0.0, 0.0], top_k=1)
+            result = await DemoVectorIndex().search(unit_vector(0), top_k=1)
             return Response.json(asdict(result))
         if path == "/describe":
             return Response.json(await index.describe())

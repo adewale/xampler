@@ -13,4 +13,5 @@ build/
 python_modules/
 .venv-workers/
 .data/
+.xampler-remote-state.json
 *.7z
