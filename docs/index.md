@@ -7,7 +7,8 @@ Long-term docs are grouped by purpose. Older planning snapshots live in [`archiv
 - [`api/library-surface.md`](api/library-surface.md) — importable library modules and stability levels.
 - [`api/reference.md`](api/reference.md) — concise API reference and copyable imports.
 - [`api/testability.md`](api/testability.md) — how to write red-green-refactor tests with fake bindings and `Demo*` clients.
-- [`api/pipeline-vocabulary.md`](api/pipeline-vocabulary.md) — composition, progress, checkpoint, retry, and observability vocabulary.
+- [`api/pipeline-vocabulary.md`](api/pipeline-vocabulary.md) — composition vocabulary.
+- [`api/operations.md`](api/operations.md) — progress, checkpoint, retry, DLQ, workflow status, and observability patterns.
 - [`api/unified-api-surface.md`](api/unified-api-surface.md) — the shared Xampler API shape.
 - [`api/primitives-api-surface.md`](api/primitives-api-surface.md) — primitive coverage and Pythonic API matrix.
 - [`api/primitive-test-realism.md`](api/primitive-test-realism.md) — verification honesty matrix.
@@ -42,6 +43,7 @@ These are mostly maintainer-facing. New users should start with the API/runtime/
 
 These docs explain why the repo looks the way it does, but they are not the main user journey.
 
+- [`project/competitive-positioning.md`](project/competitive-positioning.md)
 - [`project/complex-example-backlog.md`](project/complex-example-backlog.md)
 - [`project/duplication-audit.md`](project/duplication-audit.md)
 - [`project/experience-assessment.md`](project/experience-assessment.md)
