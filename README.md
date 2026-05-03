@@ -145,6 +145,8 @@ These examples are useful, but they contain a local stand-in, deterministic tran
 
 Start with [`docs/index.md`](docs/index.md). The highest-value user-facing docs are:
 
+- [`docs/api/library-surface.md`](docs/api/library-surface.md)
+- [`docs/api/reference.md`](docs/api/reference.md)
 - [`docs/api/unified-api-surface.md`](docs/api/unified-api-surface.md)
 - [`docs/api/primitives-api-surface.md`](docs/api/primitives-api-surface.md)
 - [`docs/api/primitive-test-realism.md`](docs/api/primitive-test-realism.md)

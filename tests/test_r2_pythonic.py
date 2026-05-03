@@ -1,15 +1,10 @@
 from __future__ import annotations
 
-import sys
-from pathlib import Path
 from typing import Any
 
 import pytest
 
-ROOT = Path(__file__).resolve().parents[1]
-sys.path.insert(0, str(ROOT))
-
-from xampler.r2 import R2Bucket  # noqa: E402
+from xampler.r2 import R2Bucket
 
 
 class FakeR2Object:
