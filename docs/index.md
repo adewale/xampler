@@ -28,11 +28,18 @@ Long-term docs are grouped by purpose. Older planning snapshots live in [`archiv
 
 ## Project direction
 
+These are mostly maintainer-facing. New users should start with the API/runtime/data docs above.
+
+- [`project/example-categories.md`](project/example-categories.md) — user-facing categorization by realism and product family.
+- [`project/project-structure-and-naming.md`](project/project-structure-and-naming.md) — folder and naming conventions.
+- [`project/composite-example-backlog.md`](project/composite-example-backlog.md) — future app ideas.
+
+## Maintainer notes and audits
+
+These docs explain why the repo looks the way it does, but they are not the main user journey.
+
 - [`project/lessons-learned.md`](project/lessons-learned.md)
-- [`project/project-structure-and-naming.md`](project/project-structure-and-naming.md)
-- [`project/example-categories.md`](project/example-categories.md)
-- [`project/wrapper-consistency-audit.md`](project/wrapper-consistency-audit.md)
-- [`project/composite-example-backlog.md`](project/composite-example-backlog.md)
-- [`project/original-goals-audit.md`](project/original-goals-audit.md)
 - [`project/gaps-explained.md`](project/gaps-explained.md)
+- [`project/original-goals-audit.md`](project/original-goals-audit.md)
 - [`project/shared-wrapper-candidates.md`](project/shared-wrapper-candidates.md)
+- [`project/wrapper-consistency-audit.md`](project/wrapper-consistency-audit.md)

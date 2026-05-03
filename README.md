@@ -17,6 +17,14 @@ examples/streaming/gutenberg-stream-composition/
 examples/full-apps/hvsc-ai-data-search/
 ```
 
+## Recommended path
+
+1. Start with [`examples/start/hello-worker/`](examples/start/hello-worker) for the smallest Python Worker.
+2. Then use [`examples/storage-data/r2-object-storage/`](examples/storage-data/r2-object-storage) as the first serious primitive: it writes text, uploads a JPEG, streams it back, and byte-compares it.
+3. Use [`examples/streaming/gutenberg-stream-composition/`](examples/streaming/gutenberg-stream-composition) to see R2 bytes become D1 full-text-search rows.
+4. Use [`examples/state-events/durable-object-chatroom/`](examples/state-events/durable-object-chatroom) to understand stateful coordination and WebSocket broadcast.
+5. Use [`examples/network-edge/service-bindings-rpc/`](examples/network-edge/service-bindings-rpc) to see TypeScript and Python Workers interact through real Service Bindings RPC.
+
 ## Examples
 
 | Example | Primitive / topic | What it demonstrates |
@@ -68,9 +76,12 @@ await AgentSession(env.AGENT, "shakespeare").emit({"type": "summary", "data": su
 
 That exact high-level API is still aspirational, but the pieces exist today:
 
+- [`examples/storage-data/r2-object-storage`](examples/storage-data/r2-object-storage) is the best post-Hello-World example because it exercises real local object storage with text, binary upload, streaming download, and byte comparison.
 - [`examples/streaming/gutenberg-stream-composition`](examples/streaming/gutenberg-stream-composition) reads a real R2 ZIP body stream, unzips it, models byte/text/line/record streams, batches, checkpoints, indexes the full text into D1 FTS, and includes AI chunks, agent events, and WebSocket events.
+- [`examples/network-edge/service-bindings-rpc`](examples/network-edge/service-bindings-rpc) deploys a Python provider and a TypeScript consumer so cross-language Workers can interact through real Service Bindings RPC.
+- [`examples/state-events/durable-object-chatroom`](examples/state-events/durable-object-chatroom) demonstrates Durable Object state plus local and deployed two-client WebSocket broadcast verification.
 - [`examples/full-apps/hvsc-ai-data-search`](examples/full-apps/hvsc-ai-data-search) composes R2 datasets, D1 ingestion state/search, Queue-style jobs, Workers AI, and Vectorize seams into an interactive app.
-- [`examples/state-events/queues-producer-consumer`](examples/state-events/queues-producer-consumer), [`examples/ai-agents/agents-sdk-tools`](examples/ai-agents/agents-sdk-tools), and [`examples/network-edge/service-bindings-rpc`](examples/network-edge/service-bindings-rpc) show typed jobs, durable sessions/tools, and cross-worker RPC boundaries.
+- [`examples/state-events/queues-producer-consumer`](examples/state-events/queues-producer-consumer) and [`examples/ai-agents/agents-sdk-tools`](examples/ai-agents/agents-sdk-tools) show typed jobs and durable sessions/tools.
 
 Reusable wrapper ideas across examples:
 
@@ -132,15 +143,16 @@ These examples are useful, but they contain a local stand-in, deterministic tran
 
 ## Pythonic API principles
 
-Start with [`docs/index.md`](docs/index.md). The highest-value docs are:
+Start with [`docs/index.md`](docs/index.md). The highest-value user-facing docs are:
 
 - [`docs/api/unified-api-surface.md`](docs/api/unified-api-surface.md)
 - [`docs/api/primitives-api-surface.md`](docs/api/primitives-api-surface.md)
 - [`docs/api/primitive-test-realism.md`](docs/api/primitive-test-realism.md)
 - [`docs/runtime/python-workers-runtime-guidance.md`](docs/runtime/python-workers-runtime-guidance.md)
+- [`docs/runtime/remote-verification.md`](docs/runtime/remote-verification.md)
 - [`docs/data/streaming-api.md`](docs/data/streaming-api.md)
-- [`docs/project/original-goals-audit.md`](docs/project/original-goals-audit.md)
-- [`docs/project/gaps-explained.md`](docs/project/gaps-explained.md)
+
+Repo-internal audits, lessons, and planning notes live under `docs/project/` and `docs/archive/`; they are useful for maintainers but are not the main user journey.
 
 The short version:
 
@@ -150,6 +162,20 @@ The short version:
 4. Keep `cfboundary` conversion at the JS/Python boundary.
 5. Use `async for` for pagination/streams and `async with` for lifecycles.
 6. Keep `.raw` as an explicit escape hatch.
+
+## Stable shared base layer
+
+Xampler does not try to hide Cloudflare behind a giant SDK, but `xampler.cloudflare` now provides a tiny canonical base vocabulary for examples that need shared shape:
+
+```python
+from xampler.cloudflare import CloudflareService, ResourceRef, RestClient
+```
+
+- `CloudflareService[T]` — active wrapper around a Worker binding/action facade.
+- `ResourceRef[T]` — passive handle to a named resource such as an object key, Durable Object stub, or workflow instance.
+- `RestClient[T]` — token/HTTP backed product client when no Python-usable binding path exists.
+
+Product-specific tutorial wrappers still live in examples until their shape is proven in more than one place.
 
 ## Primitive metrics
 
@@ -183,7 +209,7 @@ Coverage and Pythonic API scores are out of 10. Test realism is out of 5; see [`
 | Tier 1 — Gold standard | LangChain/package orchestration | 6.2 | 8.1 | 3 |
 | Tier 1 — Gold standard | Hyperdrive | 6.5 | 8.4 | 3 |
 | Tier 1 — Gold standard | Agents SDK | 6.8 | 8.6 | 3 |
-| Tier 1 — Gold standard | Streaming composition | 7.6 | 8.8 | 4 |
+| Tier 1 — Gold standard | Streaming composition | 8.2 | 9.0 | 4.5 |
 
 ## Requirements
 
@@ -207,6 +233,28 @@ uv run pytest -q
 ```
 
 `uv run pyright` checks the shared `xampler/` package. `uv run pyright -p pyright.examples.json` checks a small allowlist of stable example files. The tiny stubs in `typings/` only teach pyright the minimum shape of runtime modules such as `workers.Response`, `WorkerEntrypoint`, and `js.fetch`; they are not a replacement for Cloudflare runtime types and should stay small.
+
+## Known remote-cost profile
+
+Remote checks are opt-in because they can create Cloudflare resources, deploy Workers, and call paid products. Typical maintainer smoke runs are intentionally tiny, but exact pricing depends on your account plan and Cloudflare's current product pricing.
+
+| Profile | What it may create/call | Cost risk |
+|---|---|---|
+| `workers-ai` | One deployed Worker and one small Workers AI inference. | Usage-based AI cost. |
+| `vectorize` | One small Vectorize index, one Worker, one upsert/query smoke. | Usually tiny; index/storage/query pricing may apply. |
+| `queues-dlq` | Two Queues, one Worker, several retry/DLQ messages. | Usually tiny; Queue operations may apply. |
+| `service-bindings` | Two deployed Workers. | Worker request/deploy usage. |
+| `websockets` | One Durable Object/WebSocket Worker. | Worker/Durable Object/WebSocket duration usage. |
+| `browser-rendering` | One Worker and one Browser Rendering screenshot. | Browser Rendering usage-based cost. |
+| `r2-sql` | R2 bucket/catalog, one Worker, R2 SQL metadata query. | R2/R2 SQL/Data Catalog usage may apply. |
+| `r2-data-catalog` | R2 bucket/catalog, one Worker, Iceberg REST calls. | R2/Data Catalog/API usage may apply. |
+
+Use cleanup when done:
+
+```bash
+XAMPLER_RUN_REMOTE=1 XAMPLER_CLEANUP_REMOTE=1 \
+  uv run python scripts/cleanup_remote_examples.py vectorize
+```
 
 Remote verifiers are separate because they can use real Cloudflare resources and cost money. They never run by default. See [`docs/runtime/remote-verification.md`](docs/runtime/remote-verification.md):
 

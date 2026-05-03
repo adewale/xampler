@@ -40,6 +40,20 @@ progress = await pipeline.ingest_status()
 raw = r2.raw
 ```
 
+## Stable shared base layer
+
+The tiny canonical base vocabulary lives in `xampler.cloudflare`:
+
+```python
+from xampler.cloudflare import CloudflareService, ResourceRef, RestClient
+```
+
+- `CloudflareService[T]` is for active Worker binding/action facades.
+- `ResourceRef[T]` is for passive handles to named resources.
+- `RestClient[T]` is for token/HTTP backed product APIs.
+
+These classes intentionally only store `raw`/`name`/`base_url`; they are not a giant SDK façade. Product-specific tutorial wrappers stay in examples until their shape proves reusable.
+
 ## Reused concepts
 
 The API surface is deliberately small. A few concepts repeat across products so examples compose instead of becoming unrelated wrappers.
