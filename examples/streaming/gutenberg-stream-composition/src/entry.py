@@ -7,13 +7,16 @@ import zipfile
 from collections.abc import AsyncIterator
 from dataclasses import asdict, dataclass
 from io import BytesIO
-from typing import Any
+from typing import Any, cast
 from urllib.parse import parse_qs, urlparse
 
 import js  # type: ignore[import-not-found]
 from cfboundary.ffi import d1_null, is_js_missing, to_js, to_js_bytes, to_py
 from workers import Response, WorkerEntrypoint  # type: ignore[import-not-found]
 
+from xampler.cloudflare import CloudflareService
+from xampler.response import jsonable
+from xampler.status import Progress
 from xampler.streaming import (
     AgentEvent,
     ByteStream,
@@ -111,10 +114,7 @@ class D1Statement:
         return rows[0] if rows else None
 
 
-class D1Database:
-    def __init__(self, raw: Any):
-        self.raw = raw
-
+class D1Database(CloudflareService[Any]):
     def statement(self, sql: str) -> D1Statement:
         return D1Statement(self.raw.prepare(sql))
 
@@ -217,12 +217,23 @@ async def unzip_gutenberg_archive_from_r2(bucket: Any) -> dict[str, Any]:
     return {**metadata, "sample": html_text[:160]}
 
 
-def html_to_text_chunks(html_text: str, *, chunk_size: int = 1200) -> list[str]:
-    body = re.sub(r"(?is)<(script|style).*?</\\1>", " ", html_text)
-    body = re.sub(r"(?s)<[^>]+>", " ", body)
+def html_to_text(html_text: str, *, tag_separator: str = " ") -> str:
+    body = re.sub(r"(?is)<(script|style).*?</\\1>", tag_separator, html_text)
+    body = re.sub(r"(?s)<[^>]+>", tag_separator, body)
     text = html.unescape(body)
-    text = re.sub(r"\\s+", " ", text).strip()
+    if tag_separator == "\n":
+        lines = [re.sub(r"\\s+", " ", line).strip() for line in text.splitlines()]
+        return "\n".join(line for line in lines if line)
+    return re.sub(r"\\s+", " ", text).strip()
+
+
+def html_to_text_chunks(html_text: str, *, chunk_size: int = 1200) -> list[str]:
+    text = html_to_text(html_text)
     return [text[offset : offset + chunk_size] for offset in range(0, len(text), chunk_size)]
+
+
+def html_to_text_lines(html_text: str) -> list[str]:
+    return [line for line in html_to_text(html_text, tag_separator="\n").splitlines() if line]
 
 
 def fts_query(text: str) -> str:
@@ -316,6 +327,83 @@ async def verify_fts(raw_db: Any) -> dict[str, Any]:
     }
 
 
+async def reset_checkpointed_pipeline(db: D1Database) -> None:
+    await db.execute(
+        """
+        CREATE TABLE IF NOT EXISTS gutenberg_pipeline_lines (
+          line_no INTEGER PRIMARY KEY,
+          text TEXT NOT NULL
+        );
+        CREATE TABLE IF NOT EXISTS stream_checkpoints (
+          name TEXT PRIMARY KEY,
+          offset INTEGER NOT NULL,
+          records INTEGER NOT NULL,
+          state TEXT NOT NULL
+        );
+        DELETE FROM gutenberg_pipeline_lines;
+        DELETE FROM stream_checkpoints WHERE name = 'gutenberg-r2-lines';
+        """
+    )
+
+
+async def checkpointed_pipeline_status(raw_db: Any) -> dict[str, Any]:
+    db = D1Database(raw_db)
+    rows = await db.statement("SELECT COUNT(*) AS count FROM gutenberg_pipeline_lines").first()
+    checkpoint = await db.statement(
+        "SELECT name, offset, records, state FROM stream_checkpoints WHERE name = ?"
+    ).first("gutenberg-r2-lines")
+    return {"lines": int((rows or {}).get("count", 0)), "checkpoint": checkpoint}
+
+
+async def ingest_r2_lines_checkpointed(bucket: Any, raw_db: Any) -> dict[str, Any]:
+    db = D1Database(raw_db)
+    html_text, metadata = await extract_gutenberg_html(bucket)
+    lines = html_to_text_lines(html_text)
+    await reset_checkpointed_pipeline(db)
+    batches = 0
+    inserted = 0
+    for batch in [lines[offset : offset + 250] for offset in range(0, len(lines), 250)]:
+        statements: list[D1Statement] = []
+        for text in batch:
+            inserted += 1
+            statements.append(
+                db.statement(
+                    "INSERT INTO gutenberg_pipeline_lines (line_no, text) VALUES (?, ?)"
+                ).bind(inserted, text)
+            )
+        progress = Progress(
+            inserted, len(lines), "running" if inserted < len(lines) else "complete"
+        )
+        statements.append(
+            db.statement(
+                """
+                INSERT INTO stream_checkpoints (name, offset, records, state)
+                VALUES (?, ?, ?, ?)
+                ON CONFLICT(name) DO UPDATE SET
+                  offset = excluded.offset,
+                  records = excluded.records,
+                  state = excluded.state
+                """
+            ).bind("gutenberg-r2-lines", inserted, inserted, progress.state)
+        )
+        await db.batch_run(statements)
+        batches += 1
+    status = await checkpointed_pipeline_status(raw_db)
+    checkpoint = status["checkpoint"]
+    checkpoint_records = (
+        cast(dict[str, Any], checkpoint).get("records") if isinstance(checkpoint, dict) else None
+    )
+    return {
+        **metadata,
+        "source": "r2-zip-to-checkpointed-d1-lines",
+        "batches": batches,
+        "lines": len(lines),
+        "status": status,
+        "all_lines_checkpointed": status["lines"] == len(lines)
+        and checkpoint_records == len(lines),
+    }
+
+
 async def stream_events() -> dict[str, Any]:
     ai_chunks = [chunk async for chunk in DemoAIService().stream_text("Shakespeare archive")]
     agent_events = [asdict(event) async for event in DemoAgentSession().stream("Hamlet")]
@@ -337,18 +425,28 @@ class Default(WorkerEntrypoint):
         if path == "/demo":
             return Response.json(await composed_pipeline())
         if path == "/events":
-            return Response.json(await stream_events())
+            return Response.json(jsonable(await stream_events()))
         if path == "/zip-demo":
-            return Response.json(await unzip_gutenberg_archive_from_r2(self.env.ARTIFACTS))
+            return Response.json(
+                jsonable(await unzip_gutenberg_archive_from_r2(self.env.ARTIFACTS))
+            )
         if path == "/fts/ingest":
-            return Response.json(await ingest_gutenberg_fts(self.env.ARTIFACTS, self.env.DB))
+            return Response.json(
+                jsonable(await ingest_gutenberg_fts(self.env.ARTIFACTS, self.env.DB))
+            )
         if path == "/fts/status":
-            return Response.json(await fts_status(self.env.DB))
+            return Response.json(jsonable(await fts_status(self.env.DB)))
         if path == "/fts/search":
             query = parse_qs(urlparse(str(request.url)).query).get("q", ["hamlet"])[0]
-            return Response.json(await search_fts(self.env.DB, query))
+            return Response.json(jsonable(await search_fts(self.env.DB, query)))
         if path == "/fts/verify":
-            return Response.json(await verify_fts(self.env.DB))
+            return Response.json(jsonable(await verify_fts(self.env.DB)))
+        if path == "/pipeline/ingest-r2-lines":
+            return Response.json(
+                jsonable(await ingest_r2_lines_checkpointed(self.env.ARTIFACTS, self.env.DB))
+            )
+        if path == "/pipeline/status":
+            return Response.json(jsonable(await checkpointed_pipeline_status(self.env.DB)))
         if path == "/golden":
             obj = await self.env.ARTIFACTS.head(GUTENBERG_KEY)
             exists = obj is not None

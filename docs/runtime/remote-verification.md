@@ -39,7 +39,7 @@ uv run python scripts/cleanup_remote_examples.py vectorize
 uv run python scripts/cleanup_remote_examples.py vectorize --include-data
 ```
 
-Normal cleanup deletes deployed Workers and removes that profile from `.xampler-remote-state.json`. `--include-data` should be used carefully because it can delete shared test resources.
+Normal cleanup deletes deployed Workers and removes that profile from `.xampler-remote-state.json`. `--include-data` should be used carefully because it can delete shared test resources. For R2 SQL/Data Catalog profiles, data cleanup also attempts to delete seeded catalog tables/namespaces such as `xampler.gutenberg_smoke` and `xampler_verify.temp_table` when a catalog token is available.
 
 ## List profiles
 
@@ -62,10 +62,10 @@ These profiles call the example's real route. Binding-backed products prefer dep
 |---|---|---|
 | `workers-ai` | deployed Worker with real Workers AI binding | `XAMPLER_REMOTE_WORKERS_AI=1`; prepare with `scripts/prepare_remote_examples.py workers-ai`. |
 | `vectorize` | deployed Worker with real Vectorize binding; runs describe/upsert/query | `XAMPLER_REMOTE_VECTORIZE=1`; prepare with `scripts/prepare_remote_examples.py vectorize`. |
-| `browser-rendering` | deployed Worker using the real Browser Rendering REST API | `XAMPLER_REMOTE_BROWSER_RENDERING=1`; prepare with `CLOUDFLARE_API_TOKEN` via `scripts/prepare_remote_examples.py browser-rendering`. `CLOUDFLARE_ACCOUNT_ID` is inferred from `wrangler whoami` when possible. |
-| `r2-sql` | deployed Worker using the real R2 SQL REST API | `XAMPLER_REMOTE_R2_SQL=1`; prepare with `WRANGLER_R2_SQL_AUTH_TOKEN` via `scripts/prepare_remote_examples.py r2-sql`. `CLOUDFLARE_ACCOUNT_ID` is inferred from `wrangler whoami` when possible. |
+| `browser-rendering` | deployed Worker using the real Browser Rendering REST API; verifies screenshot, content, PDF, and scrape routes | `XAMPLER_REMOTE_BROWSER_RENDERING=1`; prepare with `CLOUDFLARE_API_TOKEN` via `scripts/prepare_remote_examples.py browser-rendering`. `CLOUDFLARE_ACCOUNT_ID` is inferred from `wrangler whoami` when possible. |
+| `r2-sql` | deployed Worker using the real R2 SQL REST API; verifies seeded table discovery and a `SELECT` against `xampler.gutenberg_smoke` | `XAMPLER_REMOTE_R2_SQL=1`; prepare with `WRANGLER_R2_SQL_AUTH_TOKEN` via `scripts/prepare_remote_examples.py r2-sql`. `CLOUDFLARE_ACCOUNT_ID` is inferred from `wrangler whoami` when possible. |
 | `ai-gateway` | real AI Gateway endpoint from the Worker | `XAMPLER_REMOTE_AI_GATEWAY=1`, `CLOUDFLARE_ACCOUNT_ID`, `CLOUDFLARE_API_TOKEN`, `XAMPLER_AI_GATEWAY_ID`, `OPENAI_API_KEY` |
-| `r2-data-catalog` | deployed Worker using the real Iceberg/R2 Data Catalog endpoint | `XAMPLER_REMOTE_R2_DATA_CATALOG=1`; prepare with `XAMPLER_R2_DATA_CATALOG_TOKEN` or `WRANGLER_R2_SQL_AUTH_TOKEN` via `scripts/prepare_remote_examples.py r2-data-catalog`. |
+| `r2-data-catalog` | deployed Worker using the real Iceberg/R2 Data Catalog endpoint; verifies seeded table listing and a temporary namespace/table create-list-delete lifecycle | `XAMPLER_REMOTE_R2_DATA_CATALOG=1`; prepare with `XAMPLER_R2_DATA_CATALOG_TOKEN` or `WRANGLER_R2_SQL_AUTH_TOKEN` via `scripts/prepare_remote_examples.py r2-data-catalog`. |
 
 Example:
 

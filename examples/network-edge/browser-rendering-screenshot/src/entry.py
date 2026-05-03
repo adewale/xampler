@@ -38,9 +38,9 @@ class BrowserRendering:
         self.base_url = f"https://api.cloudflare.com/client/v4/accounts/{account_id}/browser-rendering"
         self.token = token
 
-    async def screenshot(self, request: ScreenshotRequest) -> Any:
+    async def render(self, endpoint: str, request: ScreenshotRequest) -> Any:
         return await js.fetch(
-            f"{self.base_url}/screenshot",
+            f"{self.base_url}/{endpoint}",
             to_js({
                 "method": "POST",
                 "headers": {
@@ -50,6 +50,18 @@ class BrowserRendering:
                 "body": json.dumps(request.payload()),
             }),
         )
+
+    async def screenshot(self, request: ScreenshotRequest) -> Any:
+        return await self.render("screenshot", request)
+
+    async def pdf(self, request: ScreenshotRequest) -> Any:
+        return await self.render("pdf", request)
+
+    async def content(self, request: ScreenshotRequest) -> Any:
+        return await self.render("content", request)
+
+    async def scrape(self, request: ScreenshotRequest) -> Any:
+        return await self.render("scrape", request)
 
 
 class DemoBrowserRendering:
@@ -72,6 +84,26 @@ class Default(WorkerEntrypoint):
         if parsed.path == "/demo":
             result = await DemoBrowserRendering().screenshot(ScreenshotRequest(url=target))
             return Response.json(asdict(result))
+        if parsed.path == "/demo/content":
+            return Response(
+                "<html><title>Example Domain</title></html>",
+                headers={"content-type": "text/html"},
+            )
+        if parsed.path == "/demo/pdf":
+            return Response("%PDF-1.4 demo", headers={"content-type": "application/pdf"})
+        if parsed.path == "/demo/scrape":
+            return Response.json({"url": target, "title": "Example Domain", "source": "demo"})
+
+        render_request = ScreenshotRequest(url=target)
         renderer = BrowserRendering(str(self.env.ACCOUNT_ID), str(self.env.CF_API_TOKEN))
-        rendered = await renderer.screenshot(ScreenshotRequest(url=target))
+        if parsed.path == "/content":
+            rendered = await renderer.content(render_request)
+            return Response(rendered.body, headers={"content-type": "text/html; charset=utf-8"})
+        if parsed.path == "/pdf":
+            rendered = await renderer.pdf(render_request)
+            return Response(rendered.body, headers={"content-type": "application/pdf"})
+        if parsed.path == "/scrape":
+            rendered = await renderer.scrape(render_request)
+            return Response(rendered.body, headers={"content-type": "application/json"})
+        rendered = await renderer.screenshot(render_request)
         return Response(rendered.body, headers={"content-type": "image/png"})

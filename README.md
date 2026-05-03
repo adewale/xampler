@@ -77,7 +77,7 @@ await AgentSession(env.AGENT, "shakespeare").emit({"type": "summary", "data": su
 That exact high-level API is still aspirational, but the pieces exist today:
 
 - [`examples/storage-data/r2-object-storage`](examples/storage-data/r2-object-storage) is the best post-Hello-World example because it exercises real local object storage with text, binary upload, streaming download, and byte comparison.
-- [`examples/streaming/gutenberg-stream-composition`](examples/streaming/gutenberg-stream-composition) reads a real R2 ZIP body stream, unzips it, models byte/text/line/record streams, batches, checkpoints, indexes the full text into D1 FTS, and includes AI chunks, agent events, and WebSocket events.
+- [`examples/streaming/gutenberg-stream-composition`](examples/streaming/gutenberg-stream-composition) reads a real R2 ZIP body stream, unzips it, models byte/text/line/record streams, batches, checkpoints, feeds extracted lines into a checkpointed D1 pipeline, indexes the full text into D1 FTS, and includes AI chunks, agent events, and WebSocket events.
 - [`examples/network-edge/service-bindings-rpc`](examples/network-edge/service-bindings-rpc) deploys a Python provider and a TypeScript consumer so cross-language Workers can interact through real Service Bindings RPC.
 - [`examples/state-events/durable-object-chatroom`](examples/state-events/durable-object-chatroom) demonstrates Durable Object state plus local and deployed two-client WebSocket broadcast verification.
 - [`examples/full-apps/hvsc-ai-data-search`](examples/full-apps/hvsc-ai-data-search) composes R2 datasets, D1 ingestion state/search, Queue-style jobs, Workers AI, and Vectorize seams into an interactive app.
@@ -150,6 +150,7 @@ Start with [`docs/index.md`](docs/index.md). The highest-value user-facing docs 
 - [`docs/api/primitive-test-realism.md`](docs/api/primitive-test-realism.md)
 - [`docs/runtime/python-workers-runtime-guidance.md`](docs/runtime/python-workers-runtime-guidance.md)
 - [`docs/runtime/remote-verification.md`](docs/runtime/remote-verification.md)
+- [`docs/runtime/local-path-development.md`](docs/runtime/local-path-development.md)
 - [`docs/data/streaming-api.md`](docs/data/streaming-api.md)
 
 Repo-internal audits, lessons, and planning notes live under `docs/project/` and `docs/archive/`; they are useful for maintainers but are not the main user journey.

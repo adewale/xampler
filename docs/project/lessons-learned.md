@@ -335,6 +335,7 @@ What changed:
 - Remote verification reads prepared state so users do not need to manually copy deployed URLs for prepared profiles.
 - REST-backed Workers now use deployed Worker secrets instead of temporary local `.dev.vars` for remote verification.
 - The HTTP verifier sends a stable User-Agent after deployed Workers returned Cloudflare `1010` bot-signature errors to default Python urllib requests.
+- Cleanup is now its own gated phase and can remove deployed Workers plus optional data resources, including seeded catalog/table resources when tokens are available.
 
 Lesson: local verifier state and remote account state are different things. Remote examples should make lifecycle explicit: prepare resources, verify behavior, and cleanup disposable deployments/resources.
 
@@ -345,7 +346,8 @@ A streaming example that only emits records is useful, but a streaming example t
 What changed:
 
 - Extended the Gutenberg example beyond stream events and ZIP inspection.
-- `/fts/ingest` now reads the real Project Gutenberg Shakespeare ZIP from R2, extracts the full HTML entry, strips tags, chunks all text, writes every chunk into D1, and mirrors those chunks into a D1 FTS5 table.
+- `/pipeline/ingest-r2-lines` now reads the real Project Gutenberg Shakespeare ZIP from R2, extracts text lines, writes them to D1 in batches, and updates a checkpoint row after every batch.
+- `/fts/ingest` reads the same archive, strips tags, chunks all text, writes every chunk into D1, and mirrors those chunks into a D1 FTS5 table.
 - `/fts/search` performs full-text queries over the indexed archive.
 - `/fts/verify` checks that D1 row count equals FTS row count and runs several Shakespeare queries to show that the archive was indexed.
 

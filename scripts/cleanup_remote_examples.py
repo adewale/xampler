@@ -12,6 +12,8 @@ import argparse
 import json
 import os
 import subprocess
+import urllib.error
+import urllib.request
 from pathlib import Path
 
 ROOT = Path(__file__).resolve().parents[1]
@@ -42,6 +44,14 @@ DATA_RESOURCES_BY_PROFILE = {
     "r2-sql": [["npx", "--yes", "wrangler", "r2", "bucket", "delete", "xampler-r2-sql"]],
     "r2-data-catalog": [["npx", "--yes", "wrangler", "r2", "bucket", "delete", "xampler-r2-sql"]],
 }
+
+
+def token_env(*names: str) -> str | None:
+    for name in names:
+        value = os.environ.get(name)
+        if value:
+            return value
+    return None
 
 
 def require_cleanup() -> None:
@@ -82,10 +92,47 @@ def save_state(state: dict[str, dict[str, str]]) -> None:
         STATE_PATH.unlink(missing_ok=True)
 
 
+def catalog_request(catalog_uri: str, token: str, method: str, path: str) -> tuple[int, str]:
+    request = urllib.request.Request(
+        f"{catalog_uri.rstrip('/')}{path}",
+        method=method,
+        headers={
+            "authorization": f"Bearer {token}",
+            "user-agent": "xampler-remote-cleanup/1.0",
+        },
+    )
+    try:
+        with urllib.request.urlopen(request, timeout=60) as response:
+            return response.status, response.read().decode("utf-8", errors="replace")
+    except urllib.error.HTTPError as error:
+        return error.code, error.read().decode("utf-8", errors="replace")
+
+
+def cleanup_catalog_seed_resources() -> None:
+    state = load_state()
+    catalog_uri = state.get("r2-data-catalog", {}).get("catalog_uri")
+    token = token_env("XAMPLER_R2_DATA_CATALOG_TOKEN", "WRANGLER_R2_SQL_AUTH_TOKEN")
+    if not catalog_uri or not token:
+        print("warning: skip catalog table cleanup; missing catalog URI or catalog token")
+        return
+    for method, path in [
+        ("DELETE", "/v1/namespaces/xampler/tables/gutenberg_smoke"),
+        ("DELETE", "/v1/namespaces/xampler_verify/tables/temp_table"),
+        ("DELETE", "/v1/namespaces/xampler_verify"),
+    ]:
+        status, body = catalog_request(catalog_uri, token, method, path)
+        if status not in {200, 204, 404}:
+            print(f"warning: catalog cleanup {method} {path} -> {status}: {body}")
+        else:
+            print(f"catalog cleanup {method} {path} -> {status}")
+
+
 def cleanup_profile(profile: str, *, include_data: bool) -> None:
     for worker in WORKERS_BY_PROFILE.get(profile, []):
         run(["npx", "--yes", "wrangler", "delete", worker, "--force"])
     if include_data:
+        if profile in {"r2-sql", "r2-data-catalog"}:
+            cleanup_catalog_seed_resources()
         for command in DATA_RESOURCES_BY_PROFILE.get(profile, []):
             run(command)
     state = load_state()

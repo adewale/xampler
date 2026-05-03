@@ -4,6 +4,12 @@ Last updated: 2026-05-02.
 
 After `npx --yes wrangler login`, all local checks and local example verifiers passed. Remote verification showed that Wrangler OAuth is necessary, but not sufficient, for every product. This file tracks what we still need to solve for real account-backed testing.
 
+Latest token-backed profile attempt in this checkout:
+
+- `browser-rendering`: skipped; `CLOUDFLARE_API_TOKEN` and prepared URL/state were not present.
+- `r2-sql`: skipped; `WRANGLER_R2_SQL_AUTH_TOKEN` and prepared URL/state were not present.
+- `r2-data-catalog`: skipped; `XAMPLER_R2_DATA_CATALOG_TOKEN`/`WRANGLER_R2_SQL_AUTH_TOKEN` and prepared URL/state were not present.
+
 ## Need a better solution
 
 These profiles still need a design that is safer or more automated before a normal contributor can run them with only documented setup steps.
@@ -129,7 +135,7 @@ Docs pattern:
 TODO:
 
 - [x] Reuse the `r2-sql` bucket/catalog prepare step where possible.
-- [ ] Add a small namespace/table creation path or a read-only catalog smoke test.
+- [x] Add a small namespace/table creation path or a read-only catalog smoke test.
 - [x] Record `XAMPLER_R2_DATA_CATALOG_URI` equivalent in prepared state and document/export the token requirement.
 - [x] Deploy the R2 Data Catalog Worker from prepare after setting `CATALOG_URI` and `CATALOG_TOKEN` secrets.
 - [ ] Keep catalog token manual unless a safe Wrangler-backed token path exists.
@@ -196,5 +202,6 @@ TODO:
 - [x] Prefer `wrangler login`/Wrangler OAuth for resource creation whenever Cloudflare supports it.
 - [x] Keep secrets out of generated files by using `wrangler secret put` for prepared deployed Workers.
 - [x] Separate three phases fully: `prepare`, `verify`, and `cleanup`.
+- [x] Add cleanup for deployed Workers, optional Vectorize/Queues/R2 resources, and seeded catalog/table resources when catalog credentials are available.
 - [x] Never auto-create paid resources unless `XAMPLER_RUN_REMOTE=1` and `XAMPLER_PREPARE_REMOTE=1` are set.
 - [x] Update `docs/runtime/remote-verification.md` for prepared profiles.

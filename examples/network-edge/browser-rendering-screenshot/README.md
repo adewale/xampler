@@ -1,6 +1,6 @@
 # Browser Rendering 18 — Screenshot
 
-Uses the Browser Rendering REST API from a Python Worker.
+Uses the Browser Rendering REST API from a Python Worker. The real route supports screenshot smoke checks plus deeper `/content`, `/pdf`, and `/scrape` checks against `https://example.com`.
 
 Local `/demo` verification is deterministic. For real remote verification, run the prepared deployed flow; the prepare script infers `ACCOUNT_ID` from `wrangler whoami`, stores `ACCOUNT_ID` and `CF_API_TOKEN` as Worker secrets, deploys the Worker, and records the deployed URL.
 

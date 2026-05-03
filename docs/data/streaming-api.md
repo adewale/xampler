@@ -10,8 +10,8 @@ Streaming is now a first-class Xampler API shape. The goal is that R2 objects, J
 |---|---|---|
 | 1. Object streams | `ByteStream.iter_bytes()`, `iter_text()`, `iter_lines()`, `js_readable_stream_chunks()` | `examples/streaming/gutenberg-stream-composition /zip-demo` |
 | 2. JSONL records | `JsonlReader.records()` | `examples/streaming/gutenberg-stream-composition /events` |
-| 3. Batching | `aiter_batches(records, size=...)` | `examples/streaming/gutenberg-stream-composition /demo` |
-| 4. Stream-to-D1 style sink | `DemoD1Sink.insert_batch()` + checkpoints | `examples/streaming/gutenberg-stream-composition /demo` |
+| 3. Batching | `aiter_batches(records, size=...)` | `examples/streaming/gutenberg-stream-composition /demo`, `/pipeline/ingest-r2-lines` |
+| 4. Stream-to-D1 style sink | `DemoD1Sink.insert_batch()` + checkpoints; real D1 line batches and `stream_checkpoints` rows | `examples/streaming/gutenberg-stream-composition /demo`, `/pipeline/ingest-r2-lines` |
 | 5. Agent streaming | `DemoAgentSession.stream() -> AgentEvent` | `examples/streaming/gutenberg-stream-composition /events` |
 | 6. AI/gateway token streaming | `DemoAIService.stream_text()` | `examples/streaming/gutenberg-stream-composition /events` |
 | 7. WebSocket session stream | `DemoWebSocketSession.__aiter__()` | `examples/streaming/gutenberg-stream-composition /events` |
@@ -28,7 +28,7 @@ async for batch in aiter_batches(records, size=500):
     await progress.checkpoint(batch)
 ```
 
-The current executable proof is `examples/streaming/gutenberg-stream-composition`, which uses Project Gutenberg's Shakespeare archive as the golden large-file source. `/zip-demo` reads this object through the R2 object's JavaScript `ReadableStream`, converts chunks at the FFI boundary, and opens the streamed ZIP bytes with Python `zipfile`:
+The current executable proof is `examples/streaming/gutenberg-stream-composition`, which uses Project Gutenberg's Shakespeare archive as the golden large-file source. `/zip-demo` reads this object through the R2 object's JavaScript `ReadableStream`, converts chunks at the FFI boundary, and opens the streamed ZIP bytes with Python `zipfile`. `/pipeline/ingest-r2-lines` then feeds extracted text lines into D1 in checkpointed batches, while `/fts/ingest` indexes text chunks into D1 FTS:
 
 ```text
 r2://xampler-datasets/gutenberg/100/raw/pg100-h.zip
@@ -40,4 +40,4 @@ ZIP central directories live at the end of the archive, so Python's standard `zi
 
 ## Next integration work
 
-The streaming types are currently demonstrated in one example. The next refactor should lift them into a shared package used by R2, Agents, AI Gateway, Workers AI, WebSockets, D1, Queues, Vectorize, and Workflows.
+The streaming types are now shared in `xampler.streaming` and used by the Gutenberg and HVSC examples. The next refactor should expand them into R2, Agents, AI Gateway, Workers AI, WebSockets, D1, Queues, Vectorize, and Workflows where the abstraction has proven value.

@@ -120,16 +120,16 @@ The target is not to type every Cloudflare `JsProxy` directly. The target is to 
 | Durable Objects + WebSockets | Room Durable Object; WebSocket hibernation API; browser client; persisted message history; deterministic room send/history route. |
 | Queues | Typed job dataclass; send options; batch sends; consumer `QueueMessage`; ack/retry/backoff; deterministic consumer harness. |
 | Vectorize | Typed vectors; dimension validation; upsert; query/query-by-id; get/delete; typed matches/results; deterministic local search. |
-| Browser Rendering | `ScreenshotRequest`; `ScreenshotResult`; REST screenshot client; deterministic renderer; real API route shape. |
+| Browser Rendering | `ScreenshotRequest`; `ScreenshotResult`; REST screenshot/content/PDF/scrape client; deterministic renderer; real API route shape. |
 | Email Workers | `IncomingEmail`; `EmailDecision`; inspect/forward/reject policy; HTTP policy fixture; deployed `email()` handler path. |
 | AI Gateway | OpenAI-compatible chat messages; `ChatRequest`; `ChatChoice`; gateway transport; deterministic gateway transport. |
-| R2 SQL | Query object; read-only guard; single-table safety; automatic `LIMIT`; `explain()` route; deterministic SQL client. |
-| R2 Data Catalog | `CatalogNamespace`; `TableRef`; Iceberg REST client; namespaces/tables listing; deterministic fixture catalog. |
+| R2 SQL | Query object; read-only guard; single-table safety; automatic `LIMIT`; `explain()` route; deterministic SQL client; seeded table remote query. |
+| R2 Data Catalog | `CatalogNamespace`; `TableRef`; Iceberg REST client; namespaces/tables listing; temporary table lifecycle; deterministic fixture catalog. |
 | Pages | Static `public/`; file-routed Function; `pages dev` verifier; explicit note that Python Pages Functions are not supported today. |
 | HVSC AI/data app | Pipeline service composes R2 + D1 + Queues + AI/vector seams; shard ingestion; progress/status; browser run-all/search flow. |
 | Hyperdrive | `HyperdriveConfig.from_binding`; typed Postgres query/result; production/demo client split; `/config`, `/query`, `/demo`. |
 | Agents SDK | Typed messages; tool calls; run result; deterministic tool; Durable Object session routing; `AgentSession` raw wrapper shape. |
-| Streaming composition | `ByteStream.iter_bytes/text/lines`; `JsonlReader.records`; `RecordStream`; `aiter_batches`; `StreamCheckpoint`; AI/agent/WebSocket event streams. |
+| Streaming composition | `ByteStream.iter_bytes/text/lines`; `JsonlReader.records`; `RecordStream`; `aiter_batches`; `StreamCheckpoint`; checkpointed D1 line pipeline; AI/agent/WebSocket event streams. |
 
 ## Design rule
 

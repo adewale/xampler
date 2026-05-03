@@ -379,6 +379,9 @@ PROFILES: dict[str, RemoteProfile] = {
         "browser-rendering",
         "Calls a deployed Worker that uses the real Browser Rendering REST API.",
         RemoteCheck("/?url=https%3A%2F%2Fexample.com"),
+        RemoteCheck("/content?url=https%3A%2F%2Fexample.com", contains="Example Domain"),
+        RemoteCheck("/pdf?url=https%3A%2F%2Fexample.com", contains="%PDF"),
+        RemoteCheck("/scrape?url=https%3A%2F%2Fexample.com", contains="Example Domain"),
     ),
     "r2-sql": deployed_profile(
         "r2-sql",
@@ -387,6 +390,13 @@ PROFILES: dict[str, RemoteProfile] = {
             "/",
             method="POST",
             body=b'{"sql":"SHOW TABLES IN xampler"}',
+            headers=json_headers,
+            contains="gutenberg_smoke",
+        ),
+        RemoteCheck(
+            "/",
+            method="POST",
+            body=b'{"sql":"SELECT * FROM xampler.gutenberg_smoke LIMIT 1"}',
             headers=json_headers,
             contains="gutenberg_smoke",
         ),
@@ -413,6 +423,11 @@ PROFILES: dict[str, RemoteProfile] = {
         "r2-data-catalog",
         "Calls a deployed Worker that uses a real R2 Data Catalog/Iceberg endpoint.",
         RemoteCheck("/tables/xampler", contains="gutenberg_smoke"),
+        RemoteCheck(
+            "/lifecycle/xampler_verify/temp_table",
+            method="POST",
+            contains="lifecycle_complete",
+        ),
     ),
     "hyperdrive": deployed_profile(
         "hyperdrive",

@@ -272,6 +272,8 @@ EXAMPLES = {
             Check("/fts/ingest", contains='"all_chunks_indexed": true'),
             Check("/fts/search?q=romeo%20juliet", contains='"count"'),
             Check("/fts/verify", contains='"all_queries_return_results": true'),
+            Check("/pipeline/ingest-r2-lines", contains='"all_lines_checkpointed": true'),
+            Check("/pipeline/status", contains="gutenberg-r2-lines"),
         ],
         needs_setup=(
             "Golden Gutenberg zip is stored in R2; verifier initializes local D1 FTS."
