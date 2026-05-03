@@ -52,7 +52,13 @@ from xampler.cloudflare import CloudflareService, ResourceRef, RestClient
 - `ResourceRef[T]` is for passive handles to named resources.
 - `RestClient[T]` is for token/HTTP backed product APIs.
 
-These classes intentionally only store `raw`/`name`/`base_url`; they are not a giant SDK façade. Product-specific tutorial wrappers stay in examples until their shape proves reusable.
+These classes intentionally only store `raw`/`name`/`base_url`; they are not a giant SDK façade. R2 is the first product wrapper promoted into the shared package:
+
+```python
+from xampler.r2 import R2Bucket, R2ObjectRef, R2HttpMetadata, R2Range
+```
+
+Other product-specific tutorial wrappers stay in examples until their shape proves reusable.
 
 ## Reused concepts
 
@@ -103,7 +109,7 @@ The target is not to type every Cloudflare `JsProxy` directly. The target is to 
 | Primitive | Hero features surfaced in Xampler |
 |---|---|
 | Workers | Class-based `WorkerEntrypoint`; request parsing via Python stdlib; typed response helpers; JSON/text/binary responses; no legacy `on_fetch`. |
-| R2 | Object handles; text/JSON/bytes helpers; metadata and HTTP metadata; listing and async iteration; streaming reads; byte-for-byte JPEG fixture; multipart `async with`; `.raw`. |
+| R2 | Shared `xampler.r2` wrapper; object handles; text/JSON/bytes helpers; metadata and HTTP metadata; listing and async iteration; streaming reads; byte-for-byte JPEG fixture; multipart `async with`; `.raw`. |
 | KV | Key handles; text/JSON helpers; exists/delete; list and async key iteration; platform aliases; missing-key behavior. |
 | D1 | Statement handles; bound parameters; `one`, `all`, `one_as(Model)`; D1 null conversion; indexed query plan route; local setup automation. |
 | FastAPI / ASGI | Normal `FastAPI()` routes; ASGI bridge; environment access through ASGI scope; local framework verification. |

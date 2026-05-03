@@ -6,7 +6,7 @@ Last reviewed: 2026-05-02.
 
 Xampler now substantially meets the original direction: it is a GitHub-hosted collection of executable Python Workers examples, covers a broad set of Cloudflare Developer Platform primitives, uses Pythonic wrappers around bindings, distinguishes real verification from demo seams, and includes realistic shared datasets in R2.
 
-The biggest remaining gaps are completing token-backed/deployed remote verification, wiring direct R2 streams into more end-to-end pipelines, missing Cache/Analytics/Images product examples, and reducing per-example wrapper duplication into shared typed helpers only after APIs stabilize. See [`gaps-explained.md`](gaps-explained.md) for details.
+The biggest remaining gaps are completing token-backed/deployed remote verification, wiring direct R2 streams into more end-to-end pipelines, missing Cache/Analytics/Images product examples, and continuing to reduce per-example wrapper duplication only after APIs stabilize. R2 is now the first product wrapper promoted into `xampler.r2`. See [`gaps-explained.md`](gaps-explained.md) for details.
 
 ## Goal-by-goal assessment
 
@@ -38,7 +38,7 @@ The biggest remaining gaps are completing token-backed/deployed remote verificat
 
 ## What is strongest
 
-- R2 is the no-lies gold standard: text, binary JPEG upload, streaming download, byte comparison.
+- R2 is the no-lies gold standard and first shared product wrapper: text, binary JPEG upload, streaming download, byte comparison via `xampler.r2`.
 - D1/KV/Assets/Durable Objects/Cron/Pages are credible local primitive examples.
 - HVSC proves multi-primitive composition and honest setup-dependent search.
 - The docs now clearly distinguish real examples from deterministic demo seams.

@@ -7,7 +7,8 @@ from typing import Any
 from urllib.parse import unquote, urlsplit
 
 from cfboundary.ffi import consume_readable_stream, to_js, to_py
-from r2_pythonic import R2Bucket, R2Conditional, R2Range, R2UploadedPart
+
+from xampler.r2 import R2Bucket, R2Conditional, R2Range, R2UploadedPart
 
 try:
     import js  # type: ignore[import-not-found]

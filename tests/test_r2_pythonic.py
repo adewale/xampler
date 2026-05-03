@@ -6,10 +6,10 @@ from typing import Any
 
 import pytest
 
-R2_SRC = Path(__file__).resolve().parents[1] / "examples/storage-data/r2-object-storage" / "src"
-sys.path.insert(0, str(R2_SRC))
+ROOT = Path(__file__).resolve().parents[1]
+sys.path.insert(0, str(ROOT))
 
-from r2_pythonic import R2Bucket  # noqa: E402
+from xampler.r2 import R2Bucket  # noqa: E402
 
 
 class FakeR2Object:

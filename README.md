@@ -176,7 +176,13 @@ from xampler.cloudflare import CloudflareService, ResourceRef, RestClient
 - `ResourceRef[T]` — passive handle to a named resource such as an object key, Durable Object stub, or workflow instance.
 - `RestClient[T]` — token/HTTP backed product client when no Python-usable binding path exists.
 
-Product-specific tutorial wrappers still live in examples until their shape is proven in more than one place.
+R2 is the first product wrapper promoted out of an example into the shared package:
+
+```python
+from xampler.r2 import R2Bucket, R2HttpMetadata, R2Range
+```
+
+Most other product-specific tutorial wrappers still live in examples until their shape is proven in more than one place.
 
 ## Primitive metrics
 

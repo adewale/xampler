@@ -12,20 +12,22 @@ Xampler should lift only stable, boring, repeated concepts into `xampler/`. Prod
 | `xampler.types` | `JsonObject`, `R2Key`, `QueueName`, `WorkflowId`, `VectorId`, `AgentId`, `SupportsRaw`, `DemoTransport`, `RemoteVerifier`. |
 | `xampler.status` | `OperationState`, `Progress`, `Checkpoint`, generic `BatchResult`. |
 | `xampler.response` | `jsonable()` and `error_payload()` helpers for dataclass/native response payloads. |
+| `xampler.cloudflare` | `CloudflareService`, `ResourceRef`, `RestClient` base vocabulary. |
+| `xampler.r2` | First promoted product wrapper: `R2Bucket`, `R2ObjectRef`, metadata/options dataclasses, listing, streaming, ranges, conditionals, and multipart upload. |
 
 ## Best candidates to extract next
 
 | Candidate module | Repeated concepts | Why now |
 |---|---|---|
 | `xampler.testing` | verifier process helpers, remote-skip conventions, env guards | `scripts/verify_examples.py` is growing custom cases. |
-| `xampler.bindings` | tiny base `BindingService`, `ResourceHandle`, `SupportsRaw` | Common wrapper shape without hiding product vocabulary. |
+| `xampler.bindings` | additional base protocols only if `xampler.cloudflare` proves insufficient | Common wrapper shape without hiding product vocabulary. |
 | `xampler.demo` | `DemoTransport` conventions and route naming | Account-backed products use the same real/demo split. |
 
 ## Do not extract yet
 
 | Keep local | Reason |
 |---|---|
-| `R2Bucket`, `D1Database`, `QueueService`, `VectorIndex` product wrappers | They are still tutorial-specific and should stay readable in their examples. |
+| `D1Database`, `QueueService`, `VectorIndex` product wrappers | They are still tutorial-specific and should stay readable in their examples. R2 has graduated first because its shape and verifier are strongest. |
 | Cloudflare REST clients | Product-specific auth/metadata varies too much. |
 | Demo product logic | Useful to read beside the example it supports. |
 

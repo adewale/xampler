@@ -352,3 +352,15 @@ What changed:
 - `/fts/verify` checks that D1 row count equals FTS row count and runs several Shakespeare queries to show that the archive was indexed.
 
 Lesson: the best composition examples should show a path from bytes to records to indexed/queryable state. R2 streams, Python chunking, D1 writes, and FTS queries together reveal API and runtime issues that isolated examples miss.
+
+## 29. Product wrappers should graduate one at a time
+
+R2 became the first product-specific wrapper promoted from an example-local module into the shared `xampler` package as `xampler.r2`.
+
+Why R2 first:
+
+- Its binding path is Python-usable and stable enough to wrap directly.
+- The local verifier exercises real object storage behavior with text, binary bytes, streams, ranges, listing, and multipart shape.
+- The API had already converged on a durable shape: `R2Bucket` service wrapper, `R2ObjectRef` handle, dataclass metadata/options, async iteration, multipart `async with`, and `.raw` for Workers-native streams.
+
+Lesson: migrate stable, boring, repeated surfaces before aspirational product clients. Moving R2 gives users a canonical import without pretending every Cloudflare product is ready for the same treatment.

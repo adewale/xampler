@@ -1,12 +1,20 @@
 # 01 — R2 from Python Workers
 
-This example demonstrates [Cloudflare R2](https://developers.cloudflare.com/r2/) from a Python Worker with a Pythonic wrapper around the JavaScript binding.
+This example demonstrates [Cloudflare R2](https://developers.cloudflare.com/r2/) from a Python Worker with the shared `xampler.r2` wrapper around the JavaScript binding.
 
 It teaches R2 in layers:
 
 1. **Simple small-object helpers** — `put_text()`, `get_text()`, `put_bytes()`, `get_bytes()`.
 2. **Metadata and controls** — custom metadata, HTTP metadata, checksums, storage class, range reads, ETag conditionals, listing, and deletes.
 3. **Streaming and multipart** — large uploads/downloads without copying data through Python memory.
+
+The stable wrapper now lives in `xampler.r2`:
+
+```py
+from xampler.r2 import R2Bucket, R2HttpMetadata, R2Range
+```
+
+The example keeps a tiny `src/r2_pythonic.py` compatibility shim for older tutorial imports, but new code should import from `xampler.r2`.
 
 The wrapper uses [`cfboundary`](https://github.com/adewale/cfboundary) for low-level conversions:
 

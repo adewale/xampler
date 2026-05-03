@@ -12,6 +12,7 @@ the current checkout temporarily:
 
 ```bash
 uv run python scripts/use_local_xampler.py
+uv run python scripts/verify_examples.py examples/storage-data/r2-object-storage
 uv run python scripts/verify_examples.py examples/streaming/gutenberg-stream-composition
 ```
 
