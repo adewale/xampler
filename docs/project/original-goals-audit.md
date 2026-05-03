@@ -6,7 +6,7 @@ Last reviewed: 2026-05-02.
 
 Xampler now substantially meets the original direction: it is a GitHub-hosted collection of executable Python Workers examples, covers a broad set of Cloudflare Developer Platform primitives, uses Pythonic wrappers around bindings, distinguishes real verification from demo seams, and includes realistic shared datasets in R2.
 
-The biggest remaining gaps are completing token-backed/deployed remote verification, wiring direct R2 streams into more end-to-end pipelines, missing Cache/Analytics/Images product examples, and continuing to reduce per-example wrapper duplication only after APIs stabilize. R2 is now the first product wrapper promoted into `xampler.r2`. See [`gaps-explained.md`](gaps-explained.md) for details.
+The biggest remaining gaps are completing token-backed/deployed remote verification, missing Cache/Analytics/Images product examples, and finishing the remaining product-wrapper migrations for surfaces such as Durable Objects, Workflows, Hyperdrive, AI Gateway, Agents, Email, and HTMLRewriter. The core storage/data/event/AI wrappers now live in importable `xampler.*` modules. See [`gaps-explained.md`](gaps-explained.md) for details.
 
 ## Goal-by-goal assessment
 
@@ -57,11 +57,11 @@ The biggest remaining gaps are completing token-backed/deployed remote verificat
 | Remote verification for account-backed products | Several profiles now prepare resources/deploy Workers, but AI Gateway, Hyperdrive, Images, Analytics Engine, and richer R2/Queue assertions still need work. | Run token-backed profiles in CI/secrets and add product-specific metadata/assertions. |
 | End-to-end R2 stream pipelines | `/zip-demo` reads the real R2 object body and unzips it; `/fts/ingest` writes extracted text chunks into D1 and D1 FTS. | Make FTS ingestion resumable/incremental and verify it deployed. |
 | Missing Cache/Analytics/Images examples | Common production products are not represented as first-class examples. | Add direct Cache API, Workers Analytics Engine, and Cloudflare Images examples. |
-| Wrapper duplication | Examples repeat service/dataclass/status/demo patterns locally. | Lift only stable boring helpers into `xampler/`; keep product hero logic local. |
+| Wrapper duplication | Core reusable wrappers now live in `xampler.r2`, `xampler.d1`, `xampler.kv`, `xampler.queues`, `xampler.vectorize`, `xampler.ai`, `xampler.browser_rendering`, `xampler.r2_sql`, and `xampler.r2_data_catalog`. | Finish remaining product surfaces and keep route/UI/verifier glue local. |
 
 ## Next priorities
 
-1. Finish and run env-gated remote verification for remaining products: AI Gateway, Hyperdrive, Images, Analytics Engine, richer R2 SQL/Data Catalog, and real Queue DLQ polling.
+1. Finish and run env-gated remote verification for remaining products: AI Gateway, Hyperdrive, Images, Analytics Engine, and richer R2 SQL/Data Catalog assertions.
 2. Add a true non-seekable archive streaming example if a suitable format/library is chosen.
 3. Add direct Cache API and Analytics Engine examples.
 4. Add Cloudflare Images product example separate from binary response.

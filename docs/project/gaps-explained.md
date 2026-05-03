@@ -76,39 +76,35 @@ The current `examples/streaming/binary-response` should remain, but it should ne
 | Queue retry/DLQ semantics | Queue verifier checks producer, consumer ack/retry, and deterministic dead-letter decision; remote prep creates queues/DLQ, deploys the Worker, sends a failing job, and polls a Durable Object tracker until DLQ delivery is observed. | Add batch/concurrency assertions and optional message cleanup. |
 | Direct R2 object-body unzip | Gutenberg `/zip-demo` reads the R2 object's `ReadableStream`, buffers the streamed zip bytes for Python `zipfile`, and reads the first HTML entry. | Python `zipfile` still needs a seekable buffer for the central directory; a true non-seekable ZIP parser would require a different library/format constraint. |
 
-## Wrapper duplication not yet lifted into shared typed package
+## Library surface migration is underway, but not complete for every product
 
-Most examples still define their own wrapper classes locally. That is intentional so examples remain self-contained and easy to read, but repeated patterns are now stable enough to start lifting.
+The stable wrapper pattern has moved from examples into importable `xampler` modules. Examples now demonstrate library usage instead of being the only place the product API exists.
 
-Repeated patterns include:
-
-- service wrappers around bindings;
-- `.raw` escape hatch;
-- dataclass request/result shapes;
-- deterministic demo transports;
-- status/progress results;
-- stream/batch/checkpoint helpers;
-- JSON/error response helpers.
-
-What has already moved into shared code:
+Shared library modules now include:
 
 ```text
-xampler/streaming.py
+xampler.ai
+xampler.browser_rendering
+xampler.cloudflare
+xampler.d1
+xampler.kv
+xampler.queues
+xampler.r2
+xampler.r2_data_catalog
+xampler.r2_sql
+xampler.response
+xampler.status
+xampler.streaming
+xampler.types
+xampler.vectorize
 ```
 
-What should move next, carefully:
+What still belongs in examples:
 
-| Candidate | Why |
-|---|---|
-| `xampler.response` | Avoid repeated response/content-type helpers. |
-| `xampler.types` | Shared `Progress`, `OperationStatus`, `Checkpoint`, `JsonDict`. |
-| `xampler.protocols` | `SupportsRaw`, `DemoTransport`, `RemoteVerifier`, stream protocols. |
-| `xampler.cloudflare` | Tiny common base classes for service wrappers/handles, not product logic. |
+- HTTP route handlers;
+- HTML/browser UI;
+- verifier-only endpoints;
+- app-specific pipeline orchestration;
+- product surfaces that still mix setup, UI, and runtime behavior too tightly.
 
-What should **not** move too early:
-
-- product-specific wrappers that are still changing quickly;
-- code that hides Cloudflare vocabulary;
-- anything that makes examples harder to understand when read alone.
-
-The principle is: lift only boring, stable, repeated concepts. Keep hero product logic local until the API shape has proved itself in multiple examples.
+Remaining migration candidates include Durable Object refs, Workflows, Hyperdrive, AI Gateway, Agents, Email, and HTMLRewriter. The principle has changed from “do not move product wrappers too early” to “make reusable product APIs importable, while keeping route/demo/app glue local.”

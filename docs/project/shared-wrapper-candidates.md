@@ -2,7 +2,7 @@
 
 Last reviewed: 2026-05-02.
 
-Xampler should lift only stable, boring, repeated concepts into `xampler/`. Product hero logic should stay in examples until it has proved itself across multiple primitives.
+Xampler is now a library-first project with executable examples. Stable reusable product APIs should live in `xampler/`; examples should keep route handlers, UI, fixtures, verifier endpoints, and app-specific orchestration.
 
 ## Already shared
 
@@ -33,7 +33,7 @@ Xampler should lift only stable, boring, repeated concepts into `xampler/`. Prod
 | `xampler.workflows` | workflow start/status and instance refs | Workflow wrapper is stable enough to consider next. |
 | `xampler.demo` | `DemoTransport` conventions and route naming | Account-backed products use the same real/demo split. |
 
-## Do not extract yet
+## Keep example-local for now
 
 | Keep local | Reason |
 |---|---|
@@ -45,7 +45,7 @@ Xampler should lift only stable, boring, repeated concepts into `xampler/`. Prod
 
 Extract when all are true:
 
-1. the pattern appears in at least three examples;
-2. the shared abstraction is smaller than the duplicated code;
+1. the wrapper is reusable outside one route/UI demo;
+2. the shared abstraction is smaller and clearer than the duplicated code;
 3. it does not hide Cloudflare product vocabulary;
-4. it can be covered by strict `pyright` and unit tests.
+4. it can be covered by strict `pyright`, unit tests, and at least one executable example.

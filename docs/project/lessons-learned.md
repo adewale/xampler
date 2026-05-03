@@ -197,7 +197,7 @@ What changed:
 - Converted Gutenberg streaming and HVSC catalog ingestion to use `xampler.streaming`.
 - Converted Workflows and Workers AI to use shared status/response/demo-transport ideas.
 
-Lesson: do not extract whole product clients too early. Extract boring, repeated contracts first, then promote product wrappers only after several examples need the same shape.
+Lesson: do not freeze product clients before their shape is understood, but once an example teaches a reusable product API, promote it into `xampler/` and let the example prove the library surface.
 
 ## 19. The best API shape is compositional, not monolithic
 
@@ -255,7 +255,7 @@ What changed:
 - `OperationState` now lives only in `xampler.status`.
 - `xampler.types.OperationState` is not preserved as a compatibility alias.
 
-Lesson: Xampler's shared package is still pre-stable. It is better to keep one clear import path than preserve every transient path with compatibility shims.
+Lesson: Xampler's shared package is now importable but still young. It is better to keep one clear import path than preserve every transient path with compatibility shims.
 
 ## 22. Tiny local typings are a bridge, not an API
 
