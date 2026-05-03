@@ -1,5 +1,6 @@
 from __future__ import annotations
 
+from collections.abc import AsyncIterator
 from dataclasses import dataclass
 from typing import Any, cast
 
@@ -53,6 +54,10 @@ class DemoAIService(DemoTransport[TextGenerationRequest, TextGenerationResponse]
 
     async def generate_text(self, request: TextGenerationRequest) -> TextGenerationResponse:
         return await self.run(request)
+
+    async def stream_text(self, prompt: str) -> AsyncIterator[str]:
+        for token in ["summary", ": ", prompt[:24], "..."]:
+            yield token
 
 
 __all__ = ["AIService", "DemoAIService", "TextGenerationRequest", "TextGenerationResponse"]

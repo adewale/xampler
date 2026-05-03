@@ -19,6 +19,13 @@ Xampler is a Python library with examples that prove the APIs run in Python Work
 | `xampler.browser_rendering` | Experimental | `BrowserRendering`, `ScreenshotRequest` |
 | `xampler.r2_sql` | Experimental | `R2SqlClient`, `R2SqlQuery`, `DemoR2SqlClient` |
 | `xampler.r2_data_catalog` | Experimental | `R2DataCatalog`, `CatalogNamespace`, `TableRef` |
+| `xampler.durable_objects` | Beta | `DurableObjectNamespace`, `DurableObjectRef` |
+| `xampler.workflows` | Beta | `WorkflowService`, `WorkflowInstance`, `WorkflowStatus`, `DemoWorkflowService` |
+| `xampler.cron` | Beta | `ScheduledEventInfo`, `ScheduledRunResult`, `DemoScheduledJob` |
+| `xampler.service_bindings` | Beta | `ServiceBinding`, `RpcCall`, `RpcResult`, `DemoServiceBinding` |
+| `xampler.websockets` | Beta | `WebSocketStatus`, `DemoWebSocketSession` |
+| `xampler.agents` | Experimental | `AgentSession`, `AgentMessage`, `ToolCall`, `AgentRunResult`, `DemoAgent` |
+| `xampler.ai_gateway` | Experimental | `AIGateway`, `ChatRequest`, `ChatMessage`, `ChatResponse`, `DemoAIGateway` |
 
 ## Stability meanings
 

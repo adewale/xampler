@@ -9,6 +9,9 @@ import js  # type: ignore[import-not-found]
 from pyodide.ffi import create_proxy  # type: ignore[import-not-found]
 from workers import DurableObject, Response, WorkerEntrypoint  # type: ignore[import-not-found]
 
+from xampler.response import jsonable
+from xampler.websockets import DemoWebSocketSession
+
 
 class StreamConsumer(DurableObject):
     """A Durable Object that owns one long-lived outbound WebSocket.
@@ -99,11 +102,7 @@ class Default(WorkerEntrypoint):
     async def fetch(self, request: Any) -> Any:
         path = urlparse(str(request.url)).path
         if path == "/demo/status":
-            return Response.json({
-                "status": "connected",
-                "source": "demo-websocket-stream",
-                "reconnect": "alarm-managed",
-            })
+            return Response.json(jsonable(await DemoWebSocketSession().status()))
         namespace = self.env.CONSUMER
         stub = namespace.get(namespace.idFromName("global-stream-consumer"))
         return await stub.fetch(request)

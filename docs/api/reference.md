@@ -66,11 +66,29 @@ from xampler.r2_data_catalog import R2DataCatalog
 
 These clients require Worker runtime secrets/tokens and are currently experimental.
 
+## Events, actors, and pipelines
+
+```python
+from xampler.durable_objects import DurableObjectNamespace, DurableObjectRef
+from xampler.workflows import WorkflowService, WorkflowStatus
+from xampler.cron import ScheduledEventInfo, DemoScheduledJob
+from xampler.service_bindings import ServiceBinding
+from xampler.websockets import DemoWebSocketSession, WebSocketStatus
+from xampler.agents import AgentMessage, AgentSession, DemoAgent
+from xampler.ai_gateway import AIGateway, ChatMessage, ChatRequest
+```
+
+```python
+workflow = WorkflowService(env.PIPELINE)
+started = await workflow.start()
+status = await workflow.status(started.instance_id)
+```
+
 ## Runtime helpers
 
 ```python
 from xampler.streaming import ByteStream, JsonlReader, aiter_batches
-from xampler.response import jsonable
+from xampler.response import json_response, jsonable, text_response
 from xampler.status import Progress, Checkpoint
 from xampler.cloudflare import CloudflareService, ResourceRef, RestClient
 ```

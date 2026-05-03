@@ -1,19 +1,15 @@
 from __future__ import annotations
 
-import json
 from dataclasses import asdict, dataclass
 from typing import Any
 from urllib.parse import parse_qs, urlparse
 
-from cfboundary.ffi import to_js
-
 from xampler.d1 import D1Database
+from xampler.response import json_response
 
 try:
-    import js  # type: ignore[import-not-found]
     from workers import WorkerEntrypoint  # type: ignore[import-not-found]
 except ImportError:
-    js = None  # type: ignore[assignment]
 
     class WorkerEntrypoint:  # type: ignore[no-redef]
         env: Any = None
@@ -52,12 +48,3 @@ class Default(WorkerEntrypoint):
             "SELECT quote, author FROM quotes ORDER BY RANDOM() LIMIT 1"
         ).one_as(Quote)
         return json_response(asdict(quote or Quote("No quotes yet", "D1")))
-
-
-def json_response(data: Any, *, status: int = 200) -> Any:
-    if js is None:
-        return {"body": data, "status": status}
-    return js.Response.new(
-        json.dumps(data),
-        to_js({"status": status, "headers": {"content-type": "application/json"}}),
-    )

@@ -1,26 +1,13 @@
 from __future__ import annotations
 
 import asyncio
-from dataclasses import dataclass
-from typing import Any, cast
+from typing import Any
 from urllib.parse import urlparse
 
 from workers import Response, WorkerEntrypoint, WorkflowEntrypoint  # type: ignore[import-not-found]
 
 from xampler.response import jsonable
-from xampler.status import OperationState
-
-
-@dataclass(frozen=True)
-class WorkflowStart:
-    instance_id: str
-
-
-@dataclass(frozen=True)
-class WorkflowStatus:
-    instance_id: str
-    status: OperationState
-    raw: object | None = None
+from xampler.workflows import DemoWorkflowService, WorkflowService
 
 
 class Pipeline(WorkflowEntrypoint):
@@ -41,60 +28,6 @@ class Pipeline(WorkflowEntrypoint):
             print(f"Workflow complete: {value}")
 
         await summarize()
-
-
-class WorkflowInstance:
-    """Typed handle for one Workflow instance."""
-
-    def __init__(self, instance_id: str, raw: Any):
-        self.id = instance_id
-        self.raw = raw
-
-    async def status(self) -> WorkflowStatus:
-        raw_status = cast(object, await self.raw.status())
-        raw_state: object = raw_status
-        if isinstance(raw_status, dict):
-            mapping = cast(dict[object, object], raw_status)
-            raw_state = mapping.get("status", "running")
-        status = parse_workflow_state(raw_state)
-        return WorkflowStatus(instance_id=self.id, status=status, raw=cast(object, raw_status))
-
-
-class WorkflowService:
-    """Pythonic service wrapper around the Workflow binding."""
-
-    def __init__(self, raw: Any):
-        self.raw = raw
-
-    async def start(self) -> WorkflowStart:
-        instance = await self.raw.create()
-        return WorkflowStart(instance_id=str(instance.id))
-
-    async def instance(self, instance_id: str) -> WorkflowInstance:
-        return WorkflowInstance(instance_id, await self.raw.get(instance_id))
-
-    async def status(self, instance_id: str) -> WorkflowStatus:
-        return await (await self.instance(instance_id)).status()
-
-
-def parse_workflow_state(value: object) -> OperationState:
-    state = str(value)
-    if state in {"not_started", "running", "complete", "failed"}:
-        return cast(OperationState, state)
-    return "running"
-
-
-class DemoWorkflowService:
-    """Deterministic local substitute for verifier coverage without workflow runtime."""
-
-    def __init__(self) -> None:
-        self.started = WorkflowStart("demo-instance")
-
-    async def start(self) -> WorkflowStart:
-        return self.started
-
-    async def status(self, instance_id: str) -> WorkflowStatus:
-        return WorkflowStatus(instance_id=instance_id, status="complete", raw={"demo": True})
 
 
 class Default(WorkerEntrypoint):

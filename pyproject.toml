@@ -1,3 +1,7 @@
+[build-system]
+requires = ["setuptools>=69"]
+build-backend = "setuptools.build_meta"
+
 [project]
 name = "xampler"
 version = "0.1.0"
@@ -6,6 +10,10 @@ requires-python = ">=3.12"
 dependencies = [
     "cfboundary @ git+https://github.com/adewale/cfboundary@v0.1.11",
 ]
+
+[project.scripts]
+xc = "xampler.cli:main"
+xampler = "xampler.cli:main"
 
 [dependency-groups]
 dev = [

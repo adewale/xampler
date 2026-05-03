@@ -6,6 +6,7 @@ Long-term docs are grouped by purpose. Older planning snapshots live in [`archiv
 
 - [`api/library-surface.md`](api/library-surface.md) — importable library modules and stability levels.
 - [`api/reference.md`](api/reference.md) — concise API reference and copyable imports.
+- [`api/pipeline-vocabulary.md`](api/pipeline-vocabulary.md) — composition, progress, checkpoint, retry, and observability vocabulary.
 - [`api/unified-api-surface.md`](api/unified-api-surface.md) — the shared Xampler API shape.
 - [`api/primitives-api-surface.md`](api/primitives-api-surface.md) — primitive coverage and Pythonic API matrix.
 - [`api/primitive-test-realism.md`](api/primitive-test-realism.md) — verification honesty matrix.
@@ -19,6 +20,7 @@ Long-term docs are grouped by purpose. Older planning snapshots live in [`archiv
 - [`runtime/python-workers-runtime-guidance.md`](runtime/python-workers-runtime-guidance.md)
 - [`runtime/pythonic-tooling.md`](runtime/pythonic-tooling.md)
 - [`runtime/cloudflare-doc-links.md`](runtime/cloudflare-doc-links.md)
+- [`runtime/credentials.md`](runtime/credentials.md)
 - [`runtime/remote-verification.md`](runtime/remote-verification.md)
 - [`runtime/local-path-development.md`](runtime/local-path-development.md)
 - [`runtime/cloudflare-best-practices-alignment.md`](runtime/cloudflare-best-practices-alignment.md)
@@ -41,6 +43,7 @@ These are mostly maintainer-facing. New users should start with the API/runtime/
 
 These docs explain why the repo looks the way it does, but they are not the main user journey.
 
+- [`project/duplication-audit.md`](project/duplication-audit.md)
 - [`project/lessons-learned.md`](project/lessons-learned.md)
 - [`project/gaps-explained.md`](project/gaps-explained.md)
 - [`project/original-goals-audit.md`](project/original-goals-audit.md)

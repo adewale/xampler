@@ -147,10 +147,12 @@ Start with [`docs/index.md`](docs/index.md). The highest-value user-facing docs 
 
 - [`docs/api/library-surface.md`](docs/api/library-surface.md)
 - [`docs/api/reference.md`](docs/api/reference.md)
+- [`docs/api/pipeline-vocabulary.md`](docs/api/pipeline-vocabulary.md)
 - [`docs/api/unified-api-surface.md`](docs/api/unified-api-surface.md)
 - [`docs/api/primitives-api-surface.md`](docs/api/primitives-api-surface.md)
 - [`docs/api/primitive-test-realism.md`](docs/api/primitive-test-realism.md)
 - [`docs/runtime/python-workers-runtime-guidance.md`](docs/runtime/python-workers-runtime-guidance.md)
+- [`docs/runtime/credentials.md`](docs/runtime/credentials.md)
 - [`docs/runtime/remote-verification.md`](docs/runtime/remote-verification.md)
 - [`docs/runtime/local-path-development.md`](docs/runtime/local-path-development.md)
 - [`docs/data/streaming-api.md`](docs/data/streaming-api.md)
@@ -190,9 +192,32 @@ from xampler.ai import AIService, TextGenerationRequest
 from xampler.browser_rendering import BrowserRendering, ScreenshotRequest
 from xampler.r2_sql import R2SqlClient, R2SqlQuery
 from xampler.r2_data_catalog import R2DataCatalog
+from xampler.durable_objects import DurableObjectNamespace, DurableObjectRef
+from xampler.workflows import WorkflowService, WorkflowStatus
+from xampler.cron import ScheduledEventInfo
+from xampler.service_bindings import ServiceBinding
+from xampler.websockets import WebSocketStatus
+from xampler.agents import AgentSession, AgentMessage
+from xampler.ai_gateway import AIGateway, ChatRequest
 ```
 
-Examples now import stable product wrappers from `xampler/`; example-local wrappers should only remain for product-specific UI/demo code that has not become library surface yet.
+Examples now import stable product wrappers from `xampler/`; example-local code should be route/UI/fixture/verifier glue or product surfaces that are still deliberately experimental.
+
+## CLI and credential DX
+
+Xampler ships a small CLI as both `xc` and `xampler`:
+
+```bash
+xc doctor
+xc verify r2
+xc remote prepare vectorize
+xc remote verify vectorize
+xc remote cleanup vectorize
+xc dev link
+xc dev restore
+```
+
+Remote actions remain opt-in. `xc remote prepare` sets `XAMPLER_RUN_REMOTE=1` and `XAMPLER_PREPARE_REMOTE=1`; cleanup sets `XAMPLER_CLEANUP_REMOTE=1`. See [`docs/runtime/credentials.md`](docs/runtime/credentials.md).
 
 ## Primitive metrics
 

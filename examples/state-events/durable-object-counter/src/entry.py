@@ -5,6 +5,8 @@ from urllib.parse import urlparse
 
 from workers import DurableObject, Response, WorkerEntrypoint  # type: ignore[import-not-found]
 
+from xampler.durable_objects import DurableObjectNamespace, DurableObjectRef
+
 
 class Counter(DurableObject):
     """A named Durable Object that owns one counter value.
@@ -29,37 +31,24 @@ class Counter(DurableObject):
         return Response(str(value))
 
 
-class CounterRef:
+class CounterRef(DurableObjectRef):
     """Typed handle for one named Durable Object counter stub."""
 
-    def __init__(self, name: str, raw_stub: Any):
-        self.name = name
-        self.raw = raw_stub
-
     async def value(self) -> int:
-        response = await self.raw.fetch(f"https://counter.local/{self.name}")
-        return int(await response.text())
+        return int(await self.text("/"))
 
     async def increment(self) -> int:
-        response = await self.raw.fetch(f"https://counter.local/{self.name}/increment")
-        return int(await response.text())
+        return int(await self.text("/increment"))
 
     async def reset(self) -> int:
-        response = await self.raw.fetch(f"https://counter.local/{self.name}/reset")
-        return int(await response.text())
-
-    async def fetch(self, request: Any) -> Response:
-        return await self.raw.fetch(request)
+        return int(await self.text("/reset"))
 
 
-class CounterNamespace:
+class CounterNamespace(DurableObjectNamespace[CounterRef]):
     """Pythonic wrapper around the Durable Object namespace binding."""
 
     def __init__(self, raw: Any):
-        self.raw = raw
-
-    def named(self, name: str) -> CounterRef:
-        return CounterRef(name, self.raw.get(self.raw.idFromName(name)))
+        super().__init__(raw, ref_type=CounterRef)
 
 
 class Default(WorkerEntrypoint):

@@ -14,9 +14,10 @@ import js  # type: ignore[import-not-found]
 from cfboundary.ffi import is_js_missing, to_js_bytes, to_py
 from workers import Response, WorkerEntrypoint  # type: ignore[import-not-found]
 
+from xampler.ai import DemoAIService
 from xampler.d1 import D1Database, D1Statement
 from xampler.response import jsonable
-from xampler.status import Progress
+from xampler.status import BatchResult, Progress
 from xampler.streaming import (
     AgentEvent,
     ByteStream,
@@ -42,13 +43,6 @@ We are such stuff as dreams are made on.
 class TextRecord:
     line_no: int
     text: str
-
-
-@dataclass(frozen=True)
-class BatchResult:
-    batches: int
-    records: int
-    checkpoint: StreamCheckpoint
 
 
 async def bytes_from_text(text: str, chunk_size: int = 48) -> AsyncIterator[bytes]:
@@ -78,12 +72,6 @@ class DemoD1Sink:
             "complete",
         )
         return self.checkpoint
-
-
-class DemoAIService:
-    async def stream_text(self, prompt: str) -> AsyncIterator[str]:
-        for token in ["summary", ": ", prompt[:24], "..."]:
-            yield token
 
 
 class DemoAgentSession:
