@@ -26,6 +26,9 @@ Xampler is a Python library with examples that prove the APIs run in Python Work
 | `xampler.websockets` | Beta | `WebSocketStatus`, `DemoWebSocketSession` |
 | `xampler.agents` | Experimental | `AgentSession`, `AgentMessage`, `ToolCall`, `AgentRunResult`, `DemoAgent` |
 | `xampler.ai_gateway` | Experimental | `AIGateway`, `ChatRequest`, `ChatMessage`, `ChatResponse`, `DemoAIGateway` |
+| `xampler.email` | Experimental | `IncomingEmail`, `EmailDecision`, `EmailRouter` |
+| `xampler.htmlrewriter` | Experimental | `OpenGraphPage`, `OpenGraphRewriter` |
+| `xampler.hyperdrive` | Experimental | `HyperdriveConfig`, `PostgresQuery`, `PostgresResult`, `HyperdrivePostgres`, `DemoPostgres` |
 
 ## Stability meanings
 

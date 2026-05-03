@@ -6,6 +6,7 @@ import subprocess
 import sys
 from collections.abc import Sequence
 from contextlib import suppress
+from dataclasses import dataclass
 from pathlib import Path
 
 REMOTE_ENV = "XAMPLER_RUN_REMOTE"
@@ -27,6 +28,93 @@ EXAMPLES = {
     "durable-objects": "examples/state-events/durable-object-chatroom",
     "websockets": "examples/network-edge/outbound-websocket-consumer",
     "service-bindings": "examples/network-edge/service-bindings-rpc/ts",
+    "ai-gateway": "examples/ai-agents/ai-gateway-chat",
+    "agents": "examples/ai-agents/agents-sdk-tools",
+    "cron": "examples/state-events/cron-trigger",
+    "email": "examples/network-edge/email-worker-router",
+    "htmlrewriter": "examples/network-edge/htmlrewriter-opengraph",
+    "hyperdrive": "examples/storage-data/hyperdrive-postgres",
+}
+
+DOCS = {
+    "r2": "docs/api/reference/r2.md",
+    "d1": "docs/api/reference/d1.md",
+    "kv": "docs/api/reference/kv.md",
+    "queues": "docs/api/reference/queues.md",
+    "vectorize": "docs/api/reference/vectorize.md",
+    "ai": "docs/api/reference/ai.md",
+    "browser-rendering": "docs/api/reference/browser-rendering.md",
+    "r2-sql": "docs/api/reference/r2-sql.md",
+    "r2-data-catalog": "docs/api/reference/r2-data-catalog.md",
+    "durable-objects": "docs/api/reference/durable-objects.md",
+    "workflows": "docs/api/reference/workflows.md",
+    "cron": "docs/api/reference/cron.md",
+    "service-bindings": "docs/api/reference/service-bindings.md",
+    "websockets": "docs/api/reference/websockets.md",
+    "agents": "docs/api/reference/agents.md",
+    "ai-gateway": "docs/api/reference/ai-gateway.md",
+    "email": "docs/api/reference/email.md",
+    "htmlrewriter": "docs/api/reference/htmlrewriter.md",
+    "hyperdrive": "docs/api/reference/hyperdrive.md",
+}
+
+
+@dataclass(frozen=True)
+class RemoteAdvice:
+    profile: str
+    credentials: tuple[str, ...]
+    prepare: bool
+    cost: str
+    notes: tuple[str, ...] = ()
+
+
+REMOTE_ADVICE = {
+    "browser-rendering": RemoteAdvice(
+        "browser-rendering",
+        ("CLOUDFLARE_ACCOUNT_ID", "CLOUDFLARE_API_TOKEN"),
+        True,
+        "May incur Browser Rendering usage charges.",
+        ("Run `xc remote prepare browser-rendering` before verify.",),
+    ),
+    "r2-sql": RemoteAdvice(
+        "r2-sql",
+        ("CLOUDFLARE_ACCOUNT_ID", "WRANGLER_R2_SQL_AUTH_TOKEN"),
+        True,
+        "May create/use an R2 bucket, catalog, and R2 SQL queries.",
+    ),
+    "r2-data-catalog": RemoteAdvice(
+        "r2-data-catalog",
+        (
+            "CLOUDFLARE_ACCOUNT_ID",
+            "XAMPLER_R2_DATA_CATALOG_TOKEN or WRANGLER_R2_SQL_AUTH_TOKEN",
+        ),
+        True,
+        "May create/use R2 Data Catalog namespaces/tables.",
+    ),
+    "ai-gateway": RemoteAdvice(
+        "ai-gateway",
+        (
+            "CLOUDFLARE_ACCOUNT_ID",
+            "CLOUDFLARE_API_TOKEN",
+            "XAMPLER_AI_GATEWAY_ID",
+            "OPENAI_API_KEY",
+        ),
+        False,
+        "May incur provider costs; default model is openai/gpt-4o-mini unless "
+        "XAMPLER_AI_GATEWAY_MODEL is set.",
+    ),
+    "vectorize": RemoteAdvice(
+        "vectorize",
+        ("CLOUDFLARE_ACCOUNT_ID",),
+        True,
+        "May create/use a Vectorize index.",
+    ),
+    "workers-ai": RemoteAdvice(
+        "workers-ai",
+        ("CLOUDFLARE_ACCOUNT_ID",),
+        True,
+        "May incur Workers AI usage charges.",
+    ),
 }
 
 
@@ -34,7 +122,15 @@ def main(argv: Sequence[str] | None = None) -> int:
     parser = argparse.ArgumentParser(prog="xc", description="Xampler Cloudflare learning CLI")
     sub = parser.add_subparsers(dest="command", required=True)
 
-    sub.add_parser("doctor", help="show local tools and credential readiness")
+    doctor_parser = sub.add_parser("doctor", help="show local tools and credential readiness")
+    doctor_parser.add_argument(
+        "profile", nargs="?", choices=sorted(set(EXAMPLES) | set(REMOTE_ADVICE))
+    )
+
+    sub.add_parser("list", help="list known examples and docs")
+
+    docs_parser = sub.add_parser("docs", help="print the docs path for a surface")
+    docs_parser.add_argument("surface", choices=sorted(DOCS))
 
     verify = sub.add_parser("verify", help="run a local example verifier")
     verify.add_argument("example", choices=sorted(EXAMPLES))
@@ -52,7 +148,11 @@ def main(argv: Sequence[str] | None = None) -> int:
 
     args = parser.parse_args(list(argv) if argv is not None else None)
     if args.command == "doctor":
-        return doctor()
+        return doctor(args.profile)
+    if args.command == "list":
+        return list_surfaces()
+    if args.command == "docs":
+        return show_docs(args.surface)
     if args.command == "verify":
         return run([sys.executable, "scripts/verify_examples.py", EXAMPLES[args.example]])
     if args.command == "remote":
@@ -63,7 +163,22 @@ def main(argv: Sequence[str] | None = None) -> int:
     return 2
 
 
-def doctor() -> int:
+def list_surfaces() -> int:
+    print("Examples:")
+    for name, path in sorted(EXAMPLES.items()):
+        print(f"  {name:18} {path}")
+    print("\nDocs:")
+    for name, path in sorted(DOCS.items()):
+        print(f"  {name:18} {path}")
+    return 0
+
+
+def show_docs(surface: str) -> int:
+    print(DOCS[surface])
+    return 0
+
+
+def doctor(profile: str | None = None) -> int:
     print("Xampler doctor")
     print(f"repo: {Path.cwd()}")
     for tool in ("uv", "pywrangler", "wrangler", "node"):
@@ -71,19 +186,47 @@ def doctor() -> int:
     print("\nRemote gates:")
     for key in (REMOTE_ENV, PREPARE_ENV, CLEANUP_ENV):
         print(f"{key}={os.environ.get(key, '0')}")
-    print("\nCredentials/secrets visible to this shell:")
-    for key in (
-        "CLOUDFLARE_ACCOUNT_ID",
-        "CLOUDFLARE_API_TOKEN",
-        "WRANGLER_R2_SQL_AUTH_TOKEN",
-        "XAMPLER_R2_DATA_CATALOG_TOKEN",
-        "OPENAI_API_KEY",
-    ):
-        print(f"{key}: {'set' if os.environ.get(key) else 'missing'}")
+    if profile is None:
+        print("\nCredentials/secrets visible to this shell:")
+        keys = sorted({key for advice in REMOTE_ADVICE.values() for key in advice.credentials})
+        for key in keys:
+            print(f"{key}: {_credential_status(key)}")
+        print("\nTip: run `xc doctor <profile>` for profile-specific advice.")
+        return 0
+    print(f"\nProfile: {profile}")
+    if profile in EXAMPLES:
+        print(f"example: {EXAMPLES[profile]}")
+    advice = REMOTE_ADVICE.get(profile)
+    if advice is None:
+        print("No remote credential advice for this profile yet.")
+        return 0
+    print(f"cost warning: {advice.cost}")
+    print("required credentials:")
+    for key in advice.credentials:
+        print(f"  {key}: {_credential_status(key)}")
+    print("recommended remote flow:")
+    if advice.prepare:
+        print(f"  xc remote prepare {profile}")
+    print(f"  xc remote verify {profile}")
+    if advice.prepare:
+        print(f"  xc remote cleanup {profile}")
+    for note in advice.notes:
+        print(f"note: {note}")
     return 0
 
 
+def _credential_status(name: str) -> str:
+    if " or " in name:
+        any_set = any(os.environ.get(part.strip()) for part in name.split(" or "))
+        return "set" if any_set else "missing"
+    return "set" if os.environ.get(name) else "missing"
+
+
 def remote_command(action: str, example: str) -> int:
+    advice = REMOTE_ADVICE.get(example)
+    if advice is not None:
+        print(f"Remote cost warning: {advice.cost}")
+        print(f"Run `xc doctor {example}` to inspect required credentials.")
     script = {
         "prepare": "scripts/prepare_remote_examples.py",
         "verify": "scripts/verify_remote_examples.py",

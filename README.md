@@ -63,18 +63,20 @@ examples/full-apps/hvsc-ai-data-search/
 The target shape is small Python wrappers that compose like normal async Python: R2 produces bytes, stream helpers turn bytes into records, batches go to D1/Queues/Vectorize, and AI/Agents/WebSockets can consume or emit typed events.
 
 ```python
-archive = await R2Bucket(env.ARTIFACTS).object("gutenberg/100/raw/pg100-h.zip").read_stream()
+bucket = R2Bucket(env.ARTIFACTS)
+db = D1Database(env.DB)
+queue = QueueService(env.JOBS)
 
-async for batch in aiter_batches(unzip(archive).entry("pg100-h.html").iter_lines(), size=500):
-    rows = [TextRecord.from_line(line) for line in batch]
-    await D1Database(env.DB).table("gutenberg_lines").insert_many(rows)
-    await QueueService(env.JOBS).send_json({"kind": "indexed-batch", "rows": len(rows)})
+stream = await bucket.object("gutenberg/100/raw/pg100-h.zip").byte_stream()
+async for batch in aiter_batches(JsonlReader(stream).records(), size=500):
+    await db.batch_run([...])
+    await queue.send(QueueJob("indexed-batch", {"rows": len(batch)}))
 
-summary = await WorkersAI(env.AI).run(Summarize(lines=rows[:20]))
-await AgentSession(env.AGENT, "shakespeare").emit({"type": "summary", "data": summary})
+summary = await AIService(env.AI).generate_text(TextGenerationRequest("summarize batch"))
+print(summary.text)
 ```
 
-That exact high-level API is still aspirational, but the pieces exist today:
+Real examples include product-specific parsing and SQL details, but the compositional pieces exist today:
 
 - [`examples/storage-data/r2-object-storage`](examples/storage-data/r2-object-storage) is the best post-Hello-World example because it exercises real local object storage with text, binary upload, streaming download, and byte comparison.
 - [`examples/streaming/gutenberg-stream-composition`](examples/streaming/gutenberg-stream-composition) reads a real R2 ZIP body stream, unzips it, models byte/text/line/record streams, batches, checkpoints, feeds extracted lines into a checkpointed D1 pipeline, indexes the full text into D1 FTS, and includes AI chunks, agent events, and WebSocket events.
@@ -124,15 +126,15 @@ These examples are useful, but they contain a local stand-in, deterministic tran
 | Example | The lie / seam |
 |---|---|
 | `examples/ai-agents/workers-ai-inference` | `/demo` is deterministic; `/` is the real Workers AI binding path. |
-| `examples/ai-agents/vectorize-search` | `/demo` verifies vector API shape locally; real Vectorize needs an account index. |
-| `examples/state-events/workflows-pipeline` | `/demo/*` fakes start/status; real workflow runtime verification is still needed. |
+| `examples/ai-agents/vectorize-search` | `/demo` verifies vector API shape locally; `xc remote prepare/verify vectorize` can test a deployed account index. |
+| `examples/state-events/workflows-pipeline` | `/demo/*` fakes start/status; remote workflow runtime assertions still need deeper coverage. |
 | `examples/state-events/queues-producer-consumer` | Producer is real locally; consumer delivery uses a deterministic harness. |
-| `examples/network-edge/service-bindings-rpc` | Local two-worker RPC is verified; deployed cross-worker verification still needs account resources. |
+| `examples/network-edge/service-bindings-rpc` | Local two-worker RPC is verified; `xc remote prepare/verify service-bindings` can test deployed cross-worker RPC. |
 | `examples/network-edge/outbound-websocket-consumer` | `/demo/status` does not open the public Jetstream socket. |
-| `examples/network-edge/browser-rendering-screenshot` | `/demo` returns screenshot metadata, not a real browser screenshot. |
+| `examples/network-edge/browser-rendering-screenshot` | `/demo` returns screenshot metadata; prepared remote verification can test screenshot/content/PDF/scrape through the real API. |
 | `examples/network-edge/email-worker-router` | HTTP route verifies policy; it is not a real Email Routing event. |
-| `examples/ai-agents/ai-gateway-chat` | `/demo` mimics OpenAI-compatible shape; real gateway call needs credentials. |
-| `examples/storage-data/r2-sql` | `/demo` verifies guarded SQL shaping; real R2 SQL is account-backed. |
+| `examples/ai-agents/ai-gateway-chat` | `/demo` mimics OpenAI-compatible shape; `xc doctor ai-gateway` shows the credentials needed for a real gateway call. |
+| `examples/storage-data/r2-sql` | `/demo` verifies guarded SQL shaping; prepared remote verification can query a seeded table through real R2 SQL. |
 | `examples/storage-data/r2-data-catalog` | `/demo` is a fixture catalog; prepared remote verification can call a deployed Worker against a real Iceberg catalog. |
 | `examples/storage-data/hyperdrive-postgres` | `/demo` does not connect to Postgres through Hyperdrive. |
 | `examples/ai-agents/agents-sdk-tools` | Demonstrates Agents-like shape with Durable Objects; not direct Cloudflare Agents SDK interop yet. |
@@ -182,7 +184,7 @@ from xampler.cloudflare import CloudflareService, ResourceRef, RestClient
 - `ResourceRef[T]` — passive handle to a named resource such as an object key, Durable Object stub, or workflow instance.
 - `RestClient[T]` — token/HTTP backed product client when no Python-usable binding path exists.
 
-Product wrappers are now migrating into the shared package instead of living only inside examples. Canonical imports include:
+Product wrappers now live in the shared package instead of living only inside examples. Canonical imports include:
 
 ```python
 from xampler.r2 import R2Bucket, R2HttpMetadata, R2Range
@@ -207,7 +209,7 @@ Examples now import stable product wrappers from `xampler/`; example-local code 
 
 ## CLI and credential DX
 
-Xampler ships a small CLI as both `xc` and `xampler`:
+Xampler ships one CLI, `xc`:
 
 ```bash
 xc doctor
@@ -216,6 +218,9 @@ xc remote prepare vectorize
 xc remote verify vectorize
 xc remote cleanup vectorize
 xc dev link
+xc list
+xc docs r2
+xc doctor r2-sql
 xc dev restore
 ```
 

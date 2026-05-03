@@ -32,7 +32,7 @@ Xampler should read like normal Python while keeping Cloudflare names visible:
 
 ```python
 bucket = R2Bucket(env.BUCKET)
-stream = bucket.object("dataset/items.jsonl").byte_stream()
+stream = await bucket.object("dataset/items.jsonl").byte_stream()
 
 async for batch in aiter_batches(JsonlReader(stream).records(), size=100):
     await db.batch_run([...])

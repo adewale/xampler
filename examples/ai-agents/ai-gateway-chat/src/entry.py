@@ -10,7 +10,8 @@ from xampler.ai_gateway import AIGateway, ChatMessage, ChatRequest, DemoAIGatewa
 class Default(WorkerEntrypoint):
     async def fetch(self, request: Any) -> Response:
         prompt = "Explain Cloudflare AI Gateway in one sentence."
-        chat_request = ChatRequest(messages=[ChatMessage("user", prompt)])
+        model = str(getattr(self.env, "MODEL", "openai/gpt-4o-mini"))
+        chat_request = ChatRequest(messages=[ChatMessage("user", prompt)], model=model)
         if str(request.url).endswith("/demo"):
             return Response.json((await DemoAIGateway().chat(chat_request)).raw)
         gateway = AIGateway(

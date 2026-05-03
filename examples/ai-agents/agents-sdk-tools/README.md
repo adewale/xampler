@@ -27,3 +27,11 @@ curl -X POST http://127.0.0.1:8787/agents/demo/run -d '{"message":"weather in La
 ## Cloudflare docs
 
 - [Agents](https://developers.cloudflare.com/agents/)
+
+## Copy this API
+
+```python
+from xampler.agents import DemoAgent
+
+result = await DemoAgent().run("weather in Lagos")
+```

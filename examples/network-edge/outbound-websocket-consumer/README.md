@@ -6,3 +6,11 @@ A Pythonic WebSocket session object that echoes messages.
 
 - [WebSockets](https://developers.cloudflare.com/workers/runtime-apis/websockets/)
 - [Durable Objects](https://developers.cloudflare.com/durable-objects/)
+
+## Copy this API
+
+```python
+from xampler.websockets import DemoWebSocketSession
+
+status = await DemoWebSocketSession().status()
+```

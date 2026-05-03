@@ -66,8 +66,23 @@ class FakeR2BucketBinding:
         self.objects[key] = obj
         return obj
 
-    async def get(self, key: str) -> FakeR2Object | None:
-        return self.objects.get(key)
+    async def get(self, key: str, options: dict[str, Any] | None = None) -> FakeR2Object | None:
+        obj = self.objects.get(key)
+        if obj is None:
+            return None
+        byte_range = (options or {}).get("range", {})
+        if "offset" in byte_range:
+            offset = int(byte_range["offset"])
+            length = byte_range.get("length")
+            data = obj.body[offset:] if length is None else obj.body[offset : offset + int(length)]
+            return FakeR2Object(key, data, content_type=obj.httpMetadata["contentType"])
+        if "suffix" in byte_range:
+            return FakeR2Object(
+                key,
+                obj.body[-int(byte_range["suffix"]):],
+                content_type=obj.httpMetadata["contentType"],
+            )
+        return obj
 
     async def head(self, key: str) -> FakeR2Object | None:
         return self.objects.get(key)

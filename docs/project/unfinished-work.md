@@ -14,9 +14,9 @@ This page consolidates deferred work that is currently spread across README and 
 
 ## API and examples
 
-- Add per-module API reference pages beyond the concise `docs/api/reference.md`.
-- Add “Copy this API” sections to migrated example READMEs.
-- Expand the `xc` CLI with `xc list`, `xc docs <surface>`, and profile-specific doctor advice.
+- Keep expanding per-module API reference pages as APIs mature.
+- Add “Copy this API” sections to migrated example READMEs that do not have one yet.
+- Consider `xc new <surface>` scaffolding for low-cost examples.
 - Add low-cost complex examples from [`complex-example-backlog.md`](complex-example-backlog.md): Email policy router, HTMLRewriter extractor, Workflows timeline, Agents tool calling, and richer Durable Object/WebSocket examples.
 
 ## Product coverage gaps
@@ -39,7 +39,7 @@ This page consolidates deferred work that is currently spread across README and 
 
 ## Testability gaps
 
-- Add deeper direct tests for multipart R2, D1 batch/error paths, KV TTL/list edge cases, Queue retry/backoff, Vectorize get/delete/query-by-id, R2 SQL guard matrices, Browser Rendering payload construction, and R2 Data Catalog path/payload construction.
+- Add even deeper direct tests for R2 multipart completion/abort, D1 error paths, Queue tracker integration, Vectorize remote-shaped responses, Browser Rendering response parsing, and R2 Data Catalog schema evolution payloads.
 - Add route-level tests for complex apps after the library units are stable.
 
 ## Compatibility policy before 0.1

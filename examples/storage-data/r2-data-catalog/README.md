@@ -18,3 +18,12 @@ If your `WRANGLER_R2_SQL_AUTH_TOKEN` also has Data Catalog permissions, the prep
 ## Cloudflare docs
 
 - [R2 Data Catalog](https://developers.cloudflare.com/r2/data-catalog/)
+
+## Copy this API
+
+```python
+from xampler.r2_data_catalog import R2DataCatalog
+
+catalog = R2DataCatalog(uri=catalog_uri, token=token)
+tables = await catalog.list_tables("xampler")
+```

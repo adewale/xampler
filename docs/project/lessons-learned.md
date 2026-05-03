@@ -372,7 +372,7 @@ The remote lifecycle and local development workflow were correct but too verbose
 
 What changed:
 
-- Added `xampler.cli` with both `xc` and `xampler` entry points.
+- Added `xampler.cli` with one public entry point: `xc`.
 - Mapped common workflows to short verbs: `doctor`, `verify`, `remote prepare`, `remote verify`, `remote cleanup`, `dev link`, and `dev restore`.
 - Added `xc doctor` so missing tools, remote gates, and credential names are visible before a paid or deployed check fails.
 

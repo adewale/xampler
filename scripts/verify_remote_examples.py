@@ -417,6 +417,7 @@ PROFILES: dict[str, RemoteProfile] = {
             "ACCOUNT_ID": "CLOUDFLARE_ACCOUNT_ID",
             "GATEWAY_ID": "XAMPLER_AI_GATEWAY_ID",
             "OPENAI_API_KEY": "OPENAI_API_KEY",
+            "MODEL": "XAMPLER_AI_GATEWAY_MODEL",
         },
     ),
     "r2-data-catalog": deployed_profile(

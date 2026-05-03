@@ -273,3 +273,13 @@ See also:
 
 - [R2](https://developers.cloudflare.com/r2/)
 - [R2 Workers API](https://developers.cloudflare.com/r2/api/workers/)
+
+## Copy this API
+
+```python
+from xampler.r2 import R2Bucket
+
+bucket = R2Bucket(env.BUCKET)
+await bucket.object("notes/a.txt").write_text("hello")
+text = await bucket.object("notes/a.txt").read_text()
+```

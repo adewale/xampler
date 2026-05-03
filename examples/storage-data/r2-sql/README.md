@@ -16,3 +16,12 @@ XAMPLER_RUN_REMOTE=1 XAMPLER_REMOTE_R2_SQL=1 \
 ## Cloudflare docs
 
 - [R2 SQL](https://developers.cloudflare.com/r2-sql/)
+
+## Copy this API
+
+```python
+from xampler.r2_sql import R2SqlClient, R2SqlQuery
+
+client = R2SqlClient(account_id=account_id, bucket_name=bucket, token=token)
+result = await client.query(R2SqlQuery("SHOW TABLES IN xampler"))
+```

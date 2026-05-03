@@ -18,6 +18,9 @@ Weak spots remain where realism needs account resources: Hyperdrive, Browser Ren
 
 ```bash
 xc doctor
+xc doctor r2-sql
+xc list
+xc docs r2
 xc verify r2
 xc remote prepare vectorize
 xc remote verify vectorize
@@ -39,7 +42,5 @@ Impact:
 
 ## Remaining DX work
 
-- Add `xc list` and `xc docs <surface>`.
 - Add `xc new <surface>` scaffolding for low-cost examples.
-- Have `xc doctor` recommend exact missing credentials per selected profile.
-- Emit remote-cost warnings before prepare/deploy commands.
+- Keep expanding profile-specific credential advice as remote profiles mature.

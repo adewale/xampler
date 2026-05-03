@@ -1,6 +1,6 @@
 # API reference
 
-This is a concise hand-written reference for the importable Xampler library surface.
+This is a concise hand-written reference for the importable Xampler library surface. Per-module pages live in [`docs/api/reference/`](reference/).
 
 ## Storage and data
 
@@ -76,6 +76,9 @@ from xampler.service_bindings import ServiceBinding
 from xampler.websockets import DemoWebSocketSession, WebSocketStatus
 from xampler.agents import AgentMessage, AgentSession, DemoAgent
 from xampler.ai_gateway import AIGateway, ChatMessage, ChatRequest
+from xampler.email import EmailRouter, IncomingEmail
+from xampler.htmlrewriter import OpenGraphPage, OpenGraphRewriter
+from xampler.hyperdrive import HyperdriveConfig, PostgresQuery
 ```
 
 ```python

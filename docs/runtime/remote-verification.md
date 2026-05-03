@@ -60,12 +60,12 @@ These profiles call the example's real route. Binding-backed products prefer dep
 
 | Profile | Mechanism | Required environment beyond `XAMPLER_RUN_REMOTE=1` |
 |---|---|---|
-| `workers-ai` | deployed Worker with real Workers AI binding | `XAMPLER_REMOTE_WORKERS_AI=1`; prepare with `scripts/prepare_remote_examples.py workers-ai`. |
-| `vectorize` | deployed Worker with real Vectorize binding; runs describe/upsert/query | `XAMPLER_REMOTE_VECTORIZE=1`; prepare with `scripts/prepare_remote_examples.py vectorize`. |
-| `browser-rendering` | deployed Worker using the real Browser Rendering REST API; verifies screenshot, content, PDF, and scrape routes | `XAMPLER_REMOTE_BROWSER_RENDERING=1`; prepare with `CLOUDFLARE_API_TOKEN` via `scripts/prepare_remote_examples.py browser-rendering`. `CLOUDFLARE_ACCOUNT_ID` is inferred from `wrangler whoami` when possible. |
-| `r2-sql` | deployed Worker using the real R2 SQL REST API; verifies seeded table discovery and a `SELECT` against `xampler.gutenberg_smoke` | `XAMPLER_REMOTE_R2_SQL=1`; prepare with `WRANGLER_R2_SQL_AUTH_TOKEN` via `scripts/prepare_remote_examples.py r2-sql`. `CLOUDFLARE_ACCOUNT_ID` is inferred from `wrangler whoami` when possible. |
+| `workers-ai` | deployed Worker with real Workers AI binding | `XAMPLER_REMOTE_WORKERS_AI=1`; prepare with `xc remote prepare workers-ai`. |
+| `vectorize` | deployed Worker with real Vectorize binding; runs describe/upsert/query | `XAMPLER_REMOTE_VECTORIZE=1`; prepare with `xc remote prepare vectorize`. |
+| `browser-rendering` | deployed Worker using the real Browser Rendering REST API; verifies screenshot, content, PDF, and scrape routes | `XAMPLER_REMOTE_BROWSER_RENDERING=1`; prepare with `CLOUDFLARE_API_TOKEN` via `xc remote prepare browser-rendering`. `CLOUDFLARE_ACCOUNT_ID` is inferred from `wrangler whoami` when possible. |
+| `r2-sql` | deployed Worker using the real R2 SQL REST API; verifies seeded table discovery and a `SELECT` against `xampler.gutenberg_smoke` | `XAMPLER_REMOTE_R2_SQL=1`; prepare with `WRANGLER_R2_SQL_AUTH_TOKEN` via `xc remote prepare r2-sql`. `CLOUDFLARE_ACCOUNT_ID` is inferred from `wrangler whoami` when possible. |
 | `ai-gateway` | real AI Gateway endpoint from the Worker | `XAMPLER_REMOTE_AI_GATEWAY=1`, `CLOUDFLARE_ACCOUNT_ID`, `CLOUDFLARE_API_TOKEN`, `XAMPLER_AI_GATEWAY_ID`, `OPENAI_API_KEY` |
-| `r2-data-catalog` | deployed Worker using the real Iceberg/R2 Data Catalog endpoint; verifies seeded table listing and a temporary namespace/table create-list-delete lifecycle | `XAMPLER_REMOTE_R2_DATA_CATALOG=1`; prepare with `XAMPLER_R2_DATA_CATALOG_TOKEN` or `WRANGLER_R2_SQL_AUTH_TOKEN` via `scripts/prepare_remote_examples.py r2-data-catalog`. |
+| `r2-data-catalog` | deployed Worker using the real Iceberg/R2 Data Catalog endpoint; verifies seeded table listing and a temporary namespace/table create-list-delete lifecycle | `XAMPLER_REMOTE_R2_DATA_CATALOG=1`; prepare with `XAMPLER_R2_DATA_CATALOG_TOKEN` or `WRANGLER_R2_SQL_AUTH_TOKEN` via `xc remote prepare r2-data-catalog`. |
 
 Example:
 
@@ -73,9 +73,9 @@ Example:
 npx --yes wrangler login
 export XAMPLER_RUN_REMOTE=1
 export XAMPLER_PREPARE_REMOTE=1
-uv run python scripts/prepare_remote_examples.py vectorize
+xc remote prepare vectorize
 export XAMPLER_REMOTE_VECTORIZE=1
-uv run python scripts/verify_remote_examples.py vectorize
+xc remote verify vectorize
 ```
 
 ## Deployed URL profiles

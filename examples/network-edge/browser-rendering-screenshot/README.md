@@ -16,3 +16,12 @@ XAMPLER_RUN_REMOTE=1 XAMPLER_REMOTE_BROWSER_RENDERING=1 \
 ## Cloudflare docs
 
 - [Browser Rendering](https://developers.cloudflare.com/browser-rendering/)
+
+## Copy this API
+
+```python
+from xampler.browser_rendering import BrowserRendering, ScreenshotRequest
+
+browser = BrowserRendering(account_id, token)
+response = await browser.screenshot(ScreenshotRequest(url="https://example.com"))
+```
