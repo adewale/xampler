@@ -284,28 +284,6 @@ class R2Bucket(CloudflareService[Any]):
 
         return R2ObjectRef(self, key)
 
-    async def write_text(self, key: str, value: str, **kwargs: Any) -> R2ObjectInfo | None:
-        return await self.put_text(key, value, **kwargs)
-
-    async def read_text(self, key: str) -> str | None:
-        return await self.get_text(key)
-
-    async def write_bytes(
-        self,
-        key: str,
-        value: bytes | bytearray | memoryview,
-        **kwargs: Any,
-    ) -> R2ObjectInfo | None:
-        return await self.put_bytes(key, value, **kwargs)
-
-    async def read_bytes(
-        self,
-        key: str,
-        *,
-        byte_range: R2Range | None = None,
-    ) -> bytes | None:
-        return await self.get_bytes(key, byte_range=byte_range)
-
     async def exists(self, key: str) -> bool:
         return await self.head(key) is not None
 

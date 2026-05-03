@@ -150,9 +150,7 @@ Start with [`docs/index.md`](docs/index.md). The highest-value user-facing docs 
 - [`docs/api/library-surface.md`](docs/api/library-surface.md)
 - [`docs/api/reference.md`](docs/api/reference.md)
 - [`docs/api/testability.md`](docs/api/testability.md)
-- [`docs/api/pipeline-vocabulary.md`](docs/api/pipeline-vocabulary.md)
-- [`docs/api/operations.md`](docs/api/operations.md)
-- [`docs/api/composition-guides.md`](docs/api/composition-guides.md)
+- [`docs/api/composition-and-operations.md`](docs/api/composition-and-operations.md)
 - [`docs/api/unified-api-surface.md`](docs/api/unified-api-surface.md)
 - [`docs/api/primitives-api-surface.md`](docs/api/primitives-api-surface.md)
 - [`docs/api/primitive-test-realism.md`](docs/api/primitive-test-realism.md)
@@ -230,37 +228,7 @@ Remote actions remain opt-in. `xc remote prepare` sets `XAMPLER_RUN_REMOTE=1` an
 
 ## Primitive metrics
 
-Coverage and Pythonic API scores are out of 10. Test realism is out of 5; see [`docs/api/primitive-test-realism.md`](docs/api/primitive-test-realism.md).
-
-| Tier | Primitive | Coverage / 10 | Pythonic API / 10 | Test Realism / 5 |
-|---|---|---:|---:|---:|
-| Tier 1 — Gold standard | R2 object storage | 8.5 | 9.25 | 4 |
-| Tier 1 — Gold standard | Workers KV | 8.0 | 8.8 | 4 |
-| Tier 1 — Gold standard | Durable Objects | 7.0 | 8.6 | 4 |
-| Tier 1 — Gold standard | Workers Assets | 7.4 | 9.0 | 4 |
-| Tier 1 — Gold standard | D1 database | 7.5 | 8.9 | 4 |
-| Tier 1 — Gold standard | Binary responses | 6.0 | 8.2 | 4 |
-| Tier 1 — Gold standard | Cron Triggers | 6.5 | 8.5 | 4 |
-| Tier 1 — Gold standard | HTMLRewriter | 5.5 | 8.3 | 4 |
-| Tier 1 — Gold standard | Queues | 8.1 | 8.7 | 4 |
-| Tier 1 — Gold standard | FastAPI / ASGI | 6.0 | 8.0 | 3 |
-| Tier 1 — Gold standard | Workers AI | 6.3 | 8.7 | 4 |
-| Tier 1 — Gold standard | Vectorize | 7.8 | 8.7 | 4 |
-| Tier 1 — Gold standard | Durable Objects + WebSockets | 7.5 | 8.5 | 4 |
-| Tier 1 — Gold standard | Pages | 6.0 | 8.4 | 4 |
-| Tier 1 — Gold standard | Workflows | 7.2 | 8.5 | 4 |
-| Tier 1 — Gold standard | R2 SQL | 6.5 | 8.4 | 4 |
-| Tier 1 — Gold standard | HVSC AI/data app | 8.6 | 9.0 | 4.5 |
-| Tier 1 — Gold standard | Service Bindings / RPC | 6.8 | 8.3 | 4 |
-| Tier 1 — Gold standard | Outbound WebSockets | 7.0 | 8.2 | 3 |
-| Tier 1 — Gold standard | Browser Rendering | 6.2 | 8.2 | 3 |
-| Tier 1 — Gold standard | Email Workers | 6.5 | 8.3 | 3 |
-| Tier 1 — Gold standard | AI Gateway | 6.5 | 8.4 | 3 |
-| Tier 1 — Gold standard | R2 Data Catalog | 6.8 | 8.4 | 3 |
-| Tier 1 — Gold standard | LangChain/package orchestration | 6.2 | 8.1 | 3 |
-| Tier 1 — Gold standard | Hyperdrive | 6.5 | 8.4 | 3 |
-| Tier 1 — Gold standard | Agents SDK | 6.8 | 8.6 | 3 |
-| Tier 1 — Gold standard | Streaming composition | 8.2 | 9.0 | 4.5 |
+Coverage and Pythonic API scores live in [`docs/api/primitives-api-surface.md`](docs/api/primitives-api-surface.md). Test realism lives in [`docs/api/primitive-test-realism.md`](docs/api/primitive-test-realism.md).
 
 ## Requirements
 

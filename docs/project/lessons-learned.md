@@ -398,6 +398,7 @@ The package is still pre-0.1, so preserving every transient method name makes th
 What changed:
 
 - Removed young KV alias methods (`get_text`, `put_text`, `get_json`, `put_json`) and kept one clear key API: `read_text`, `write_text`, `read_json`, `write_json`.
+- Removed R2 bucket-level `read_*`/`write_*` aliases; object refs own Python file-style verbs, while buckets keep R2 platform vocabulary with `put_*`/`get_*`.
 - Updated docs to stop framing convenience methods as compatibility aliases.
 - Consolidated unfinished work into one document so API changes and deferred work are easier to audit.
 

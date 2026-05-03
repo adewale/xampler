@@ -203,8 +203,9 @@ It would be a thin wrapper over `head()`.
 Possible compromise:
 
 ```py
-await bucket.write_text(key, text)
-text = await bucket.read_text(key)
+obj = bucket.object(key)
+await obj.write_text(text)
+text = await obj.read_text()
 ```
 
 ### Add a testing fake as a supported artifact

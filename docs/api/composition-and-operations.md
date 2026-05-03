@@ -1,9 +1,51 @@
-# Copyable composition guides
+# Composition and operations
 
-Xampler should make Cloudflare primitives feel like a small set of Python concepts that compose:
+Xampler's small compositional vocabulary is:
 
 ```text
-Service → Ref → Request → Result → Progress/Checkpoint → Verifier
+Service → Ref → Request → Result → Progress/Checkpoint → Timeline → Verifier
+```
+
+For data pipelines, the memorable path is:
+
+```text
+R2 bytes → ByteStream → records → batches → D1/FTS → Queue → Vectorize/AI → status endpoint
+```
+
+## Vocabulary
+
+| Concept | Use when | API |
+|---|---|---|
+| Service | Active wrapper around a binding or REST client. | `R2Bucket`, `D1Database`, `QueueService`, `VectorIndex` |
+| Ref | Cheap handle to a named resource. | `R2ObjectRef`, `KVKey`, `DurableObjectRef`, `WorkflowInstance` |
+| Request | Input shape. | `TextGenerationRequest`, `VectorQuery`, `ChatRequest` |
+| Result | Output shape. | `WorkflowStatus`, `BatchResult`, `ChatResponse` |
+| Progress | A known-size task is underway. | `Progress(current, total, state)` |
+| Checkpoint | A stream/import can resume from an offset. | `Checkpoint`, `StreamCheckpoint` |
+| Timeline | A process has ordered operational events. | `TimelineEvent`, `OperationTimeline` |
+| Pipeline status | A route should expose progress, checkpoint, and events together. | `PipelineStatus` |
+| Retry/DLQ | Queue work can fail independently. | `QueueConsumer`, `QueueBatchResult` |
+| Local realism | Account-backed products need deterministic local behavior. | explicit `Demo*` clients |
+| Escape hatch | Advanced platform behavior is still available. | `.raw` |
+
+## Route-level rules
+
+1. Keep route handlers thin.
+2. Put reusable product behavior in `xampler/` services/refs.
+3. Return dataclasses or native Python values from services.
+4. Serialize once at the route boundary with `json_response()` or `Response.json()`.
+5. Every long-running example should expose `/status` or `/progress`.
+6. Every resumable import should persist a checkpoint outside process memory.
+7. Every queue example should report processed/retried/dead-lettered counts.
+8. Every remote verifier should assert an observable effect, not only HTTP 200.
+
+```python
+from xampler.response import json_response
+from xampler.status import Progress
+
+async def fetch(request):
+    progress = Progress(current=42, total=100)
+    return json_response(progress)
 ```
 
 ## Pattern 1: R2 bytes to D1 searchable records
@@ -37,13 +79,6 @@ async for batch in aiter_batches(JsonlReader(stream).records(), size=500):
 result = BatchResult(batches=batches, records=records, checkpoint=checkpoint)
 ```
 
-Route pattern:
-
-```python
-if path == "/pipeline/status":
-    return json_response(await pipeline.status())
-```
-
 ## Pattern 2: Queue-backed retryable work
 
 Use when request handling should enqueue work instead of doing it inline.
@@ -69,7 +104,7 @@ Operational assertion:
 processed + retried + dead_lettered >= attempted messages
 ```
 
-## Pattern 3: Workflow timeline plus D1 status
+## Pattern 3: Workflow timeline plus status
 
 Use when a task has durable phases and users need visibility.
 
@@ -93,12 +128,12 @@ GET  /workflows/<id>/timeline
 
 ```json
 [
-  {"step": "fetch input", "state": "complete", "records": 100},
-  {"step": "transform", "state": "running", "records": 50}
+  {"name": "fetch input", "state": "complete", "details": {"records": 100}},
+  {"name": "transform", "state": "running", "details": {"records": 50}}
 ]
 ```
 
-## Pattern 4: Retrieval-augmented answer from R2/D1/Vectorize/AI
+## Pattern 4: Retrieval answer from R2/D1/Vectorize/AI
 
 Use when documents are stored in R2, indexed in D1/Vectorize, and summarized by AI.
 
@@ -136,6 +171,9 @@ GET /rooms/<name>/transcript
 Recommended result shape:
 
 ```python
+from dataclasses import dataclass
+from xampler.status import OperationState
+
 @dataclass(frozen=True)
 class RoomStatus:
     room: str
@@ -144,14 +182,10 @@ class RoomStatus:
     state: OperationState = "running"
 ```
 
-## API surface ideas
+## Future API ideas to resist until proven
 
-These ideas reuse existing Xampler vocabulary instead of adding a giant client:
+- `StatusReporter` protocol.
+- `xampler.testing` fake bindings.
+- Larger pipeline/orchestration framework.
 
-1. `xampler.ops.OperationTimeline` — ordered events for workflows, queues, and Durable Objects.
-2. `xampler.ops.TimelineEvent` — `{name, state, details}`.
-3. `xampler.ops.PipelineStatus` — combines `Progress`, `Checkpoint`, and recent timeline events.
-4. `xampler.ops.StatusReporter` — future tiny protocol for services that expose `status()`.
-5. `xampler.testing.FakeBinding` helpers — future test fakes for docs, not runtime dependencies.
-
-Only promote the future ideas after at least two examples need the same shape.
+Only promote more API after at least two examples need the same shape.

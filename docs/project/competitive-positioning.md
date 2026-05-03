@@ -33,5 +33,5 @@ Rust and Zig Workers projects are instructive because they treat WebAssembly as 
 
 1. Deepen per-module API references beyond snippets.
 2. Run credentialed remote profiles and record pass/fail.
-3. Add `docs/api/operations.md` examples to Workflows, Queues, Gutenberg, and HVSC routes.
+3. Add `docs/api/composition-and-operations.md` examples to Workflows, Queues, Gutenberg, and HVSC routes.
 4. Keep pre-0.1 APIs sharp: one CLI name, one canonical import path, no compatibility shims.

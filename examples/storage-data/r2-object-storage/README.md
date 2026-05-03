@@ -35,8 +35,9 @@ note = bucket.object("notes/hello.txt")
 await note.write_text("Hello from Python Workers + R2")
 text = await note.read_text()
 
-await bucket.write_bytes("images/logo.bin", b"...")
-body = await bucket.read_bytes("images/logo.bin")
+image = bucket.object("images/logo.bin")
+await image.write_bytes(b"...")
+body = await image.read_bytes()
 ```
 
 For large objects, prefer the streaming path:
@@ -65,18 +66,6 @@ body = await obj.read_bytes()
 exists = await obj.exists()
 info = await obj.stat()
 await obj.delete()
-```
-
-### Bucket-level convenience methods
-
-```py
-await bucket.write_text("notes/hello.txt", "hello")
-text = await bucket.read_text("notes/hello.txt")
-
-await bucket.write_bytes("blob.bin", b"bytes")
-body = await bucket.read_bytes("blob.bin")
-
-exists = await bucket.exists("blob.bin")
 ```
 
 ### Platform-aware R2 API
@@ -110,7 +99,7 @@ await bucket.put_bytes(
 )
 
 part = R2Range(offset=0, length=1024)
-first_kb = await bucket.read_bytes("archive/report.pdf", byte_range=part)
+first_kb = await bucket.get_bytes("archive/report.pdf", byte_range=part)
 
 async with await bucket.create_multipart_upload("large.bin") as upload:
     uploaded = await upload.upload_part(1, request.body)

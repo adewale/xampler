@@ -7,9 +7,7 @@ Long-term docs are grouped by purpose. Older planning snapshots live in [`archiv
 - [`api/library-surface.md`](api/library-surface.md) — importable library modules and stability levels.
 - [`api/reference.md`](api/reference.md) — concise API reference and copyable imports.
 - [`api/testability.md`](api/testability.md) — how to write red-green-refactor tests with fake bindings and `Demo*` clients.
-- [`api/pipeline-vocabulary.md`](api/pipeline-vocabulary.md) — composition vocabulary.
-- [`api/operations.md`](api/operations.md) — progress, checkpoint, retry, DLQ, workflow status, and observability patterns.
-- [`api/composition-guides.md`](api/composition-guides.md) — copyable R2/D1/Queues/Vectorize/AI composition patterns.
+- [`api/composition-and-operations.md`](api/composition-and-operations.md) — composition, progress, checkpoint, retry, DLQ, workflow status, observability, and copyable pipeline patterns.
 - [`api/unified-api-surface.md`](api/unified-api-surface.md) — the shared Xampler API shape.
 - [`api/primitives-api-surface.md`](api/primitives-api-surface.md) — primitive coverage and Pythonic API matrix.
 - [`api/primitive-test-realism.md`](api/primitive-test-realism.md) — verification honesty matrix.

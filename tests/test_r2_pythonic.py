@@ -139,7 +139,7 @@ async def test_object_handle_and_read_write_methods() -> None:
 
     assert await note.exists() is True
     assert await note.read_text() == "hello handle"
-    assert await bucket.read_text("notes/handle.txt") == "hello handle"
+    assert await bucket.get_text("notes/handle.txt") == "hello handle"
 
     await note.delete()
     assert await note.exists() is False
