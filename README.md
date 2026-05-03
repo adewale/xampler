@@ -152,6 +152,7 @@ Start with [`docs/index.md`](docs/index.md). The highest-value user-facing docs 
 - [`docs/api/testability.md`](docs/api/testability.md)
 - [`docs/api/pipeline-vocabulary.md`](docs/api/pipeline-vocabulary.md)
 - [`docs/api/operations.md`](docs/api/operations.md)
+- [`docs/api/composition-guides.md`](docs/api/composition-guides.md)
 - [`docs/api/unified-api-surface.md`](docs/api/unified-api-surface.md)
 - [`docs/api/primitives-api-surface.md`](docs/api/primitives-api-surface.md)
 - [`docs/api/primitive-test-realism.md`](docs/api/primitive-test-realism.md)

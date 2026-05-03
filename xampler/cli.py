@@ -40,6 +40,7 @@ DOCS = {
     "r2": "docs/api/reference/r2.md",
     "d1": "docs/api/reference/d1.md",
     "kv": "docs/api/reference/kv.md",
+    "ops": "docs/api/reference/ops.md",
     "queues": "docs/api/reference/queues.md",
     "vectorize": "docs/api/reference/vectorize.md",
     "ai": "docs/api/reference/ai.md",

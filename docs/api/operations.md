@@ -5,6 +5,7 @@ Xampler examples should expose operational state as typed Python values first, t
 ## Core vocabulary
 
 ```python
+from xampler.ops import OperationTimeline, PipelineStatus, TimelineEvent
 from xampler.status import BatchResult, Checkpoint, Progress
 from xampler.queues import QueueBatchResult, QueueConsumer, QueueJob, QueueService
 from xampler.workflows import WorkflowService, WorkflowStatus
@@ -18,6 +19,8 @@ from xampler.workflows import WorkflowService, WorkflowStatus
 | Retry | One event/message failed but the batch should continue. | `QueueConsumer.process_batch()` |
 | DLQ | A message exceeded normal handling and needs inspection. | `QueueBatchResult.dead_lettered` |
 | Workflow status | A durable workflow instance has lifecycle state. | `WorkflowStatus` |
+| Timeline | A process has ordered operational events. | `TimelineEvent`, `OperationTimeline` |
+| Pipeline status | A route should expose progress, checkpoint, and events together. | `PipelineStatus` |
 
 ## Recommended route shape
 

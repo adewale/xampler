@@ -12,6 +12,7 @@ Xampler is a Python library with examples that prove the APIs run in Python Work
 | `xampler.streaming` | Stable | `ByteStream`, `JsonlReader`, `aiter_batches`, `StreamCheckpoint` |
 | `xampler.response` | Stable | `jsonable`, `error_payload` |
 | `xampler.status` | Stable | `Progress`, `Checkpoint`, `BatchResult` |
+| `xampler.ops` | Beta | `TimelineEvent`, `OperationTimeline`, `PipelineStatus` |
 | `xampler.cloudflare` | Stable base | `CloudflareService`, `ResourceRef`, `RestClient` |
 | `xampler.queues` | Beta | `QueueService`, `QueueJob`, `QueueConsumer`, `QueueBatchResult` |
 | `xampler.vectorize` | Beta | `VectorIndex`, `Vector`, `VectorQuery`, `DemoVectorIndex` |
