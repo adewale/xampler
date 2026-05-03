@@ -147,6 +147,7 @@ Start with [`docs/index.md`](docs/index.md). The highest-value user-facing docs 
 
 - [`docs/api/library-surface.md`](docs/api/library-surface.md)
 - [`docs/api/reference.md`](docs/api/reference.md)
+- [`docs/api/testability.md`](docs/api/testability.md)
 - [`docs/api/pipeline-vocabulary.md`](docs/api/pipeline-vocabulary.md)
 - [`docs/api/unified-api-surface.md`](docs/api/unified-api-surface.md)
 - [`docs/api/primitives-api-surface.md`](docs/api/primitives-api-surface.md)
@@ -156,6 +157,7 @@ Start with [`docs/index.md`](docs/index.md). The highest-value user-facing docs 
 - [`docs/runtime/remote-verification.md`](docs/runtime/remote-verification.md)
 - [`docs/runtime/local-path-development.md`](docs/runtime/local-path-development.md)
 - [`docs/data/streaming-api.md`](docs/data/streaming-api.md)
+- [`docs/project/unfinished-work.md`](docs/project/unfinished-work.md)
 
 Repo-internal audits, lessons, and planning notes live under `docs/project/` and `docs/archive/`; they are useful for maintainers but are not the main user journey.
 

@@ -6,6 +6,7 @@ Long-term docs are grouped by purpose. Older planning snapshots live in [`archiv
 
 - [`api/library-surface.md`](api/library-surface.md) — importable library modules and stability levels.
 - [`api/reference.md`](api/reference.md) — concise API reference and copyable imports.
+- [`api/testability.md`](api/testability.md) — how to write red-green-refactor tests with fake bindings and `Demo*` clients.
 - [`api/pipeline-vocabulary.md`](api/pipeline-vocabulary.md) — composition, progress, checkpoint, retry, and observability vocabulary.
 - [`api/unified-api-surface.md`](api/unified-api-surface.md) — the shared Xampler API shape.
 - [`api/primitives-api-surface.md`](api/primitives-api-surface.md) — primitive coverage and Pythonic API matrix.
@@ -46,6 +47,7 @@ These docs explain why the repo looks the way it does, but they are not the main
 - [`project/complex-example-backlog.md`](project/complex-example-backlog.md)
 - [`project/duplication-audit.md`](project/duplication-audit.md)
 - [`project/experience-assessment.md`](project/experience-assessment.md)
+- [`project/unfinished-work.md`](project/unfinished-work.md)
 - [`project/lessons-learned.md`](project/lessons-learned.md)
 - [`project/gaps-explained.md`](project/gaps-explained.md)
 - [`project/original-goals-audit.md`](project/original-goals-audit.md)

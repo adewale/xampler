@@ -14,6 +14,7 @@ WorkflowId = NewType("WorkflowId", str)
 VectorId = NewType("VectorId", str)
 AgentId = NewType("AgentId", str)
 
+
 @runtime_checkable
 class SupportsRaw(Protocol):
     raw: Any

@@ -196,15 +196,15 @@ if await bucket.exists("notes/hello.txt"):
 
 It would be a thin wrapper over `head()`.
 
-### Add `read_*` / `write_*` aliases
+### Prefer Pythonic `read_*` / `write_*` convenience methods
 
 `put_*` and `get_*` match object-store vocabulary. `read_*` and `write_*` match Python file vocabulary.
 
 Possible compromise:
 
 ```py
-await bucket.write_text(key, text)  # alias for put_text
-text = await bucket.read_text(key)  # alias for get_text
+await bucket.write_text(key, text)
+text = await bucket.read_text(key)
 ```
 
 ### Add a testing fake as a supported artifact
@@ -230,5 +230,5 @@ The most Pythonic S3 libraries win by meeting Python developers where they alrea
 Our current API is Pythonic for a Workers-first R2 wrapper, but we can learn three big things:
 
 1. Add a small object-handle API inspired by `pathlib`/`cloudpathlib`.
-2. Add read/write aliases and `exists()` for common Python expectations.
+2. Keep read/write convenience methods and `exists()` for common Python expectations.
 3. Promote fakes/testing helpers so examples feel runnable with normal Python tools.

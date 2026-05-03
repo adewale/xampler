@@ -116,7 +116,7 @@ async def test_bytes_round_trip_delete_and_missing() -> None:
 
 
 @pytest.mark.asyncio
-async def test_object_handle_and_read_write_aliases() -> None:
+async def test_object_handle_and_read_write_methods() -> None:
     bucket = R2Bucket(FakeR2BucketBinding())
     note = bucket.object("notes/handle.txt")
 

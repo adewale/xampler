@@ -67,7 +67,7 @@ info = await obj.stat()
 await obj.delete()
 ```
 
-### Bucket-level convenience aliases
+### Bucket-level convenience methods
 
 ```py
 await bucket.write_text("notes/hello.txt", "hello")

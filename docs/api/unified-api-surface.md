@@ -118,7 +118,7 @@ The target is not to type every Cloudflare `JsProxy` directly. The target is to 
 |---|---|
 | Workers | Class-based `WorkerEntrypoint`; request parsing via Python stdlib; typed response helpers; JSON/text/binary responses; no legacy `on_fetch`. |
 | R2 | Shared `xampler.r2` wrapper; object handles; text/JSON/bytes helpers; metadata and HTTP metadata; listing and async iteration; streaming reads; byte-for-byte JPEG fixture; multipart `async with`; `.raw`. |
-| KV | Shared `xampler.kv` wrapper; key handles; text/JSON helpers; exists/delete; list and async key iteration; platform aliases; missing-key behavior. |
+| KV | Shared `xampler.kv` wrapper; key handles; text/JSON helpers; exists/delete; list and async key iteration; missing-key behavior. |
 | D1 | Shared `xampler.d1` wrapper; statement handles; bound parameters; `one`, `all`, `one_as(Model)`; D1 null conversion; indexed query plan route; local setup automation. |
 | FastAPI / ASGI | Normal `FastAPI()` routes; ASGI bridge; environment access through ASGI scope; local framework verification. |
 | LangChain/package orchestration | `PromptInput`/`PromptOutput`; `PromptTemplate`; Runnable-style `PromptChain.invoke`; service boundary around package orchestration. |
@@ -136,7 +136,7 @@ The target is not to type every Cloudflare `JsProxy` directly. The target is to 
 | Vectorize | Shared `xampler.vectorize` wrapper; typed vectors; dimension validation; upsert; query/query-by-id; get/delete; typed matches/results; deterministic local search. |
 | Browser Rendering | Shared `xampler.browser_rendering` REST wrapper; `ScreenshotRequest`; `ScreenshotResult`; screenshot/content/PDF/scrape client; deterministic renderer; real API route shape. |
 | Email Workers | `IncomingEmail`; `EmailDecision`; inspect/forward/reject policy; HTTP policy fixture; deployed `email()` handler path. |
-| AI Gateway | OpenAI-compatible chat messages; `ChatRequest`; `ChatChoice`; gateway transport; deterministic gateway transport. |
+| AI Gateway | OpenAI-compatible chat messages; `ChatRequest`; `ChatResponse`; gateway transport; deterministic gateway transport. |
 | R2 SQL | Shared `xampler.r2_sql` REST wrapper; query object; read-only guard; single-table safety; automatic `LIMIT`; `explain()` route; deterministic SQL client; seeded table remote query. |
 | R2 Data Catalog | Shared `xampler.r2_data_catalog` REST wrapper; `CatalogNamespace`; `TableRef`; Iceberg REST client; namespaces/tables listing; temporary table lifecycle; deterministic fixture catalog. |
 | Pages | Static `public/`; file-routed Function; `pages dev` verifier; explicit note that Python Pages Functions are not supported today. |

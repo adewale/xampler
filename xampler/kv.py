@@ -72,12 +72,6 @@ class KVKey(ResourceRef[Any]):
         super().__init__(name=name, raw=namespace.raw)
         self.namespace = namespace
 
-    async def get_text(self) -> str | None:
-        return await self.read_text()
-
-    async def put_text(self, value: str, *, expiration_ttl: int | None = None) -> None:
-        await self.write_text(value, expiration_ttl=expiration_ttl)
-
     async def read_text(self) -> str | None:
         value = await self.namespace.raw.get(self.name)
         return None if is_js_missing(value) else str(value)
@@ -88,12 +82,6 @@ class KVKey(ResourceRef[Any]):
             await self.namespace.raw.put(self.name, value, to_js(options))
         else:
             await self.namespace.raw.put(self.name, value)
-
-    async def get_json(self) -> Any | None:
-        return await self.read_json()
-
-    async def put_json(self, value: Any, *, expiration_ttl: int | None = None) -> None:
-        await self.write_json(value, expiration_ttl=expiration_ttl)
 
     async def read_json(self) -> Any | None:
         text = await self.read_text()
