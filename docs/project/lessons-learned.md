@@ -155,7 +155,7 @@ What changed:
 
 - Coverage and Pythonic API scores are out of 10.
 - Test realism is out of 5.
-- `docs/archive/top-10-improvement-plan.md` identifies the next action for each key primitive.
+- `docs/project/unfinished-work.md` now identifies deferred work and next actions without keeping old planning snapshots alive.
 
 Lesson: every low score should point to the next PR.
 
@@ -365,3 +365,75 @@ Why migrate now:
 - Example-local wrappers obscured what users should copy into their own apps.
 
 Lesson: keep product vocabulary visible, but make the reusable product surfaces importable. Examples should demonstrate library usage; they should not be the only place the library exists.
+
+## 30. A CLI turns repository conventions into product DX
+
+The remote lifecycle and local development workflow were correct but too verbose when they required users to remember script paths, environment gates, and profile names.
+
+What changed:
+
+- Added `xampler.cli` with both `xc` and `xampler` entry points.
+- Mapped common workflows to short verbs: `doctor`, `verify`, `remote prepare`, `remote verify`, `remote cleanup`, `dev link`, and `dev restore`.
+- Added `xc doctor` so missing tools, remote gates, and credential names are visible before a paid or deployed check fails.
+
+Lesson: a library-plus-examples project needs a command vocabulary, not just scripts. `xc` makes Xampler easier to explain because its verbs match the mental model: inspect readiness, verify locally, prepare remotely, verify remotely, clean up, and link local development builds.
+
+## 31. Testability is part of the API surface
+
+The migrated wrappers became much easier to change once tests could target the library directly instead of only exercising HTTP routes.
+
+What changed:
+
+- Added direct unit tests for the migrated modules with fake bindings and deterministic `Demo*` transports.
+- Added `docs/api/testability.md` to document the red-green-refactor loop.
+- Kept wrappers small and constructed around raw bindings/clients so tests can pass tiny fakes.
+- Kept examples as refactor proof: after a wrapper moves into `xampler/`, at least one executable example should import it.
+
+Lesson: Xampler APIs should be designed to be tested before they are deployed. Good wrappers accept fakeable raw bindings, return dataclasses/native Python values, expose `.raw` for platform escape hatches, and have a deterministic local path for products that need remote credentials.
+
+## 32. Before 0.1, clarity beats compatibility
+
+The package is still pre-0.1, so preserving every transient method name makes the API harder to understand without giving users real stability.
+
+What changed:
+
+- Removed young KV alias methods (`get_text`, `put_text`, `get_json`, `put_json`) and kept one clear key API: `read_text`, `write_text`, `read_json`, `write_json`.
+- Updated docs to stop framing convenience methods as compatibility aliases.
+- Consolidated unfinished work into one document so API changes and deferred work are easier to audit.
+
+Lesson: until Xampler has a stable release contract, prefer one canonical import path and one canonical method family. If a young API needs to change, change it and update examples, tests, and docs in the same commit.
+
+## 33. Full apps should consume the library too
+
+It was easy for complex examples to drift into local mini-libraries because they were built before the shared package existed.
+
+What changed:
+
+- Migrated the HVSC app away from local `D1Database`, `QueueService`, `DemoVectorIndex`, and most R2 streaming/list/read/write plumbing.
+- Added reusable R2 byte-stream helpers on `R2Bucket` and `R2ObjectRef`.
+- Extended `DemoVectorIndex` with deterministic keyword embedding/scoring so apps can share the same local vector seam.
+
+Lesson: full apps should keep domain orchestration local, but product wrappers should still come from `xampler/`. Otherwise the most realistic examples accidentally teach users to copy private app code instead of the public library surface.
+
+## 34. Documentation needs pruning as much as code does
+
+Early planning docs were valuable while the API was forming, but many became stale after the library migration, CLI, testability guide, and unfinished-work inventory landed.
+
+What changed:
+
+- Added `docs/project/unfinished-work.md` as the canonical deferred-work inventory.
+- Added `docs/project/duplication-audit.md` and `docs/project/experience-assessment.md` for current state that supersedes older audits.
+- Identified archive and project docs that duplicated current API/reference/testability docs.
+
+Lesson: stale docs create a second API in prose. Keep current docs small and linked from `docs/index.md`; archive or delete planning snapshots once their lessons have been captured here or in the unfinished-work inventory.
+
+## 35. Cost-effective complex examples are abstraction research
+
+Some products still do not have a clean shared abstraction because one small route is not enough evidence.
+
+What changed:
+
+- Added a cost-effective complex-example backlog for Browser Rendering, R2 Data Catalog, Workflows, Agents, Email, HTMLRewriter, Hyperdrive, and Durable Object/WebSocket patterns.
+- Kept remote/paid checks opt-in while proposing deterministic fixture-heavy examples that can run locally.
+
+Lesson: when an abstraction is unclear, do not force it into `xampler/` prematurely. Add one more low-cost, fixture-driven example that exercises a second shape. Good examples are how Xampler discovers the right library API.

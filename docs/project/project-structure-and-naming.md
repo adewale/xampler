@@ -82,7 +82,7 @@ Avoid sequence numbers. They imply tutorial order and make insertions/renames fe
 | “Compare to native Python Workers.” | `docs/api/native-python-workers-comparison.md` |
 | “Show streaming composition.” | `docs/data/streaming-api.md` + `examples/streaming/gutenberg-stream-composition` |
 | “Which examples are verified?” | `docs/api/primitive-test-realism.md` |
-| “What should be built next?” | `docs/project/composite-example-backlog.md` |
+| “What should be built next?” | `docs/project/complex-example-backlog.md` and `docs/project/unfinished-work.md` |
 
 ## Cloudflare docs grounding
 

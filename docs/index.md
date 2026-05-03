@@ -12,9 +12,7 @@ Long-term docs are grouped by purpose. Older planning snapshots live in [`archiv
 - [`api/primitives-api-surface.md`](api/primitives-api-surface.md) — primitive coverage and Pythonic API matrix.
 - [`api/primitive-test-realism.md`](api/primitive-test-realism.md) — verification honesty matrix.
 - [`api/native-python-workers-comparison.md`](api/native-python-workers-comparison.md) — Xampler wrappers vs native Python Workers bindings.
-- [`api/python-design-patterns.md`](api/python-design-patterns.md) — reusable wrapper patterns.
 - [`api/pythonic-rubric.md`](api/pythonic-rubric.md) — scoring rubric.
-- [`api/cloudflare-python-api-shape.md`](api/cloudflare-python-api-shape.md) — general API target.
 
 ## Runtime and platform grounding
 
@@ -38,7 +36,7 @@ These are mostly maintainer-facing. New users should start with the API/runtime/
 
 - [`project/example-categories.md`](project/example-categories.md) — user-facing categorization by realism and product family.
 - [`project/project-structure-and-naming.md`](project/project-structure-and-naming.md) — folder and naming conventions.
-- [`project/composite-example-backlog.md`](project/composite-example-backlog.md) — future app ideas.
+- [`project/complex-example-backlog.md`](project/complex-example-backlog.md) — future app ideas and low-cost abstraction research.
 
 ## Maintainer notes and audits
 
@@ -49,7 +47,3 @@ These docs explain why the repo looks the way it does, but they are not the main
 - [`project/experience-assessment.md`](project/experience-assessment.md)
 - [`project/unfinished-work.md`](project/unfinished-work.md)
 - [`project/lessons-learned.md`](project/lessons-learned.md)
-- [`project/gaps-explained.md`](project/gaps-explained.md)
-- [`project/original-goals-audit.md`](project/original-goals-audit.md)
-- [`project/shared-wrapper-candidates.md`](project/shared-wrapper-candidates.md)
-- [`project/wrapper-consistency-audit.md`](project/wrapper-consistency-audit.md)
