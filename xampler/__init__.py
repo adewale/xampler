@@ -1,5 +1,35 @@
 """Shared typed helpers for Xampler examples."""
 
-from . import cloudflare, r2, response, status, streaming, types
+from . import (
+    ai,
+    browser_rendering,
+    cloudflare,
+    d1,
+    kv,
+    queues,
+    r2,
+    r2_data_catalog,
+    r2_sql,
+    response,
+    status,
+    streaming,
+    types,
+    vectorize,
+)
 
-__all__ = ["cloudflare", "r2", "response", "status", "streaming", "types"]
+__all__ = [
+    "ai",
+    "browser_rendering",
+    "cloudflare",
+    "d1",
+    "kv",
+    "queues",
+    "r2",
+    "r2_data_catalog",
+    "r2_sql",
+    "response",
+    "status",
+    "streaming",
+    "types",
+    "vectorize",
+]

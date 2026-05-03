@@ -1,23 +1,29 @@
 #!/usr/bin/env python3
-"""Temporarily point example dependencies at the local xampler checkout.
+"""Temporarily point example dependencies at a locally built xampler wheel.
 
 Most examples depend on ``xampler @ git+https://github.com/adewale/xampler@main`` so
 normal users get a reproducible GitHub dependency. Maintainers editing the shared
-``xampler/`` package and examples together can run this script to replace that
-with a local ``file://`` dependency, then restore before committing.
+``xampler/`` package and examples together can run this script to build a local
+wheel, replace the GitHub dependency with that wheel, then restore before
+committing.
 """
 
 from __future__ import annotations
 
 import argparse
+import subprocess
 from pathlib import Path
 
 ROOT = Path(__file__).resolve().parents[1]
 GIT_DEP = '    "xampler @ git+https://github.com/adewale/xampler@main",'
 
 
+def wheel_path() -> Path:
+    return ROOT / "dist" / "xampler-0.1.0-py3-none-any.whl"
+
+
 def local_dep() -> str:
-    return f'    "xampler @ file://{ROOT.as_posix()}",'
+    return f'    "xampler @ file://{wheel_path().as_posix()}",'
 
 
 def example_pyprojects() -> list[Path]:
@@ -42,6 +48,8 @@ def main() -> int:
         help="Restore examples to the GitHub xampler dependency before committing.",
     )
     args = parser.parse_args()
+    if not args.restore:
+        subprocess.run(["uv", "build", "--wheel"], cwd=ROOT, check=True)
     changed = [path for path in example_pyprojects() if rewrite(path, restore=args.restore)]
     action = "restored" if args.restore else "linked"
     for path in changed:

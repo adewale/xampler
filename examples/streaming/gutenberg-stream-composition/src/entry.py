@@ -11,10 +11,10 @@ from typing import Any, cast
 from urllib.parse import parse_qs, urlparse
 
 import js  # type: ignore[import-not-found]
-from cfboundary.ffi import d1_null, is_js_missing, to_js, to_js_bytes, to_py
+from cfboundary.ffi import is_js_missing, to_js_bytes, to_py
 from workers import Response, WorkerEntrypoint  # type: ignore[import-not-found]
 
-from xampler.cloudflare import CloudflareService
+from xampler.d1 import D1Database, D1Statement
 from xampler.response import jsonable
 from xampler.status import Progress
 from xampler.streaming import (
@@ -91,40 +91,6 @@ class DemoAgentSession:
         yield AgentEvent("tool_call", {"name": "gutenberg.search", "query": message})
         yield AgentEvent("token", {"text": "Found Shakespeare lines."})
         yield AgentEvent("done", {"status": "complete"})
-
-
-class D1Statement:
-    def __init__(self, raw_statement: Any):
-        self.raw = raw_statement
-
-    def bind(self, *params: Any) -> D1Statement:
-        return D1Statement(self.raw.bind(*[d1_null(param) for param in params]))
-
-    async def run(self, *params: Any) -> Any:
-        statement = self.bind(*params) if params else self
-        return to_py(await statement.raw.run())
-
-    async def all(self, *params: Any) -> list[dict[str, Any]]:
-        statement = self.bind(*params) if params else self
-        result = to_py(await statement.raw.all())
-        return list(result.get("results", []))
-
-    async def first(self, *params: Any) -> dict[str, Any] | None:
-        rows = await self.all(*params)
-        return rows[0] if rows else None
-
-
-class D1Database(CloudflareService[Any]):
-    def statement(self, sql: str) -> D1Statement:
-        return D1Statement(self.raw.prepare(sql))
-
-    async def execute(self, sql: str) -> None:
-        for statement in [part.strip() for part in sql.split(";") if part.strip()]:
-            await self.statement(statement).run()
-
-    async def batch_run(self, statements: list[D1Statement]) -> None:
-        if statements:
-            await self.raw.batch(to_js([statement.raw for statement in statements]))
 
 
 class DemoWebSocketSession:

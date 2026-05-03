@@ -7,8 +7,8 @@ Normal examples depend on the GitHub copy of Xampler:
 ```
 
 That is good for users, but annoying when a maintainer edits `xampler/` and an
-example together before pushing. Use the local-path helper to point examples at
-the current checkout temporarily:
+example together before pushing. Use the local-path helper to build a local
+wheel and point examples at that wheel temporarily:
 
 ```bash
 uv run python scripts/use_local_xampler.py
@@ -25,4 +25,5 @@ git diff -- examples/**/pyproject.toml
 
 The helper only rewrites example `pyproject.toml` files that already depend on
 `xampler`. It does not change `cfboundary` dependencies and it does not edit the
-root package.
+root package. Re-run the helper after editing `xampler/` so the wheel in `dist/`
+reflects your changes; `dist/` is ignored by Git.

@@ -52,13 +52,21 @@ from xampler.cloudflare import CloudflareService, ResourceRef, RestClient
 - `ResourceRef[T]` is for passive handles to named resources.
 - `RestClient[T]` is for token/HTTP backed product APIs.
 
-These classes intentionally only store `raw`/`name`/`base_url`; they are not a giant SDK façade. R2 is the first product wrapper promoted into the shared package:
+These classes intentionally only store `raw`/`name`/`base_url`; they are not a giant SDK façade. Product wrappers are now migrating into the shared package:
 
 ```python
 from xampler.r2 import R2Bucket, R2ObjectRef, R2HttpMetadata, R2Range
+from xampler.d1 import D1Database
+from xampler.kv import KVNamespace
+from xampler.queues import QueueJob, QueueService
+from xampler.vectorize import VectorIndex, VectorQuery
+from xampler.ai import AIService, TextGenerationRequest
+from xampler.browser_rendering import BrowserRendering, ScreenshotRequest
+from xampler.r2_sql import R2SqlClient, R2SqlQuery
+from xampler.r2_data_catalog import R2DataCatalog
 ```
 
-Other product-specific tutorial wrappers stay in examples until their shape proves reusable.
+Example-local code should now be limited to route/UI/demo behavior, not stable product wrapper APIs.
 
 ## Reused concepts
 
@@ -110,27 +118,27 @@ The target is not to type every Cloudflare `JsProxy` directly. The target is to 
 |---|---|
 | Workers | Class-based `WorkerEntrypoint`; request parsing via Python stdlib; typed response helpers; JSON/text/binary responses; no legacy `on_fetch`. |
 | R2 | Shared `xampler.r2` wrapper; object handles; text/JSON/bytes helpers; metadata and HTTP metadata; listing and async iteration; streaming reads; byte-for-byte JPEG fixture; multipart `async with`; `.raw`. |
-| KV | Key handles; text/JSON helpers; exists/delete; list and async key iteration; platform aliases; missing-key behavior. |
-| D1 | Statement handles; bound parameters; `one`, `all`, `one_as(Model)`; D1 null conversion; indexed query plan route; local setup automation. |
+| KV | Shared `xampler.kv` wrapper; key handles; text/JSON helpers; exists/delete; list and async key iteration; platform aliases; missing-key behavior. |
+| D1 | Shared `xampler.d1` wrapper; statement handles; bound parameters; `one`, `all`, `one_as(Model)`; D1 null conversion; indexed query plan route; local setup automation. |
 | FastAPI / ASGI | Normal `FastAPI()` routes; ASGI bridge; environment access through ASGI scope; local framework verification. |
 | LangChain/package orchestration | `PromptInput`/`PromptOutput`; `PromptTemplate`; Runnable-style `PromptChain.invoke`; service boundary around package orchestration. |
 | Workers Assets | Static assets do not wake Python; dynamic `/api/*` route does; verifier proves static/dynamic separation. |
 | Durable Objects | Namespace wrapper; named-object handle; storage-backed state; typed ref methods; named-object isolation verification. |
 | Cron Triggers | `ScheduledEventInfo`; `ScheduledRunResult`; job service object; local scheduled handler endpoint. |
-| Workers AI | Typed text-generation request/result; service wrapper; deterministic demo service; real binding route retained. |
+| Workers AI | Shared `xampler.ai` wrapper; typed text-generation request/result; service wrapper; deterministic demo service; real binding route retained. |
 | Workflows | Workflow service; start/status shapes; instance handle; typed status result; durable-step vocabulary; demo status polling. |
 | HTMLRewriter | Metadata dataclass; escaped OpenGraph injection; transformation wrapper; executable edge HTML response. |
 | Binary responses | Dependency-free PNG bytes; content-type and PNG signature verification; teaches binary response correctness, not Cloudflare Images. |
 | Service Bindings / RPC | Python RPC method; TypeScript service binding client; local provider verification; cross-worker vocabulary retained. |
 | Outbound WebSockets | Durable Object owns outbound socket; alarm-managed reconnect; Pyodide proxy callbacks; deterministic status seam. |
 | Durable Objects + WebSockets | Room Durable Object; WebSocket hibernation API; browser client; persisted message history; deterministic room send/history route. |
-| Queues | Typed job dataclass; send options; batch sends; consumer `QueueMessage`; ack/retry/backoff; deterministic consumer harness. |
-| Vectorize | Typed vectors; dimension validation; upsert; query/query-by-id; get/delete; typed matches/results; deterministic local search. |
-| Browser Rendering | `ScreenshotRequest`; `ScreenshotResult`; REST screenshot/content/PDF/scrape client; deterministic renderer; real API route shape. |
+| Queues | Shared `xampler.queues` wrapper; typed job dataclass; send options; batch sends; consumer `QueueMessage`; ack/retry/backoff; deterministic consumer harness. |
+| Vectorize | Shared `xampler.vectorize` wrapper; typed vectors; dimension validation; upsert; query/query-by-id; get/delete; typed matches/results; deterministic local search. |
+| Browser Rendering | Shared `xampler.browser_rendering` REST wrapper; `ScreenshotRequest`; `ScreenshotResult`; screenshot/content/PDF/scrape client; deterministic renderer; real API route shape. |
 | Email Workers | `IncomingEmail`; `EmailDecision`; inspect/forward/reject policy; HTTP policy fixture; deployed `email()` handler path. |
 | AI Gateway | OpenAI-compatible chat messages; `ChatRequest`; `ChatChoice`; gateway transport; deterministic gateway transport. |
-| R2 SQL | Query object; read-only guard; single-table safety; automatic `LIMIT`; `explain()` route; deterministic SQL client; seeded table remote query. |
-| R2 Data Catalog | `CatalogNamespace`; `TableRef`; Iceberg REST client; namespaces/tables listing; temporary table lifecycle; deterministic fixture catalog. |
+| R2 SQL | Shared `xampler.r2_sql` REST wrapper; query object; read-only guard; single-table safety; automatic `LIMIT`; `explain()` route; deterministic SQL client; seeded table remote query. |
+| R2 Data Catalog | Shared `xampler.r2_data_catalog` REST wrapper; `CatalogNamespace`; `TableRef`; Iceberg REST client; namespaces/tables listing; temporary table lifecycle; deterministic fixture catalog. |
 | Pages | Static `public/`; file-routed Function; `pages dev` verifier; explicit note that Python Pages Functions are not supported today. |
 | HVSC AI/data app | Pipeline service composes R2 + D1 + Queues + AI/vector seams; shard ingestion; progress/status; browser run-all/search flow. |
 | Hyperdrive | `HyperdriveConfig.from_binding`; typed Postgres query/result; production/demo client split; `/config`, `/query`, `/demo`. |

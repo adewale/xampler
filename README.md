@@ -176,13 +176,21 @@ from xampler.cloudflare import CloudflareService, ResourceRef, RestClient
 - `ResourceRef[T]` — passive handle to a named resource such as an object key, Durable Object stub, or workflow instance.
 - `RestClient[T]` — token/HTTP backed product client when no Python-usable binding path exists.
 
-R2 is the first product wrapper promoted out of an example into the shared package:
+Product wrappers are now migrating into the shared package instead of living only inside examples. Canonical imports include:
 
 ```python
 from xampler.r2 import R2Bucket, R2HttpMetadata, R2Range
+from xampler.d1 import D1Database
+from xampler.kv import KVNamespace
+from xampler.queues import QueueJob, QueueService
+from xampler.vectorize import VectorIndex, VectorQuery
+from xampler.ai import AIService, TextGenerationRequest
+from xampler.browser_rendering import BrowserRendering, ScreenshotRequest
+from xampler.r2_sql import R2SqlClient, R2SqlQuery
+from xampler.r2_data_catalog import R2DataCatalog
 ```
 
-Most other product-specific tutorial wrappers still live in examples until their shape is proven in more than one place.
+Examples now import stable product wrappers from `xampler/`; example-local wrappers should only remain for product-specific UI/demo code that has not become library surface yet.
 
 ## Primitive metrics
 

@@ -355,12 +355,13 @@ Lesson: the best composition examples should show a path from bytes to records t
 
 ## 29. Product wrappers should graduate one at a time
 
-R2 became the first product-specific wrapper promoted from an example-local module into the shared `xampler` package as `xampler.r2`.
+R2 became the first product-specific wrapper promoted from an example-local module into the shared `xampler` package as `xampler.r2`. The next migration moved the other stable product wrappers out of examples too: `xampler.d1`, `xampler.kv`, `xampler.queues`, `xampler.vectorize`, `xampler.ai`, `xampler.browser_rendering`, `xampler.r2_sql`, and `xampler.r2_data_catalog`.
 
-Why R2 first:
+Why migrate now:
 
-- Its binding path is Python-usable and stable enough to wrap directly.
-- The local verifier exercises real object storage behavior with text, binary bytes, streams, ranges, listing, and multipart shape.
-- The API had already converged on a durable shape: `R2Bucket` service wrapper, `R2ObjectRef` handle, dataclass metadata/options, async iteration, multipart `async with`, and `.raw` for Workers-native streams.
+- Xampler is a library, not only a gallery of examples.
+- The repeated service-wrapper/resource-handle/dataclass shape had become stable enough to make canonical imports useful.
+- Local verifiers can now prove examples consume the local library wheel during maintainer development.
+- Example-local wrappers obscured what users should copy into their own apps.
 
-Lesson: migrate stable, boring, repeated surfaces before aspirational product clients. Moving R2 gives users a canonical import without pretending every Cloudflare product is ready for the same treatment.
+Lesson: keep product vocabulary visible, but make the reusable product surfaces importable. Examples should demonstrate library usage; they should not be the only place the library exists.

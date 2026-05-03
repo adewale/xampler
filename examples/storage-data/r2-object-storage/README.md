@@ -14,7 +14,7 @@ The stable wrapper now lives in `xampler.r2`:
 from xampler.r2 import R2Bucket, R2HttpMetadata, R2Range
 ```
 
-The example keeps a tiny `src/r2_pythonic.py` compatibility shim for older tutorial imports, but new code should import from `xampler.r2`.
+The old example-local `src/r2_pythonic.py` module has been removed; new code should import from `xampler.r2`.
 
 The wrapper uses [`cfboundary`](https://github.com/adewale/cfboundary) for low-level conversions:
 

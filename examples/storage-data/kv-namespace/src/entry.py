@@ -1,12 +1,12 @@
 from __future__ import annotations
 
 import json
-from collections.abc import AsyncIterator
-from dataclasses import dataclass
 from typing import Any
 from urllib.parse import unquote, urlsplit
 
-from cfboundary.ffi import is_js_missing, to_js, to_py
+from cfboundary.ffi import to_js, to_py
+
+from xampler.kv import KVNamespace
 
 try:
     import js  # type: ignore[import-not-found]
@@ -16,97 +16,6 @@ except ImportError:
 
     class WorkerEntrypoint:  # type: ignore[no-redef]
         env: Any = None
-
-
-@dataclass(frozen=True)
-class KVListResult:
-    keys: list[str]
-    cursor: str | None = None
-    complete: bool = True
-
-
-class KVNamespace:
-    def __init__(self, raw: Any):
-        self.raw = raw
-
-    def key(self, name: str) -> KVKey:
-        return KVKey(self, name)
-
-    async def list(
-        self,
-        *,
-        prefix: str | None = None,
-        limit: int | None = None,
-        cursor: str | None = None,
-    ) -> KVListResult:
-        options = {
-            k: v
-            for k, v in {"prefix": prefix, "limit": limit, "cursor": cursor}.items()
-            if v is not None
-        }
-        data = to_py(await self.raw.list(to_js(options)))
-        return KVListResult(
-            keys=[item["name"] for item in data.get("keys", [])],
-            cursor=data.get("cursor"),
-            complete=not bool(data.get("list_complete") is False),
-        )
-
-    async def iter_keys(
-        self,
-        *,
-        prefix: str | None = None,
-        page_size: int = 1000,
-    ) -> AsyncIterator[KVKey]:
-        cursor: str | None = None
-        while True:
-            page = await self.list(prefix=prefix, limit=page_size, cursor=cursor)
-            for name in page.keys:
-                yield self.key(name)
-            if page.complete:
-                break
-            cursor = page.cursor
-
-
-class KVKey:
-    def __init__(self, namespace: KVNamespace, name: str):
-        self.namespace = namespace
-        self.name = name
-
-    async def get_text(self) -> str | None:
-        return await self.read_text()
-
-    async def put_text(self, value: str, *, expiration_ttl: int | None = None) -> None:
-        await self.write_text(value, expiration_ttl=expiration_ttl)
-
-    async def read_text(self) -> str | None:
-        value = await self.namespace.raw.get(self.name)
-        return None if is_js_missing(value) else str(value)
-
-    async def write_text(self, value: str, *, expiration_ttl: int | None = None) -> None:
-        options = {"expirationTtl": expiration_ttl} if expiration_ttl is not None else None
-        if options:
-            await self.namespace.raw.put(self.name, value, to_js(options))
-        else:
-            await self.namespace.raw.put(self.name, value)
-
-    async def get_json(self) -> Any | None:
-        return await self.read_json()
-
-    async def put_json(self, value: Any, *, expiration_ttl: int | None = None) -> None:
-        await self.write_json(value, expiration_ttl=expiration_ttl)
-
-    async def read_json(self) -> Any | None:
-        text = await self.read_text()
-        return None if text is None else json.loads(text)
-
-    async def write_json(self, value: Any, *, expiration_ttl: int | None = None) -> None:
-        await self.write_text(json.dumps(value), expiration_ttl=expiration_ttl)
-
-    async def exists(self) -> bool:
-        return await self.read_text() is not None
-
-    async def delete(self) -> None:
-        await self.namespace.raw.delete(self.name)
 
 
 class Default(WorkerEntrypoint):
