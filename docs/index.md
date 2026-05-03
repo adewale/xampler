@@ -43,7 +43,9 @@ These are mostly maintainer-facing. New users should start with the API/runtime/
 
 These docs explain why the repo looks the way it does, but they are not the main user journey.
 
+- [`project/complex-example-backlog.md`](project/complex-example-backlog.md)
 - [`project/duplication-audit.md`](project/duplication-audit.md)
+- [`project/experience-assessment.md`](project/experience-assessment.md)
 - [`project/lessons-learned.md`](project/lessons-learned.md)
 - [`project/gaps-explained.md`](project/gaps-explained.md)
 - [`project/original-goals-audit.md`](project/original-goals-audit.md)

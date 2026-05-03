@@ -6,7 +6,7 @@ Latest audit focus: wrapper-like code duplicated between examples and `xampler/`
 
 | Area | Finding | Recommendation |
 |---|---|---|
-| HVSC full app | Still owns local `D1Database`, `QueueService`, and `DemoVectorIndex` equivalents. | Migrate to `xampler.d1`, `xampler.queues`, and `xampler.vectorize`; keep HVSC domain records/pipeline local. |
+| HVSC full app | Migrated away from local `D1Database`, `QueueService`, and `DemoVectorIndex` equivalents. It now uses `xampler.d1`, `xampler.queues`, `xampler.r2`, and `xampler.vectorize`; only HVSC domain orchestration remains local. | Add route-level tests around the HVSC pipeline and consider extracting reusable dataset-pipeline helpers later. |
 | Response helpers | Several examples had local `json_response`, `text_response`, or `response`. | Use `xampler.response.{json_response,text_response,html_response,binary_response}`. |
 | Gutenberg | Local `BatchResult` and `DemoAIService` overlapped library names. | Use `xampler.status.BatchResult` and `xampler.ai.DemoAIService`; keep Gutenberg-specific sinks/sessions local. |
 

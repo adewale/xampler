@@ -119,12 +119,28 @@ class VectorIndex(CloudflareService[Any]):
 
 
 class DemoVectorIndex:
-    def __init__(self, dimensions: int = VECTOR_DIMENSIONS):
+    def __init__(
+        self,
+        dimensions: int = VECTOR_DIMENSIONS,
+        *,
+        keywords: tuple[str, ...] = ("hvsc", "sid", "commodore"),
+    ):
         self.dimensions = dimensions
+        self.keywords = keywords
         self.vectors = [
             Vector("doc-1", unit_vector(0, dimensions=dimensions), metadata={"url": "/docs/1"}),
             Vector("doc-2", unit_vector(1, dimensions=dimensions), metadata={"url": "/docs/2"}),
         ]
+
+    def embed(self, text: str) -> list[float]:
+        lowered = text.lower()
+        values = [float(keyword in lowered) for keyword in self.keywords]
+        return (values + [0.0] * self.dimensions)[: self.dimensions]
+
+    def score(self, query: str, document: str) -> float:
+        q = self.embed(query)
+        d = self.embed(document)
+        return sum(a * b for a, b in zip(q, d, strict=True))
 
     async def search(self, values: list[float], *, top_k: int = 5) -> VectorQueryResult:
         if len(values) != self.dimensions:

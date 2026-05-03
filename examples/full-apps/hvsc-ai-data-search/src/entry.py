@@ -1,17 +1,20 @@
 from __future__ import annotations
 
 import json
-from collections.abc import AsyncIterator
 from dataclasses import asdict, dataclass
 from pathlib import PurePosixPath
 from typing import Any
 from urllib.parse import parse_qs, urlparse
 
 import js  # type: ignore[import-not-found]
-from cfboundary.ffi import d1_null, is_js_missing, to_js, to_py
+from cfboundary.ffi import to_py
 from workers import Response, WorkerEntrypoint  # type: ignore[import-not-found]
 
-from xampler.streaming import ByteStream, JsonlReader
+from xampler.d1 import D1Database as XamplerD1Database
+from xampler.queues import QueueJob, QueueService
+from xampler.r2 import R2Bucket
+from xampler.streaming import JsonlReader
+from xampler.vectorize import DemoVectorIndex
 
 HVSC_ARCHIVE_KEY = "hvsc/84/raw/HVSC_84-all-of-them.7z"
 HVSC_ARCHIVE_URL = "https://boswme.home.xs4all.nl/HVSC/HVSC_84-all-of-them.7z"
@@ -115,76 +118,25 @@ class CatalogVerification:
     exists: bool
 
 
-class R2Artifacts:
-    def __init__(self, raw: Any):
-        self.raw = raw
-
+class R2Artifacts(R2Bucket):
     async def write_json(self, key: str, value: Any) -> None:
-        await self.raw.put(
-            key,
-            json.dumps(value),
-            to_js({"httpMetadata": {"contentType": "application/json"}}),
-        )
-
-    async def write_text(self, key: str, value: str, *, content_type: str = "text/plain") -> None:
-        await self.raw.put(
-            key,
-            value,
-            to_js({"httpMetadata": {"contentType": content_type}}),
-        )
-
-    async def read_json(self, key: str) -> Any | None:
-        text = await self.read_text(key)
-        return None if text is None else json.loads(text)
-
-    async def read_text(self, key: str) -> str | None:
-        obj = await self.raw.get(key)
-        if is_js_missing(obj):
-            return None
-        return str(await obj.text())
-
-    async def iter_bytes(self, key: str) -> AsyncIterator[bytes]:
-        obj = await self.raw.get(key)
-        if is_js_missing(obj):
-            return
-        reader = obj.body.getReader()
-        while True:
-            chunk = await reader.read()
-            if bool(getattr(chunk, "done", False)):
-                break
-            value = getattr(chunk, "value", None)
-            if value is not None:
-                yield bytes(to_py(value))
-
-    def byte_stream(self, key: str) -> ByteStream:
-        return ByteStream(self.iter_bytes(key))
+        await self.put_text(key, json.dumps(value), content_type="application/json")
 
     async def verify_catalog(self, key: str = HVSC_CATALOG_KEY) -> CatalogVerification:
-        obj = await self.raw.head(key)
-        exists = not is_js_missing(obj)
-        return CatalogVerification(key=key, size=int(obj.size) if exists else 0, exists=exists)
+        info = await self.head(key)
+        return CatalogVerification(
+            key=key,
+            size=0 if info is None or info.size is None else info.size,
+            exists=info is not None,
+        )
 
     async def list_keys(self, prefix: str) -> list[str]:
-        data = to_py(await self.raw.list(to_js({"prefix": prefix})))
-        objects = (
-            data.get("objects", []) if isinstance(data, dict) else getattr(data, "objects", [])
-        )
-        keys: list[str] = []
-        for item in objects:
-            py_item = to_py(item)
-            key = py_item.get("key") if isinstance(py_item, dict) else getattr(item, "key", None)
-            if key is not None:
-                keys.append(str(key))
-        return keys
+        return [item.key async for item in self.iter_objects(prefix=prefix)]
 
     async def stream_from_url(self, *, url: str, key: str) -> ArchiveVerification:
         response = await js.fetch(url)
         expected_size = int(response.headers.get("content-length") or 0)
-        await self.raw.put(
-            key,
-            response.body,
-            to_js({"httpMetadata": {"contentType": "application/x-7z-compressed"}}),
-        )
+        await self.put_stream(key, response.body, content_type="application/x-7z-compressed")
         return await self.verify_archive(key=key, url=url, expected_size=expected_size)
 
     async def verify_archive(
@@ -194,8 +146,8 @@ class R2Artifacts:
         url: str = HVSC_ARCHIVE_URL,
         expected_size: int = HVSC_ARCHIVE_SIZE,
     ) -> ArchiveVerification:
-        obj = await self.raw.head(key)
-        stored_size = 0 if is_js_missing(obj) else int(obj.size)
+        info = await self.head(key)
+        stored_size = 0 if info is None or info.size is None else info.size
         return ArchiveVerification(
             key=key,
             source_url=url,
@@ -205,19 +157,12 @@ class R2Artifacts:
         )
 
 
-class D1Database:
-    def __init__(self, raw: Any):
-        self.raw = raw
-
-    async def execute(self, sql: str, *params: Any) -> list[dict[str, Any]]:
-        stmt = self.raw.prepare(sql)
-        if params:
-            stmt = stmt.bind(*[d1_null(param) for param in params])
-        result = to_py(await stmt.all())
-        return list(result.get("results", []))
+class HvscDatabase(XamplerD1Database):
+    async def execute_rows(self, sql: str, *params: Any) -> list[dict[str, Any]]:
+        return await self.query(sql, *params)
 
     async def save_release(self, release: HvscRelease, summary: str) -> None:
-        await self.execute(
+        await self.execute_rows(
             "INSERT OR REPLACE INTO releases "
             "(version, source, update_url, complete_url, summary) VALUES (?, ?, ?, ?, ?)",
             release.version,
@@ -228,7 +173,7 @@ class D1Database:
         )
 
     async def save_track(self, track: Track) -> None:
-        await self.execute(
+        await self.execute_rows(
             "INSERT OR REPLACE INTO tracks "
             "(id, version, path, filename, title, composer, search_text) "
             "VALUES (?, ?, ?, ?, ?, ?, ?)",
@@ -249,7 +194,7 @@ class D1Database:
         completed_shards: int = 0,
         imported_rows: int = 0,
     ) -> None:
-        await self.execute(
+        await self.execute_rows(
             "INSERT OR REPLACE INTO ingest_state "
             "(dataset, status, total_shards, completed_shards, imported_rows, shard_keys) "
             "VALUES ('hvsc-84', ?, ?, ?, ?, ?)",
@@ -261,7 +206,7 @@ class D1Database:
         )
 
     async def get_ingest_state(self) -> dict[str, Any]:
-        rows = await self.execute("SELECT * FROM ingest_state WHERE dataset = 'hvsc-84'")
+        rows = await self.execute_rows("SELECT * FROM ingest_state WHERE dataset = 'hvsc-84'")
         if not rows:
             return {
                 "status": "not_started",
@@ -280,7 +225,7 @@ class D1Database:
         }
 
     async def search_tracks(self, query: str) -> list[Track]:
-        rows = await self.execute(
+        rows = await self.execute_rows(
             "SELECT id, version, path, filename, title, composer, search_text "
             "FROM tracks WHERE search_text LIKE ? ORDER BY path LIMIT 20",
             f"%{query}%",
@@ -288,7 +233,7 @@ class D1Database:
         return [Track(**row) for row in rows]
 
     async def search(self, query: str) -> list[SearchResult]:
-        rows = await self.execute(
+        rows = await self.execute_rows(
             "SELECT version, summary, update_url, complete_url "
             "FROM releases WHERE summary LIKE ? ORDER BY version DESC LIMIT 10",
             f"%{query}%",
@@ -305,14 +250,6 @@ class D1Database:
         ]
 
 
-class QueueService:
-    def __init__(self, raw: Any):
-        self.raw = raw
-
-    async def send(self, job: IngestJob) -> None:
-        await self.raw.send(to_js(asdict(job)))
-
-
 class ReleaseSummarizer:
     async def summarize(self, release: HvscRelease) -> str:
         return (
@@ -322,25 +259,10 @@ class ReleaseSummarizer:
         )
 
 
-class DemoVectorIndex:
-    def embed(self, text: str) -> list[float]:
-        text = text.lower()
-        return [
-            float("hvsc" in text),
-            float("sid" in text),
-            float("commodore" in text or "c64" in text),
-        ]
-
-    def score(self, query: str, document: str) -> float:
-        q = self.embed(query)
-        d = self.embed(document)
-        return sum(a * b for a, b in zip(q, d, strict=True))
-
-
 class HvscPipeline:
     def __init__(self, env: Any):
         self.r2 = R2Artifacts(env.ARTIFACTS)
-        self.db = D1Database(env.DB)
+        self.db = HvscDatabase(env.DB)
         self.queue = QueueService(env.INGEST_QUEUE)
         self.summarizer = ReleaseSummarizer()
         self.vector = DemoVectorIndex()
@@ -350,7 +272,8 @@ class HvscPipeline:
         summary = await self.summarizer.summarize(release)
         await self.r2.write_json(key, asdict(release))
         await self.db.save_release(release, summary)
-        await self.queue.send(IngestJob("hvsc-release-index", release.version, key))
+        job = IngestJob("hvsc-release-index", release.version, key)
+        await self.queue.send(QueueJob(job.kind, asdict(job)))
         return {"version": release.version, "r2_key": key, "summary": summary}
 
     async def ingest_archive(self) -> ArchiveVerification:
@@ -425,7 +348,7 @@ class HvscPipeline:
 
     async def catalog_status(self) -> dict[str, Any]:
         catalog = await self.verify_catalog()
-        rows = await self.db.execute("SELECT COUNT(*) AS count FROM tracks")
+        rows = await self.db.query("SELECT COUNT(*) AS count FROM tracks")
         return {
             "catalog_key": catalog.key,
             "catalog_exists_in_r2": catalog.exists,

@@ -23,6 +23,7 @@ from cfboundary.ffi import (
 )
 
 from xampler.cloudflare import CloudflareService
+from xampler.streaming import ByteStream
 
 StorageClass = Literal["Standard", "InfrequentAccess"]
 ChecksumAlgorithm = Literal["md5", "sha1", "sha256", "sha384", "sha512"]
@@ -175,6 +176,12 @@ class R2Object:
         return await consume_readable_stream(self.raw)
 
     async def chunks(self) -> AsyncIterator[bytes]:
+        raw_chunks = getattr(self.raw, "chunks", None)
+        if callable(raw_chunks):
+            raw_iter = cast(AsyncIterator[bytes], raw_chunks())
+            async for chunk in raw_iter:
+                yield bytes(chunk)
+            return
         async for chunk in cast(AsyncIterator[bytes], stream_r2_body(self.raw)):
             yield chunk
 
@@ -217,6 +224,9 @@ class R2ObjectRef:
 
     async def delete(self) -> None:
         await self.bucket.delete(self.key)
+
+    async def byte_stream(self) -> ByteStream:
+        return await self.bucket.byte_stream(self.key)
 
     async def get(self, **kwargs: Any) -> R2Object | None:
         return await self.bucket.get(self.key, **kwargs)
@@ -439,6 +449,16 @@ class R2Bucket(CloudflareService[Any]):
     async def get_bytes(self, key: str, *, byte_range: R2Range | None = None) -> bytes | None:
         obj = await self.get(key, byte_range=byte_range)
         return None if obj is None else await obj.bytes()
+
+    async def iter_bytes(self, key: str) -> AsyncIterator[bytes]:
+        obj = await self.get(key)
+        if obj is None:
+            return
+        async for chunk in obj.chunks():
+            yield chunk
+
+    async def byte_stream(self, key: str) -> ByteStream:
+        return ByteStream(self.iter_bytes(key))
 
     async def delete(self, key: str) -> None:
         await self.raw.delete(key)
