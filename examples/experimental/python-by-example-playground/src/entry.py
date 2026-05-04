@@ -124,11 +124,35 @@ import contextlib
 import inspect
 import io
 import json
+import sys
 import traceback
 from typing import Any
 from workers import Response, WorkerEntrypoint
 
 USER_CODE = {user_code!r}
+MAX_TRACE_EVENTS = 20_000
+
+
+class SandboxLimitExceeded(RuntimeError):
+    pass
+
+
+def make_trace_limiter():
+    events = 0
+
+    def trace(frame: Any, event: str, arg: Any) -> Any:
+        nonlocal events
+        if event in {"line", "call", "jump"}:
+            events += 1
+            if events > MAX_TRACE_EVENTS:
+                raise SandboxLimitExceeded(
+                    "Execution stopped: sandbox instruction limit exceeded. "
+                    "This usually means the example entered an infinite loop "
+                    "or did too much work for the playground."
+                )
+        return trace
+
+    return trace
 
 
 class Default(WorkerEntrypoint):
@@ -144,13 +168,49 @@ class Default(WorkerEntrypoint):
                     "exec",
                     flags=ast.PyCF_ALLOW_TOP_LEVEL_AWAIT,
                 )
-                result = eval(compiled, namespace, namespace)
-                if inspect.isawaitable(result):
-                    await result
+                sys.settrace(make_trace_limiter())
+                try:
+                    result = eval(compiled, namespace, namespace)
+                    if inspect.isawaitable(result):
+                        await result
+                finally:
+                    sys.settrace(None)
             payload = {{"ok": True, "stdout": stdout.getvalue(), "stderr": stderr.getvalue()}}
-        except BaseException:
-            payload = {{"ok": False, "stdout": stdout.getvalue(), "stderr": stderr.getvalue() + traceback.format_exc()}}
+        except SandboxLimitExceeded as exc:
+            payload = {{
+                "ok": False,
+                "error_type": "sandbox_limit",
+                "friendly_error": str(exc),
+                "stdout": stdout.getvalue(),
+                "stderr": stderr.getvalue() + str(exc) + "\\n",
+            }}
+        except SystemExit as exc:
+            code = exc.code if exc.code is not None else 0
+            payload = {{
+                "ok": code == 0,
+                "error_type": "system_exit",
+                "friendly_error": f"The example called sys.exit({{code!r}}). Process exits are shown explicitly in the playground.",
+                "stdout": stdout.getvalue(),
+                "stderr": stderr.getvalue() if code == 0 else stderr.getvalue() + traceback.format_exc(),
+            }}
+        except BaseException as exc:
+            payload = {{
+                "ok": False,
+                "error_type": exc.__class__.__name__,
+                "friendly_error": friendly_error(exc),
+                "stdout": stdout.getvalue(),
+                "stderr": stderr.getvalue() + traceback.format_exc(),
+            }}
         return Response(json.dumps(payload), headers={{"content-type": "application/json; charset=utf-8"}})
+
+
+def friendly_error(exc: BaseException) -> str:
+    text = str(exc)
+    if "not permitted to access the internet" in text:
+        return "Network access is blocked for this run. Enable the Outbound Worker checkbox on the HTTP Client example to allow example.com."
+    if "Host is unreachable" in text:
+        return "Network access is unavailable in this sandboxed Worker run."
+    return f"{{exc.__class__.__name__}}: {{text}}"
 '''
 
 
@@ -238,6 +298,7 @@ def example_html(example: dict[str, str]) -> str:
 {unsupported_note(unsupported)}
 {outbound_note(outbound)}
 <p class=attrib>Source: <a href={source_url}>{html.escape(example['source_path'])}</a> · Lesson: <a href={lesson_url}>{html.escape(example['lesson_path'])}</a></p>
+<div class=limits><strong>Sandbox limits:</strong> CPU budget 50 ms, Python trace budget 20,000 events, outbound network blocked by default, subrequests 0 unless the Outbound Worker checkbox is enabled.</div>
 <div class=playground>
 <textarea id=code spellcheck=false>{code}</textarea>
 <div class=actions><button id=run>▶ Run Python</button>{outbound_checkbox(outbound)}<span id=status></span></div>
@@ -258,8 +319,9 @@ document.querySelector('#run').onclick = async () => {{
       body: JSON.stringify({{code: code.value, allowOutbound: Boolean(outbound && outbound.checked)}})
     }});
     const data = await res.json();
-    status.textContent = data.ok ? 'ok' : 'error';
-    out.textContent = (data.stdout || '') + (data.stderr || '');
+    status.textContent = data.ok ? 'ok' : (data.error_type || 'error');
+    const friendly = data.friendly_error ? data.friendly_error + '\\n\\n' : '';
+    out.textContent = friendly + (data.stdout || '') + (data.stderr || '');
   }} catch (err) {{
     status.textContent = 'error';
     out.textContent = String(err);
@@ -316,7 +378,8 @@ a{{color:#0b66c3}}.attrib,small{{color:#536471}}.hero{{border-bottom:1px solid #
 .layout{{display:grid;grid-template-columns:minmax(0,1fr) 320px;gap:2rem;align-items:start}}h1{{font-size:2.4rem;margin:.2rem 0}}h2{{margin:1rem 0 .6rem}}
 .example-list{{columns:2 260px;column-gap:1.5rem}}.example-list a{{display:block;break-inside:avoid;text-decoration:none;color:#0b66c3;padding:.22rem 0}}
 .example-list a span{{display:block}}.example-list a small{{display:block;color:#6b7280;font-size:.82rem;line-height:1.25;margin-bottom:.35rem}}
-.panel,.notice{{border:1px solid #d0d7de;border-radius:12px;padding:1rem;background:#f8fafc;margin-bottom:1rem}}.unsupported{{background:#fff7ed;border-color:#fed7aa}}
+.panel,.notice,.limits{{border:1px solid #d0d7de;border-radius:12px;padding:1rem;background:#f8fafc;margin-bottom:1rem}}.unsupported{{background:#fff7ed;border-color:#fed7aa}}
+.limits{{background:#eff6ff;border-color:#bfdbfe;color:#1e3a8a}}
 .playground{{border:1px solid #d0d7de;border-radius:12px;overflow:hidden}}textarea{{box-sizing:border-box;width:100%;min-height:380px;border:0;border-bottom:1px solid #d0d7de;padding:1rem;font:14px/1.45 ui-monospace,SFMono-Regular,Menlo,monospace}}
 .actions{{display:flex;gap:1rem;align-items:center;flex-wrap:wrap;padding:.75rem 1rem;background:#f6f8fa;border-bottom:1px solid #d0d7de}}button{{font:inherit;padding:.45rem .8rem;border-radius:8px;border:1px solid #0b66c3;background:#0b66c3;color:white;cursor:pointer}}
 .check{{display:inline-flex;gap:.45rem;align-items:center}}pre{{margin:0;padding:1rem;min-height:120px;background:#0d1117;color:#e6edf3;overflow:auto;white-space:pre-wrap}}code{{background:#f6f8fa;padding:.15rem .3rem;border-radius:5px}}

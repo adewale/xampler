@@ -459,6 +459,13 @@ EXAMPLES = {
                 headers={"content-type": "application/json"},
                 contains='"stdout": "200\\n"',
             ),
+            Check(
+                "/api/run",
+                method="POST",
+                body=b'{"code":"while True:\\n    pass\\n"}',
+                headers={"content-type": "application/json"},
+                contains='"error_type": "sandbox_limit"',
+            ),
         ],
         needs_setup="Runs editable snippets in Dynamic Python Worker isolates locally.",
     ),
