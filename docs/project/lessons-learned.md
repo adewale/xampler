@@ -465,3 +465,69 @@ What changed:
 - Verified the example through `scripts/use_local_xampler.py` so the Worker consumed the local wheel, not the last pushed GitHub version.
 
 Lesson: route-level examples are not just demos. They are integration tests for the library API, packaging path, Python Workers runtime behavior, and documented architecture choices.
+
+## 38. Expand existing examples before creating parallel examples
+
+A batch of complex-example ideas did not require seven new directories. Most were better as deeper routes inside examples that already owned the product context.
+
+What changed:
+
+- `examples/state-events/workflows-pipeline` gained a D1-backed `workflow_timeline` table and `/timeline/<id>` route.
+- `examples/ai-agents/agents-sdk-tools` gained deterministic calculator/search tools and `/demo/transcript` assertions.
+- `examples/network-edge/email-worker-router` gained allow/reject/forward/annotate fixture routes.
+- `examples/network-edge/htmlrewriter-opengraph` gained fixture OpenGraph/canonical-link extraction.
+- `examples/network-edge/browser-rendering-screenshot` gained local `/report` and `/demo/report-verifier` artifact assertions.
+- `examples/state-events/durable-object-chatroom` gained ephemeral presence, replay, transcript export, and last-10-message behavior.
+- `examples/full-apps/mini-wiki` gained a Cache API wrapper route and D1 wide-event observability rows.
+
+Lesson: prefer deepening the example that already teaches the primitive. New directories are justified when the user journey, setup, or product combination is genuinely different.
+
+## 39. Timelines and observability are patterns, not a shared module yet
+
+The workflow timeline and wiki wide events are useful, but they still have example-specific schemas and route semantics. They did not justify bringing back a global `xampler.ops` or adding `xampler.pipeline`.
+
+What changed:
+
+- Workflows write ordered progress/checkpoint events to D1 and expose them through `/timeline/<id>`.
+- The mini-wiki records wide request events into D1 and exposes `/events`.
+- Both examples use ordinary dataclasses/dicts/tables rather than a shared operations framework.
+
+Lesson: keep timelines, wide events, and pipeline dashboards example-local until multiple independently useful examples converge on one exact shape. D1 is a good low-cost observability sidecar, but Xampler should not become an orchestration framework prematurely.
+
+## 40. Cache API is route policy, not domain storage
+
+The wiki cache work answered an important design question: Static Assets and Cache API are complementary, not substitutes.
+
+What changed:
+
+- Static Assets still serves `style.css` without waking Python.
+- `/cached/wiki/<slug>` wraps dynamic wiki page rendering with the Cache API.
+- The `Wiki` domain class did not change.
+
+Lesson: Static Assets is for files that are already static. Cache API is for Worker-generated responses that should be cached at the edge. Keep caching at the route/request-policy layer so domain code remains a clean D1-backed source of truth.
+
+## 41. Durable Objects can teach ephemeral realtime state, not only durable storage
+
+The chatroom initially emphasized Durable Object storage-backed history. The better minimal realtime lesson is that a Durable Object can be the single live coordinator for WebSocket clients and can intentionally forget state.
+
+What changed:
+
+- The chatroom now keeps presence in memory and broadcasts avatar/user updates.
+- It keeps only the last 10 messages.
+- Replay/export routes expose the transcript shape for verification.
+- Messages disappear when the object is evicted or no clients keep it warm; durable persistence is deliberately not the point.
+
+Lesson: Durable Objects are not only tiny databases. They are globally unique, stateful, realtime actors. Some examples should demonstrate hibernation/ephemeral coordination explicitly instead of persisting everything.
+
+## 42. Experimental surfaces should prove policy, extraction, and artifact assertions
+
+Several `xampler.experimental` modules became more convincing once their examples asserted behavior rather than only showing a type shape.
+
+What changed:
+
+- Email now proves four policy decisions: allow, reject, forward, annotate.
+- HTMLRewriter now demonstrates both transformation and extraction over fixture HTML.
+- Browser Rendering local verification compares report title/content/PDF/screenshot-shaped artifacts.
+- Agents now proves deterministic tool calls and transcript structure.
+
+Lesson: a type/demo-only surface can still be educational if the example has deterministic assertions. Keep it under `xampler.experimental` until a real binding/client wrapper exists, but make the local proof strong enough to teach the product vocabulary honestly.
