@@ -379,18 +379,106 @@ def index_html() -> Response:
 <meta name=viewport content="width=device-width, initial-scale=1">
 <title>Gutenberg Streaming · Xampler</title>
 <style>
-body{font:16px/1.55 system-ui;max-width:1060px;margin:2rem auto;padding:0 1rem;color:#17202a}header{border-bottom:1px solid #d0d7de;margin-bottom:1rem}button{font:inherit;padding:.5rem .8rem;border:1px solid #2563eb;border-radius:.5rem;background:#2563eb;color:white;cursor:pointer}input{font:inherit;padding:.45rem;width:16rem}.grid{display:grid;grid-template-columns:repeat(auto-fit,minmax(250px,1fr));gap:1rem}.card{border:1px solid #d0d7de;border-radius:.75rem;padding:1rem;background:#f8fafc}pre{background:#0d1117;color:#e6edf3;padding:1rem;border-radius:.75rem;overflow:auto;min-height:12rem}mark{background:#fde68a;color:#111827}
+*{box-sizing:border-box}body{font:16px/1.55 system-ui,-apple-system,Segoe UI,sans-serif;max-width:1180px;margin:0 auto;padding:2rem 1rem;color:#17202a;background:linear-gradient(180deg,#f8fafc,#fff 22rem)}
+a{color:#2563eb}.hero{display:grid;grid-template-columns:minmax(0,1fr) 320px;gap:1.5rem;align-items:end;border-bottom:1px solid #d0d7de;padding-bottom:1.4rem;margin-bottom:1.5rem}.eyebrow{font-size:.78rem;text-transform:uppercase;letter-spacing:.08em;color:#64748b;font-weight:800;margin:0 0 .35rem}h1{font-size:clamp(2.1rem,5vw,3.5rem);line-height:1.03;margin:.1rem 0 .8rem;letter-spacing:-.04em}h2{font-size:1.05rem;margin:0 0 .55rem}.lede{font-size:1.1rem;color:#334155;max-width:72ch}.route-card,.panel,.step{border:1px solid #d0d7de;border-radius:16px;background:rgba(255,255,255,.88);box-shadow:0 8px 24px rgba(15,23,42,.05)}.route-card{padding:1rem}.route-card code{display:block;margin-top:.45rem;overflow-wrap:anywhere}.layout{display:grid;grid-template-columns:360px minmax(0,1fr);gap:1.5rem;align-items:start}.workflow{position:sticky;top:1rem;display:grid;gap:1rem}.step{padding:1rem}.step-num{display:inline-grid;place-items:center;width:1.65rem;height:1.65rem;border-radius:999px;background:#2563eb;color:white;font-weight:800;font-size:.85rem;margin-right:.45rem}.muted{color:#64748b}.button-row{display:flex;gap:.6rem;flex-wrap:wrap;margin-top:.8rem}button{font:inherit;padding:.55rem .8rem;border:1px solid #2563eb;border-radius:10px;background:#2563eb;color:white;cursor:pointer;font-weight:650}button.secondary{background:white;color:#2563eb}button:disabled{opacity:.6;cursor:wait}input{font:inherit;border:1px solid #cbd5e1;border-radius:10px;padding:.55rem .7rem;width:100%;min-width:0}.main{display:grid;gap:1rem}.panel{overflow:hidden}.panel-head{display:flex;justify-content:space-between;gap:1rem;align-items:center;padding:1rem;border-bottom:1px solid #e2e8f0;background:#f8fafc}.status{display:inline-flex;gap:.45rem;align-items:center;border:1px solid #cbd5e1;border-radius:999px;padding:.3rem .55rem;background:white;color:#475569;font-size:.86rem}.dot{width:.55rem;height:.55rem;border-radius:999px;background:#94a3b8}.status.running .dot{background:#2563eb}.status.ok .dot{background:#16a34a}.status.error .dot{background:#dc2626}.metrics{display:grid;grid-template-columns:repeat(4,minmax(0,1fr));gap:.75rem;padding:1rem}.metric{border:1px solid #e2e8f0;border-radius:12px;padding:.8rem;background:white}.metric strong{display:block;font-size:1.35rem}.results{padding:1rem;display:grid;gap:.75rem}.result{border:1px solid #e2e8f0;border-radius:12px;padding:.85rem;background:white}.result mark{background:#fde68a;color:#111827;border-radius:4px;padding:0 .1rem}.output-wrap{border-top:1px solid #e2e8f0}.output-head{display:flex;justify-content:space-between;align-items:center;padding:.75rem 1rem;background:#f8fafc}pre{margin:0;padding:1rem;background:#0d1117;color:#e6edf3;overflow:auto;white-space:pre-wrap;max-height:34rem;min-height:12rem}.diagram{display:grid;grid-template-columns:repeat(5,minmax(0,1fr));gap:.45rem;margin-top:1rem}.node{border:1px solid #bfdbfe;background:#eff6ff;color:#1e3a8a;border-radius:12px;padding:.65rem;text-align:center;font-size:.9rem;font-weight:700}.arrow{align-self:center;text-align:center;color:#64748b}.tabs{display:flex;gap:.5rem;flex-wrap:wrap;padding:1rem;border-bottom:1px solid #e2e8f0}.tabs button{background:white;color:#2563eb}.tabs button.active{background:#2563eb;color:white}.hidden{display:none!important}@media(max-width:900px){body{padding:1rem}.hero,.layout{display:block}.workflow{position:static;margin-bottom:1rem}.metrics{grid-template-columns:repeat(2,minmax(0,1fr))}.diagram{grid-template-columns:1fr}.arrow{display:none}}
 </style>
-<header><h1>Gutenberg Streaming Composition</h1><p>R2 ZIP → byte/text streams → batches/checkpoints → D1 FTS.</p></header>
-<section class=grid>
- <article class=card><h2>Local composition</h2><button data-path=/demo>Run demo</button></article>
- <article class=card><h2>Checkpointed R2 pipeline</h2><button data-path=/pipeline/ingest-r2-lines>Ingest lines</button> <button data-path=/pipeline/status>Status</button></article>
- <article class=card><h2>Search</h2><p><button data-path=/fts/ingest>Build FTS</button></p><input id=q value=hamlet> <button id=search>Search</button></article>
-</section><pre id=out>Choose an action.</pre>
+<header class=hero>
+  <div>
+    <p class=eyebrow>Streaming composition example</p>
+    <h1>Gutenberg Streaming Composition</h1>
+    <p class=lede>This app turns a Project Gutenberg ZIP in R2 into streamable text, indexes it in D1 FTS, and records checkpointed ingestion progress. Use it left-to-right: inspect the object, build the index, search, then run the checkpointed line pipeline.</p>
+    <div class=diagram aria-label="pipeline diagram"><div class=node>R2 ZIP</div><div class=arrow>→</div><div class=node>byte stream</div><div class=arrow>→</div><div class=node>D1 FTS + checkpoints</div></div>
+  </div>
+  <aside class=route-card><strong>What this proves</strong><code>ByteStream.iter_lines()</code><code>aiter_batches()</code><code>R2 object bodies</code><code>D1 batch writes + FTS5</code></aside>
+</header>
+<main class=layout>
+  <aside class=workflow>
+    <section class=step><h2><span class=step-num>1</span>Inspect the archive</h2><p class=muted>Downloads the Shakespeare ZIP into local R2 if missing, then reports stream and archive metadata.</p><div class=button-row><button data-action=/zip-demo>Inspect R2 ZIP</button><button class=secondary data-action=/golden>R2 status</button></div></section>
+    <section class=step><h2><span class=step-num>2</span>Build searchable text</h2><p class=muted>Extracts HTML, converts it to text chunks, writes chunks and FTS rows to D1 in batches.</p><div class=button-row><button data-action=/fts/ingest>Build FTS</button><button class=secondary data-action=/fts/status>FTS status</button></div></section>
+    <section class=step><h2><span class=step-num>3</span>Search the index</h2><p class=muted>Try Shakespeare terms after building FTS.</p><input id=q value="romeo juliet" aria-label="Search query"><div class=button-row><button id=search>Search</button><button class=secondary data-action=/fts/verify>Verify queries</button></div></section>
+    <section class=step><h2><span class=step-num>4</span>Run checkpointed ingest</h2><p class=muted>Persists line-level progress into D1 so a streaming pipeline can expose resumable status.</p><div class=button-row><button data-action=/pipeline/ingest-r2-lines>Ingest lines</button><button class=secondary data-action=/pipeline/status>Status</button></div></section>
+  </aside>
+  <section class=main>
+    <section class=panel>
+      <div class=panel-head><div><h2>Dashboard</h2><p class=muted>Run actions with AJAX; the page stays in place while results update.</p></div><span id=status class=status><span class=dot></span><span>Ready</span></span></div>
+      <div id=metrics class=metrics>
+        <div class=metric><span class=muted>R2 bytes</span><strong>—</strong></div><div class=metric><span class=muted>Chunks</span><strong>—</strong></div><div class=metric><span class=muted>FTS rows</span><strong>—</strong></div><div class=metric><span class=muted>Lines</span><strong>—</strong></div>
+      </div>
+      <div class=tabs><button class=active data-view=summary>Summary</button><button data-view=search>Search results</button><button data-view=raw>Raw JSON</button></div>
+      <div id=summary class=results><div class=result><strong>Start with “Inspect R2 ZIP”.</strong><p class=muted>The verifier also exercises these same routes, including the browser JavaScript on this page.</p></div></div>
+      <div id=searchResults class="results hidden"></div>
+      <div id=rawWrap class="output-wrap hidden"><div class=output-head><strong>Raw response</strong><button id=copy class=secondary>Copy JSON</button></div><pre id=out>{"hint":"Choose an action from the workflow."}</pre></div>
+    </section>
+  </section>
+</main>
 <script>
-async function show(path){document.querySelector('#out').textContent = JSON.stringify(await (await fetch(path)).json(), null, 2)}
-document.querySelectorAll('[data-path]').forEach(b => b.onclick = () => show(b.dataset.path));
-document.querySelector('#search').onclick = () => show('/fts/search?q=' + encodeURIComponent(document.querySelector('#q').value));
+const statusEl = document.querySelector('#status');
+const metricsEl = document.querySelector('#metrics');
+const summaryEl = document.querySelector('#summary');
+const searchEl = document.querySelector('#searchResults');
+const rawWrap = document.querySelector('#rawWrap');
+const out = document.querySelector('#out');
+let lastJson = {hint: 'Choose an action from the workflow.'};
+function setStatus(kind, text) {
+  statusEl.className = 'status ' + kind;
+  statusEl.querySelector('span:last-child').textContent = text;
+}
+function esc(value) {
+  return String(value).replace(/[&<>"']/g, c => ({'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;',"'":'&#39;'}[c]));
+}
+function metric(label, value) {
+  return '<div class=metric><span class=muted>' + esc(label) + '</span><strong>' + esc(value ?? '—') + '</strong></div>';
+}
+function updateMetrics(data) {
+  const status = data.status || {};
+  const checkpoint = status.checkpoint || {};
+  metricsEl.innerHTML = metric('R2 bytes', data.zip_bytes || data.r2_streamed_bytes) + metric('Chunks', data.chunks || status.chunks) + metric('FTS rows', status.fts_rows) + metric('Lines', data.lines || status.lines || checkpoint.records);
+}
+function renderSummary(path, data) {
+  const rows = [];
+  if (path.includes('zip-demo') || path.includes('golden')) rows.push(['Archive', data.exists === false ? 'Missing from R2' : 'Available in R2'], ['Key', data.golden_key || data.key], ['ZIP bytes', data.zip_bytes || data.size], ['Stream chunks', data.r2_stream_chunks]);
+  else if (path.includes('fts/ingest')) rows.push(['FTS ingest', data.all_chunks_indexed ? 'All chunks indexed' : 'Completed'], ['Chunks', data.chunks], ['Batches', data.batches], ['Text chars', data.source_text_chars]);
+  else if (path.includes('pipeline')) rows.push(['Pipeline', data.all_lines_checkpointed ? 'All lines checkpointed' : 'Status loaded'], ['Lines', data.lines || data.status?.lines], ['Batches', data.batches], ['Checkpoint', data.status?.checkpoint?.state || data.checkpoint?.state]);
+  else if (path.includes('verify')) rows.push(['Verification', data.all_queries_return_results ? 'All sample searches returned results' : 'Some searches need an index'], ['Chunks indexed', data.all_chunks_indexed], ['Queries', data.queries?.length]);
+  else rows.push(['Result', 'Action completed']);
+  summaryEl.innerHTML = rows.map(([k,v]) => '<div class=result><strong>' + esc(k) + '</strong><p class=muted>' + esc(v ?? '—') + '</p></div>').join('');
+}
+function renderSearch(data) {
+  const results = data.results || [];
+  if (!results.length) { searchEl.innerHTML = '<div class=result><strong>No matches yet.</strong><p class=muted>Build FTS, then search for terms like hamlet, tempest, or romeo juliet.</p></div>'; return; }
+  searchEl.innerHTML = results.map(r => '<div class=result><strong>Chunk ' + esc(r.chunk_no) + '</strong><p>' + esc(r.snippet || '').replaceAll('&lt;mark&gt;','<mark>').replaceAll('&lt;/mark&gt;','</mark>') + '</p></div>').join('');
+}
+function activate(view) {
+  document.querySelectorAll('.tabs button').forEach(b => b.classList.toggle('active', b.dataset.view === view));
+  summaryEl.classList.toggle('hidden', view !== 'summary');
+  searchEl.classList.toggle('hidden', view !== 'search');
+  rawWrap.classList.toggle('hidden', view !== 'raw');
+}
+async function run(path) {
+  setStatus('running', 'Running…');
+  document.querySelectorAll('button').forEach(b => b.disabled = true);
+  try {
+    const res = await fetch(path);
+    const data = await res.json();
+    lastJson = data;
+    out.textContent = JSON.stringify(data, null, 2);
+    updateMetrics(data);
+    renderSummary(path, data);
+    if (path.includes('/fts/search')) { renderSearch(data); activate('search'); } else { activate('summary'); }
+    setStatus('ok', 'Done');
+  } catch (err) {
+    lastJson = {error: String(err)};
+    out.textContent = JSON.stringify(lastJson, null, 2);
+    summaryEl.innerHTML = '<div class=result><strong>Request failed</strong><p class=muted>' + esc(err) + '</p></div>';
+    setStatus('error', 'Error');
+  } finally {
+    document.querySelectorAll('button').forEach(b => b.disabled = false);
+  }
+}
+document.querySelectorAll('[data-action]').forEach(b => b.onclick = () => run(b.dataset.action));
+document.querySelector('#search').onclick = () => run('/fts/search?q=' + encodeURIComponent(document.querySelector('#q').value));
+document.querySelectorAll('.tabs button').forEach(b => b.onclick = () => activate(b.dataset.view));
+document.querySelector('#copy').onclick = async () => navigator.clipboard?.writeText(JSON.stringify(lastJson, null, 2));
 </script>""",
         headers={"content-type": "text/html; charset=utf-8"},
     )
