@@ -49,6 +49,7 @@ examples/full-apps/hvsc-ai-data-search/
 | [`examples/storage-data/r2-data-catalog/`](examples/storage-data/r2-data-catalog) | R2 Data Catalog | Iceberg REST namespace/table client. |
 | [`examples/start/pages-functions/`](examples/start/pages-functions) | Pages | Static Pages project with file-based Function. |
 | [`examples/full-apps/hvsc-ai-data-search/`](examples/full-apps/hvsc-ai-data-search) | AI/data app | HVSC release ingestion through R2, D1, Queues, Workers AI/Vectorize seams, and search. |
+| [`examples/full-apps/mini-wiki/`](examples/full-apps/mini-wiki) | Wiki app | Workers + Static Assets + D1 wiki with revisions and FTS search. |
 | [`examples/storage-data/hyperdrive-postgres/`](examples/storage-data/hyperdrive-postgres) | Hyperdrive | Typed Postgres query shape through Hyperdrive with deterministic local transport. |
 | [`examples/ai-agents/agents-sdk-tools/`](examples/ai-agents/agents-sdk-tools) | Agents SDK | Stateful agent/session shape with tools, Durable Objects, and typed run results. |
 | [`examples/streaming/gutenberg-stream-composition/`](examples/streaming/gutenberg-stream-composition) | Streaming composition | Gutenberg golden file, byte/text/line/record streams, batches, checkpoints, D1 FTS indexing, AI/agent/WebSocket events. |
@@ -83,6 +84,7 @@ Real examples include product-specific parsing and SQL details, but the composit
 - [`examples/network-edge/service-bindings-rpc`](examples/network-edge/service-bindings-rpc) deploys a Python provider and a TypeScript consumer so cross-language Workers can interact through real Service Bindings RPC.
 - [`examples/state-events/durable-object-chatroom`](examples/state-events/durable-object-chatroom) demonstrates Durable Object state plus local and deployed two-client WebSocket broadcast verification.
 - [`examples/full-apps/hvsc-ai-data-search`](examples/full-apps/hvsc-ai-data-search) composes R2 datasets, D1 ingestion state/search, Queue-style jobs, Workers AI, and Vectorize seams into an interactive app.
+- [`examples/full-apps/mini-wiki`](examples/full-apps/mini-wiki) keeps the stack deliberately small: Workers handle dynamic routes, Static Assets serve CSS, and D1 stores pages, revisions, recent changes, and FTS search.
 - [`examples/state-events/queues-producer-consumer`](examples/state-events/queues-producer-consumer) and [`examples/ai-agents/agents-sdk-tools`](examples/ai-agents/agents-sdk-tools) show typed jobs and durable sessions/tools.
 
 Reusable wrapper ideas across examples follow one documented vocabulary:

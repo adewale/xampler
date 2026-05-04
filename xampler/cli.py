@@ -34,6 +34,7 @@ EXAMPLES = {
     "email": "examples/network-edge/email-worker-router",
     "htmlrewriter": "examples/network-edge/htmlrewriter-opengraph",
     "hyperdrive": "examples/storage-data/hyperdrive-postgres",
+    "mini-wiki": "examples/full-apps/mini-wiki",
 }
 
 DOCS = {

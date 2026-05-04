@@ -32,7 +32,7 @@ def _response_class() -> Any:
 
 
 def response(body: object = "", *, status: int = 200, content_type: str = "text/plain") -> Any:
-    return _response_class()(body, {"status": status, "headers": {"content-type": content_type}})
+    return _response_class()(body, status=status, headers={"content-type": content_type})
 
 
 def text_response(body: str, *, status: int = 200) -> Any:
@@ -50,7 +50,8 @@ def json_response(data: object, *, status: int = 200) -> Any:
         return cls.json(payload, {"status": status})
     return cls(
         json.dumps(payload),
-        {"status": status, "headers": {"content-type": "application/json; charset=utf-8"}},
+        status=status,
+        headers={"content-type": "application/json; charset=utf-8"},
     )
 
 

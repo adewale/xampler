@@ -346,6 +346,53 @@ EXAMPLES = {
         needs_setup="Pages Functions are TypeScript today; verifier uses Wrangler Pages dev.",
         dev_command=["uv", "run", "pywrangler", "pages", "dev", "public", "--port"],
     ),
+    "examples/full-apps/mini-wiki": Example(
+        "examples/full-apps/mini-wiki",
+        [
+            Check("/", contains="Mini Wiki"),
+            Check("/style.css", contains="font-family"),
+            Check("/wiki/HomePage", status=404, contains="Create HomePage"),
+            Check(
+                "/wiki/HomePage",
+                method="POST",
+                body=(
+                    b"title=HomePage&body=%23%20HomePage%0A%0AWelcome%20to%20PythonWorkers%20wiki."
+                    b"&author=Ada&message=create"
+                ),
+                headers={"content-type": "application/x-www-form-urlencoded"},
+                contains="PythonWorkers",
+            ),
+            Check("/wiki/HomePage/raw", contains="Welcome to PythonWorkers wiki."),
+            Check("/search?q=PythonWorkers", contains="HomePage"),
+            Check(
+                "/wiki/HomePage",
+                method="POST",
+                body=(
+                    b"base_revision=1&title=HomePage&body=%23%20HomePage%0A%0AUpdated%20wiki%20text%20about%20D1Search."
+                    b"&author=Ada&message=update"
+                ),
+                headers={"content-type": "application/x-www-form-urlencoded"},
+                contains="D1Search",
+            ),
+            Check("/wiki/HomePage/history", contains="r2"),
+            Check("/search?q=D1Search", contains="HomePage"),
+            Check("/export.jsonl", contains='"revision":2'),
+        ],
+        needs_setup="Initializes local D1; CSS is served by Workers Static Assets.",
+        setup_commands=[
+            [
+                "uv",
+                "run",
+                "pywrangler",
+                "d1",
+                "execute",
+                "xampler-mini-wiki",
+                "--local",
+                "--file",
+                "db_init.sql",
+            ]
+        ],
+    ),
     "examples/full-apps/hvsc-ai-data-search": Example(
         "examples/full-apps/hvsc-ai-data-search",
         [

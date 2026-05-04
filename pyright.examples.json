@@ -3,7 +3,8 @@
     "examples/state-events/workflows-pipeline/src",
     "examples/storage-data/r2-data-catalog/src",
     "examples/ai-agents/workers-ai-inference/src",
-    "examples/streaming/gutenberg-stream-composition/src"
+    "examples/streaming/gutenberg-stream-composition/src",
+    "examples/full-apps/mini-wiki/src"
   ],
   "exclude": [
     "**/.venv",

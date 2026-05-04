@@ -1,0 +1,12 @@
+:root { color-scheme: light dark; font-family: system-ui, sans-serif; }
+body { max-width: 760px; margin: 2rem auto; padding: 0 1rem; line-height: 1.55; }
+header { display: flex; gap: 1rem; align-items: baseline; border-bottom: 1px solid #9994; margin-bottom: 1rem; }
+nav { display: flex; gap: .75rem; flex-wrap: wrap; }
+a { color: #2563eb; }
+a.missing { color: #b45309; }
+textarea, input { width: 100%; box-sizing: border-box; font: inherit; margin: .25rem 0 1rem; }
+textarea { min-height: 18rem; font-family: ui-monospace, monospace; }
+button { padding: .45rem .8rem; }
+pre { background: #8882; padding: 1rem; overflow: auto; }
+.page { border: 1px solid #9994; padding: 1rem; border-radius: .5rem; }
+.muted { color: #666; }
