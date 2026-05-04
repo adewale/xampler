@@ -48,11 +48,11 @@ The tiny canonical base vocabulary lives in `xampler.cloudflare`:
 from xampler.cloudflare import CloudflareService, ResourceRef, RestClient
 ```
 
-- `CloudflareService[T]` is for active Worker binding/action facades.
-- `ResourceRef[T]` is for passive handles to named resources.
-- `RestClient[T]` is for token/HTTP backed product APIs.
+- `CloudflareService[T]` is for active Worker binding/action facades such as R2, D1, KV, Queues, Vectorize, AI, and Workflows.
+- `ResourceRef[T]` is for passive handles to named resources such as keys, Durable Object stubs, and Workflow instances.
+- `RestClient[T]` is for token/HTTP backed product APIs such as Browser Rendering, R2 SQL, R2 Data Catalog, and AI Gateway.
 
-These classes intentionally only store `raw`/`name`/`base_url`; they are not a giant SDK façade. Product wrappers are now migrating into the shared package:
+These classes intentionally only store `raw`/`name`/`base_url`; they are not a giant SDK façade. The split is semantic: it keeps binding-backed, named-resource, and credentialed REST paths visibly different. Product wrappers now live in the shared package:
 
 ```python
 from xampler.r2 import R2Bucket, R2ObjectRef, R2HttpMetadata, R2Range

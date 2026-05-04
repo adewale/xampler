@@ -31,6 +31,24 @@ Xampler is a Python library with examples that prove the APIs run in Python Work
 | `xampler.htmlrewriter` | Experimental | `OpenGraphPage`, `OpenGraphRewriter` |
 | `xampler.hyperdrive` | Experimental | `HyperdriveConfig`, `PostgresQuery`, `PostgresResult`, `HyperdrivePostgres`, `DemoPostgres` |
 
+## Base vocabulary: service, ref, REST client
+
+`xampler.cloudflare` has three tiny base classes. They are deliberately more semantic than functional: they document the role a wrapper plays in the Cloudflare boundary.
+
+| Base | Meaning | Use for | Examples |
+|---|---|---|---|
+| `CloudflareService[T]` | Active wrapper around a Worker binding or runtime facade. | Code that calls binding methods and owns JS/Python boundary conversion. | `R2Bucket`, `D1Database`, `KVNamespace`, `QueueService`, `VectorIndex`, `AIService`, `WorkflowService` |
+| `ResourceRef[T]` | Passive handle to one named resource reached through a service/namespace. | Cheap, passable references with domain verbs. | `KVKey`, `DurableObjectRef`, `WorkflowInstance`, queue tracker refs |
+| `RestClient[T]` | Token/HTTP-backed client for Cloudflare APIs without a Python-usable Worker binding path. | Products that need account IDs, tokens, secrets, base URLs, or deployed REST verification. | `BrowserRendering`, `R2SqlClient`, `R2DataCatalog`, `AIGateway` |
+
+The split is intentionally visible because it teaches where code runs and what credentials it needs:
+
+- Use a **service** when Worker code has a binding such as `env.BUCKET`, `env.DB`, or `env.JOBS`.
+- Use a **ref** when user code needs a stable handle to a named thing such as an R2 key, KV key, Durable Object name, or Workflow instance.
+- Use a **REST client** when Worker code calls an HTTP API with explicit credentials/secrets instead of using a binding.
+
+These bases should stay tiny. Product behavior belongs in product modules; route/UI/demo glue belongs in examples; `.raw` remains the escape hatch for platform features not yet wrapped.
+
 ## Stability meanings
 
 - **Stable**: intended for users to import; covered by strict `pyright`, unit tests, and executable examples.

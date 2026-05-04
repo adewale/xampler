@@ -16,8 +16,9 @@ R2 bytes → ByteStream → records → batches → D1/FTS → Queue → Vectori
 
 | Concept | Use when | API |
 |---|---|---|
-| Service | Active wrapper around a binding or REST client. | `R2Bucket`, `D1Database`, `QueueService`, `VectorIndex` |
-| Ref | Cheap handle to a named resource. | `R2ObjectRef`, `KVKey`, `DurableObjectRef`, `WorkflowInstance` |
+| Service | Active wrapper around a Worker binding/runtime facade. | `R2Bucket`, `D1Database`, `QueueService`, `VectorIndex` |
+| Ref | Cheap handle to a named resource reached through a service/namespace. | `R2ObjectRef`, `KVKey`, `DurableObjectRef`, `WorkflowInstance` |
+| REST client | Token/HTTP-backed product client when no Python-usable binding path exists. | `BrowserRendering`, `R2SqlClient`, `R2DataCatalog`, `AIGateway` |
 | Request | Input shape. | `TextGenerationRequest`, `VectorQuery`, `ChatRequest` |
 | Result | Output shape. | `WorkflowStatus`, `BatchResult`, `ChatResponse` |
 | Progress | A known-size task is underway. | `Progress(current, total, state)` |
