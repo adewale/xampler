@@ -32,8 +32,6 @@ GET  /dev/events               D1 wide-event observability rows
 POST /dev/render               AJAX preview renderer
 ```
 
-Older demo URLs such as `/events` and `/cached/wiki/<slug>` redirect under `/dev/*` so product navigation stays clean.
-
 ## Wiki syntax
 
 ````text

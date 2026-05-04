@@ -364,16 +364,14 @@ class Default(WorkerEntrypoint):
             if path == "/dev/events":
                 return Response.json({"events": await wiki.wide_events()})
             if path.startswith("/dev/cached/wiki/"):
-                slug = slugify(unquote(path.removeprefix("/dev/cached/wiki/")))
+                slug = unquote(path.removeprefix("/dev/cached/wiki/"))
                 return await cached_wiki_page(wiki, slug)
             if path == "/dev/render" and request.method == "POST":
                 data = await form_data(request)
                 return html_response(render_markup(data.get("body", "")))
-            if path in {"/events", "/cached/wiki"} or path.startswith("/cached/wiki/"):
-                return redirect("/dev" + path)
             if path == "/":
                 return await show_page(wiki, "home-page")
-            if path in {"/recent", "/recent-changes"}:
+            if path == "/recent-changes":
                 return await recent_page(wiki)
             if path == "/all":
                 return await all_pages(wiki)
@@ -477,7 +475,7 @@ async def search_page(wiki: Wiki, query: str) -> Response:
 async def wiki_route(wiki: Wiki, request: Any, path: str) -> Response:
     rest = path.removeprefix("/wiki/")
     parts = rest.split("/")
-    slug = slugify(unquote(parts[0]))
+    slug = unquote(parts[0])
     validate_slug(slug)
     action = parts[1] if len(parts) > 1 else "show"
     if request.method == "POST" and action == "show":
