@@ -1,19 +1,28 @@
 # ruff: noqa: E501
 from __future__ import annotations
 
-import contextlib
 import html
-import io
+import inspect
 import json
-import traceback
-from typing import Any
+from typing import Any, cast
 from urllib.parse import unquote, urlparse
 
+import js  # type: ignore[import-not-found]
+import workers as workers_sdk  # type: ignore[import-not-found]
+import workers._workers as workers_impl  # type: ignore[import-not-found]
 from examples_data import EXAMPLES, SOURCE_AUTHOR, SOURCE_LICENSE, SOURCE_URL
+from pyodide.ffi import create_proxy  # type: ignore[import-not-found]
 from workers import Response, WorkerEntrypoint  # type: ignore[import-not-found]
+
+from xampler.experimental.dynamic_workers import (
+    DynamicWorkerCode,
+    DynamicWorkerLimits,
+    stable_worker_id,
+)
 
 COMPATIBILITY_DATE = "2026-05-01"
 EXAMPLE_BY_SLUG = {example["slug"]: example for example in EXAMPLES}
+_CALLBACKS: list[Any] = []
 
 
 class Default(WorkerEntrypoint):
@@ -44,27 +53,75 @@ class Default(WorkerEntrypoint):
         if path == "/api/run" and request.method == "POST":
             payload = await request.json()
             code = str(payload.get("code", ""))[:20_000]
-            return run_code(code)
+            return await run_code(self.env.LOADER, code)
         if path == "/attribution":
             return html_response(attribution_html())
         return Response("not found", status=404)
 
 
-def run_code(code: str) -> Response:
-    stdout = io.StringIO()
-    stderr = io.StringIO()
-    try:
-        namespace = {"__name__": "__main__"}
-        with contextlib.redirect_stdout(stdout), contextlib.redirect_stderr(stderr):
-            exec(code, namespace, namespace)
-        payload = {"ok": True, "stdout": stdout.getvalue(), "stderr": stderr.getvalue()}
-    except BaseException:
-        payload = {
-            "ok": False,
-            "stdout": stdout.getvalue(),
-            "stderr": stderr.getvalue() + traceback.format_exc(),
-        }
-    return json_response(payload)
+async def run_code(loader: Any, code: str) -> Response:
+    child_source = runner_source(code)
+    worker_code = DynamicWorkerCode(
+        compatibility_date=COMPATIBILITY_DATE,
+        compatibility_flags=["python_workers", "disable_python_external_sdk"],
+        main_module="runner.py",
+        modules={"runner.py": child_source},
+        global_outbound=None,
+        limits=DynamicWorkerLimits(cpu_ms=50, subrequests=0),
+    )
+    raw = with_workers_sdk(worker_code.to_raw())
+
+    def load_code() -> Any:
+        return js_object(raw)
+
+    worker = loader.get(stable_worker_id("python-by-example-runner", worker_code), keep_callback(load_code))
+    return await worker.getEntrypoint().fetch("http://xampler.local/run")
+
+
+def runner_source(user_code: str) -> str:
+    return f'''from __future__ import annotations
+
+import contextlib
+import io
+import json
+import traceback
+from typing import Any
+from workers import Response, WorkerEntrypoint
+
+USER_CODE = {user_code!r}
+
+
+class Default(WorkerEntrypoint):
+    async def fetch(self, request: Any) -> Response:
+        stdout = io.StringIO()
+        stderr = io.StringIO()
+        try:
+            namespace = {{"__name__": "__main__"}}
+            with contextlib.redirect_stdout(stdout), contextlib.redirect_stderr(stderr):
+                exec(USER_CODE, namespace, namespace)
+            payload = {{"ok": True, "stdout": stdout.getvalue(), "stderr": stderr.getvalue()}}
+        except BaseException:
+            payload = {{"ok": False, "stdout": stdout.getvalue(), "stderr": stderr.getvalue() + traceback.format_exc()}}
+        return Response(json.dumps(payload), headers={{"content-type": "application/json; charset=utf-8"}})
+'''
+
+
+def with_workers_sdk(raw: dict[str, Any]) -> dict[str, Any]:
+    modules = cast(dict[str, Any], raw["modules"])
+    modules["workers/__init__.py"] = inspect.getsource(workers_sdk)
+    modules["workers/_workers.py"] = inspect.getsource(workers_impl)
+    return raw
+
+
+def js_object(value: object) -> Any:
+    js_runtime = cast(Any, js)
+    return js_runtime.JSON.parse(json.dumps(value))
+
+
+def keep_callback(callback: Any) -> Any:
+    proxy = cast(Any, create_proxy(callback))
+    _CALLBACKS.append(proxy)
+    return proxy
 
 
 def index_html() -> str:
@@ -81,7 +138,7 @@ def index_html() -> str:
         f"""
 <header>
 <h1>Python by Example Playground</h1>
-<p>A Cloudflare Python Workers playground inspired by <a href=https://gobyexample.com/>Go by Example</a>. Each example includes a play button that runs editable Python code immediately in the Python Worker runtime.</p>
+<p>A Cloudflare Python Workers playground inspired by <a href=https://gobyexample.com/>Go by Example</a>. Each example includes a play button that runs editable Python code immediately in a Dynamic Python Worker isolate.</p>
 <p class=attrib>Examples adapted from <a href={SOURCE_URL}>{SOURCE_URL}</a> by {html.escape(SOURCE_AUTHOR)}, licensed under {html.escape(SOURCE_LICENSE)}. See <a href=/attribution>attribution</a>.</p>
 </header>
 <nav class=grid>{cards}</nav>
@@ -105,7 +162,7 @@ def example_html(example: dict[str, str]) -> str:
 <div class=playground>
 <textarea id=code spellcheck=false>{code}</textarea>
 <div class=actions><button id=run>▶ Run Python</button><span id=status></span></div>
-<pre id=out>Click Run Python to execute this example in the Python Worker runtime.</pre>
+<pre id=out>Click Run Python to execute this example in a Dynamic Python Worker isolate.</pre>
 </div>
 <script>
 const code = document.querySelector('#code');
@@ -146,7 +203,7 @@ def attribution_html() -> str:
 <li>Repository owner: pycollege</li>
 <li>License: {html.escape(SOURCE_LICENSE)}</li>
 </ul>
-<p>The transformation here adds the Cloudflare Python Workers playground UI. The original lesson/source links remain attached to each example.</p>
+<p>The transformation here adds the Cloudflare Dynamic Python Workers playground UI. The original lesson/source links remain attached to each example.</p>
 """,
     )
 

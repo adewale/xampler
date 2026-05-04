@@ -22,6 +22,8 @@ response = await worker.getEntrypoint().fetch(request)
 
 Use `global_outbound=None` for sandboxed examples that should not reach the Internet. Use `DynamicWorkerLimits(cpu_ms=..., subrequests=...)` when running user-edited code.
 
+The executable examples verify Dynamic Python Workers locally. They also include the small Workers Python SDK modules in the dynamic `modules` map and keep the loader callback alive with a Pyodide proxy; those details are local-runtime glue, not a stable Xampler abstraction yet.
+
 ## Examples
 
 - [`examples/experimental/dynamic-workers-loader/`](../../../examples/experimental/dynamic-workers-loader)

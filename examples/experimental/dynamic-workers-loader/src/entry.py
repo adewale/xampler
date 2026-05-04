@@ -1,11 +1,14 @@
 # ruff: noqa: E501
 from __future__ import annotations
 
+import inspect
 import json
 from typing import Any, cast
 from urllib.parse import urlparse
 
 import js  # type: ignore[import-not-found]
+import workers as workers_sdk  # type: ignore[import-not-found]
+import workers._workers as workers_impl  # type: ignore[import-not-found]
 from pyodide.ffi import create_proxy  # type: ignore[import-not-found]
 from workers import Response, WorkerEntrypoint  # type: ignore[import-not-found]
 
@@ -14,35 +17,31 @@ from xampler.experimental.dynamic_workers import python_fetch_worker, stable_wor
 COMPATIBILITY_DATE = "2026-05-01"
 _CALLBACKS: list[Any] = []
 
-CHILD_SOURCE = """export default {
-  fetch(request, env) {
-    return new Response(env.MESSAGE || "hello from a Dynamic Worker", {
-      headers: { "x-dynamic-worker": "javascript" }
-    });
-  }
-}
-"""
-
-NETWORK_TEST_SOURCE = """export default {
-  async fetch() {
-    try {
-      await fetch("https://example.com");
-    } catch (err) {
-      return new Response("blocked: " + err.constructor.name);
-    }
-    return new Response("unexpected network access", { status: 500 });
-  }
-}
-"""
-
 PYTHON_CHILD_SOURCE = '''from __future__ import annotations
 
 from typing import Any
-import js  # type: ignore[import-not-found]
+from workers import Response, WorkerEntrypoint
 
 
-async def fetch(request: Any, env: Any, ctx: Any) -> Any:
-    return js.Response.new("hello from a dynamic Python Worker")
+class Default(WorkerEntrypoint):
+    async def fetch(self, request: Any) -> Response:
+        message = getattr(self.env, "MESSAGE", "hello from a dynamic Python Worker")
+        return Response(message, headers={"x-dynamic-worker": "python"})
+'''
+
+PYTHON_NETWORK_TEST_SOURCE = '''from __future__ import annotations
+
+from typing import Any
+from workers import Response, WorkerEntrypoint, fetch
+
+
+class Default(WorkerEntrypoint):
+    async def fetch(self, request: Any) -> Response:
+        try:
+            await fetch("https://example.com")
+        except Exception as exc:
+            return Response("blocked: " + exc.__class__.__name__)
+        return Response("unexpected network access", status=500)
 '''
 
 
@@ -63,13 +62,9 @@ class Default(WorkerEntrypoint):
 
 async def run_dynamic_child(loader: Any, request: Any) -> Response:
     _ = request
-    raw = {
-        "compatibilityDate": COMPATIBILITY_DATE,
-        "mainModule": "worker.js",
-        "modules": {"worker.js": CHILD_SOURCE},
-        "globalOutbound": None,
-        "env": {"MESSAGE": "hello from a Dynamic Worker loaded by Python"},
-    }
+    code = python_fetch_worker(PYTHON_CHILD_SOURCE, compatibility_date=COMPATIBILITY_DATE)
+    raw = with_workers_sdk(code.to_raw())
+    raw["env"] = {"MESSAGE": "hello from a Dynamic Python Worker loaded by Python"}
     worker_id = stable_worker_id("xampler-python-child", json.dumps(raw, sort_keys=True))
 
     def load_code() -> Any:
@@ -81,12 +76,8 @@ async def run_dynamic_child(loader: Any, request: Any) -> Response:
 
 async def run_network_check(loader: Any, request: Any) -> Response:
     _ = request
-    raw = {
-        "compatibilityDate": COMPATIBILITY_DATE,
-        "mainModule": "network.js",
-        "modules": {"network.js": NETWORK_TEST_SOURCE},
-        "globalOutbound": None,
-    }
+    code = python_fetch_worker(PYTHON_NETWORK_TEST_SOURCE, compatibility_date=COMPATIBILITY_DATE)
+    raw = with_workers_sdk(code.to_raw())
 
     def load_code() -> Any:
         return js_object(raw)
@@ -96,6 +87,13 @@ async def run_network_check(loader: Any, request: Any) -> Response:
         keep_callback(load_code),
     )
     return await worker.getEntrypoint().fetch("http://xampler.local/blocked-network")
+
+
+def with_workers_sdk(raw: dict[str, Any]) -> dict[str, Any]:
+    modules = cast(dict[str, Any], raw["modules"])
+    modules["workers/__init__.py"] = inspect.getsource(workers_sdk)
+    modules["workers/_workers.py"] = inspect.getsource(workers_impl)
+    return raw
 
 
 def js_object(value: object) -> Any:

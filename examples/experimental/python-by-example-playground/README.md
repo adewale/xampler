@@ -8,7 +8,7 @@ Every vendored Python source example gets a page with:
 - links back to the upstream lesson/source file;
 - an editable code textarea;
 - a **Run Python** button;
-- immediate execution in the Python Worker runtime.
+- execution inside a Dynamic Python Worker isolate.
 
 ## Attribution
 
@@ -40,6 +40,20 @@ Open <http://localhost:8787>.
 
 ## How execution works
 
-The Worker is Python. When you press **Run Python**, the route captures `stdout`/`stderr`, executes the edited snippet with `exec()`, and returns JSON.
+The parent Worker is Python. When you press **Run Python**, it creates a Dynamic Python Worker module that embeds the edited code, captures `stdout`/`stderr`, and returns JSON.
 
-This is intentionally an educational playground, not a production sandbox for untrusted users. The companion [`dynamic-workers-loader`](../dynamic-workers-loader) example demonstrates Worker Loader isolation. Cloudflare documents Python modules for Dynamic Workers, but local Dynamic Python Workers currently need extra runtime care, so this playground keeps execution simple and verifiable.
+The Dynamic Worker is configured with:
+
+- `globalOutbound = null` so examples cannot use network access by default;
+- small CPU/subrequest limits;
+- an ID derived from the generated code for cache-friendly reloads.
+
+This requires the Dynamic Workers / Worker Loader binding:
+
+```jsonc
+{
+  "worker_loaders": [{ "binding": "LOADER" }]
+}
+```
+
+Remote deployment is beta-gated by Cloudflare. Keep this example experimental until deployed Python Dynamic Workers are broadly available and remotely verified.

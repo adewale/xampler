@@ -427,7 +427,7 @@ EXAMPLES = {
         [
             Check("/", contains="Dynamic Workers from a Python Worker"),
             Check("/worker-code", contains="worker.py"),
-            Check("/run", contains="Dynamic Worker loaded by Python"),
+            Check("/run", contains="Dynamic Python Worker loaded by Python"),
             Check("/blocked-network", contains="blocked:"),
         ],
         needs_setup="Dynamic Workers are local-first and beta-gated for deployed usage.",
@@ -446,7 +446,7 @@ EXAMPLES = {
                 contains='"stdout": "3\\n"',
             ),
         ],
-        needs_setup="Runs editable snippets in the Python Worker runtime for local verification.",
+        needs_setup="Runs editable snippets in Dynamic Python Worker isolates locally.",
     ),
     "examples/full-apps/hvsc-ai-data-search": Example(
         "examples/full-apps/hvsc-ai-data-search",

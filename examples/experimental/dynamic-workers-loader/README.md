@@ -6,11 +6,12 @@ It proves the shape Xampler expects for the beta API:
 
 - the parent Worker is Python;
 - the parent has a `worker_loaders` binding named `LOADER`;
-- the parent loads a real Dynamic Worker isolate locally;
-- the parent exposes a `WorkerCode` object containing a Python `worker.py` module at `/worker-code`;
-- `globalOutbound = null` is used as the default sandbox posture.
+- the parent loads and runs a real Dynamic Python Worker isolate locally;
+- the parent returns a `WorkerCode` object containing a Python `worker.py` module;
+- `globalOutbound = null` is used as the default sandbox posture;
+- the local verifier checks both execution and blocked outbound fetch behavior.
 
-> Dynamic Workers are currently beta-gated for deployed Cloudflare usage. Wrangler/workerd local development supports the Worker Loader API. This example verifies the loader with a JavaScript child isolate because that path is reliable locally from a Python parent. `/worker-code` documents the Dynamic Python WorkerCode shape Cloudflare exposes; keep deployed Dynamic Python verification beta-gated.
+> Dynamic Workers are currently beta-gated for deployed Cloudflare usage. Wrangler/workerd local development supports the Worker Loader API. Python Dynamic Workers are supported by Cloudflare, but Cloudflare warns they start more slowly than JavaScript Dynamic Workers.
 
 ## Run locally
 
