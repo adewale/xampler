@@ -10,6 +10,12 @@ Every vendored Python source example gets a page with:
 - a **Run Python** button;
 - execution inside a Dynamic Python Worker isolate.
 
+The index deliberately uses a learning order rather than alphabetical order: basics, control flow, collections, functions/classes, files/JSON/time, async, and networking. Examples that require process-level CLI/test-runner/server behavior are grouped under **Unsupported in this playground**.
+
+## Python runtime version
+
+The local Cloudflare Python Workers toolchain currently installs a Pyodide/Python 3.13 runtime for Workers. This playground therefore targets Python 3.13 behavior. Python 3.14 support should be added when Cloudflare's Python Workers runtime and `pywrangler` toolchain expose a Python 3.14/Pyodide build; until then, advertising 3.14 would be misleading.
+
 ## Attribution
 
 This example vendors educational code from:

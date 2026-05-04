@@ -23,6 +23,64 @@ from xampler.experimental.dynamic_workers import (
 COMPATIBILITY_DATE = "2026-05-01"
 UNSUPPORTED_SLUGS = {"argparse-example", "exit", "http-server", "testing"}
 OUTBOUND_EXAMPLE_SLUG = "http-client"
+EXAMPLE_ORDER = [
+    "hello-world",
+    "values",
+    "variables",
+    "constants",
+    "strings",
+    "string-formatting",
+    "lists",
+    "tuples",
+    "dictionaries",
+    "sets",
+    "slicing",
+    "comprehensions",
+    "if-else",
+    "for-loops",
+    "while-loops",
+    "break-and-continue",
+    "range-and-enumerate",
+    "functions",
+    "multiple-return-values",
+    "variadic-functions",
+    "closures",
+    "lambdas",
+    "classes",
+    "methods",
+    "inheritance",
+    "dataclasses",
+    "enums",
+    "custom-exceptions",
+    "exceptions",
+    "type-hints",
+    "match",
+    "modules",
+    "packages",
+    "file-paths",
+    "directories",
+    "reading-files",
+    "writing-files",
+    "temporary-files",
+    "json-example",
+    "json-files",
+    "regular-expressions",
+    "random-numbers",
+    "time-example",
+    "time-formatting",
+    "environment-variables",
+    "command-line-arguments",
+    "async-basics",
+    "async-concurrency",
+    "async-queues",
+    "http-client",
+    "logging-example",
+    "recursion",
+    "argparse-example",
+    "exit",
+    "http-server",
+    "testing",
+]
 HTTP_CLIENT_CODE = '''from workers import fetch
 
 # This example is special in the playground: outbound network is controlled
@@ -34,6 +92,11 @@ print(body[:120] + "...")
 '''
 EXAMPLE_BY_SLUG = {example["slug"]: example for example in EXAMPLES}
 _CALLBACKS: list[Any] = []
+
+
+def ordered_examples() -> list[dict[str, str]]:
+    rank = {slug: index for index, slug in enumerate(EXAMPLE_ORDER)}
+    return sorted(EXAMPLES, key=lambda example: rank.get(example["slug"], len(rank)))
 
 
 class ExampleOutbound(WorkerEntrypoint):
@@ -60,7 +123,7 @@ class Default(WorkerEntrypoint):
                         "source_path": example["source_path"],
                         "lesson_path": example["lesson_path"],
                     }
-                    for example in EXAMPLES
+                    for example in ordered_examples()
                 ]
             )
         if path.startswith("/examples/"):
@@ -235,12 +298,12 @@ def keep_callback(callback: Any) -> Any:
 def index_html() -> str:
     supported = [
         example
-        for example in EXAMPLES
+        for example in ordered_examples()
         if example["slug"] not in UNSUPPORTED_SLUGS | {OUTBOUND_EXAMPLE_SLUG}
     ]
     supported_links = example_links(supported)
     unsupported_links = example_links(
-        [example for example in EXAMPLES if example["slug"] in UNSUPPORTED_SLUGS]
+        [example for example in ordered_examples() if example["slug"] in UNSUPPORTED_SLUGS]
     )
     outbound = EXAMPLE_BY_SLUG[OUTBOUND_EXAMPLE_SLUG]
     return page(
@@ -249,6 +312,7 @@ def index_html() -> str:
 <header class=hero>
 <h1>Python by Example</h1>
 <p>Executable Python examples in the style of <a href=https://gobyexample.com/>Go by Example</a>, running inside Cloudflare Dynamic Python Worker isolates.</p>
+<p class=attrib>Ordered from basics → control flow → data structures → functions/classes → files/JSON/time → async/networking. Runtime: Cloudflare Python Workers currently use Python 3.13/Pyodide locally; Python 3.14 support depends on Cloudflare upgrading that runtime.</p>
 <p class=attrib>Adapted from <a href={SOURCE_URL}>{SOURCE_URL}</a> by {html.escape(SOURCE_AUTHOR)}, licensed under {html.escape(SOURCE_LICENSE)}. See <a href=/attribution>attribution</a>.</p>
 </header>
 <main class=layout>
