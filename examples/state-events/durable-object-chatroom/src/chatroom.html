@@ -5,58 +5,101 @@
   <meta name="viewport" content="width=device-width, initial-scale=1">
   <title>Python Workers Chatroom</title>
   <style>
-    *{box-sizing:border-box}body{font:16px/1.55 system-ui,-apple-system,Segoe UI,sans-serif;max-width:1120px;margin:0 auto;padding:2rem 1rem;color:#17202a;background:linear-gradient(180deg,#f8fafc,#fff 20rem)}
-    h1{font-size:clamp(2.1rem,5vw,3.2rem);line-height:1.04;margin:.1rem 0 .75rem;letter-spacing:-.04em}h2{font-size:1.05rem;margin:0 0 .45rem}.eyebrow{font-size:.78rem;text-transform:uppercase;letter-spacing:.08em;color:#64748b;font-weight:800}.muted{color:#64748b}
-    .hero{display:grid;grid-template-columns:minmax(0,1fr) 300px;gap:1.5rem;align-items:end;border-bottom:1px solid #d0d7de;padding-bottom:1.3rem;margin-bottom:1.4rem}.lede{font-size:1.1rem;color:#334155;max-width:72ch}
-    .card,.panel,.step{border:1px solid #d0d7de;border-radius:16px;background:rgba(255,255,255,.9);box-shadow:0 8px 24px rgba(15,23,42,.05)}.card,.step{padding:1rem}.layout{display:grid;grid-template-columns:340px minmax(0,1fr);gap:1.4rem;align-items:start}.steps{position:sticky;top:1rem;display:grid;gap:1rem}.num{display:inline-grid;place-items:center;width:1.65rem;height:1.65rem;border-radius:999px;background:#2563eb;color:white;font-weight:800;font-size:.85rem;margin-right:.45rem}
-    label{display:block;margin:.7rem 0 .25rem}input{box-sizing:border-box;width:100%;font:inherit;padding:.65rem;border:1px solid #cbd5e1;border-radius:10px}button{font:inherit;padding:.6rem .9rem;border:1px solid #2563eb;border-radius:10px;background:#2563eb;color:white;cursor:pointer;font-weight:650}.button-row{display:flex;gap:.6rem;flex-wrap:wrap;margin-top:.85rem}.panel{overflow:hidden}.panel-head{display:flex;justify-content:space-between;gap:1rem;align-items:center;padding:1rem;border-bottom:1px solid #e2e8f0;background:#f8fafc}.status{display:inline-flex;gap:.45rem;align-items:center;border:1px solid #cbd5e1;border-radius:999px;padding:.3rem .55rem;background:white;color:#475569;font-size:.86rem}.dot{width:.55rem;height:.55rem;border-radius:999px;background:#94a3b8}.status.connected .dot{background:#16a34a}.status.closed .dot{background:#dc2626}.metrics{display:grid;grid-template-columns:repeat(3,minmax(0,1fr));gap:.75rem;padding:1rem;border-bottom:1px solid #e2e8f0}.metric{border:1px solid #e2e8f0;border-radius:12px;padding:.8rem;background:white}.metric strong{display:block;font-size:1.35rem}.messages{padding:1rem;display:grid;gap:.7rem;max-height:36rem;overflow:auto}.msg{border:1px solid #e2e8f0;border-radius:12px;padding:.85rem;background:white}.msg strong{display:block}.system{background:#f8fafc}.raw{border-top:1px solid #e2e8f0}.raw summary{cursor:pointer;padding:.75rem 1rem;background:#f8fafc}pre{margin:0;padding:1rem;background:#0d1117;color:#e6edf3;overflow:auto;white-space:pre-wrap;max-height:18rem}code{background:#f1f5f9;padding:.1rem .25rem;border-radius:.25rem}
-    @media(max-width:860px){body{padding:1rem}.hero,.layout{display:block}.steps{position:static;margin-bottom:1rem}.metrics{grid-template-columns:1fr}}
+    *{box-sizing:border-box}body{font:16px/1.55 system-ui,-apple-system,Segoe UI,sans-serif;max-width:1180px;margin:0 auto;padding:1.5rem 1rem;color:#17202a;background:linear-gradient(180deg,#f8fafc,#fff 18rem)}
+    h1{font-size:clamp(2rem,5vw,3rem);line-height:1.04;margin:.1rem 0 .65rem;letter-spacing:-.04em}h2{font-size:1.05rem;margin:0 0 .45rem}.eyebrow{font-size:.78rem;text-transform:uppercase;letter-spacing:.08em;color:#64748b;font-weight:800}.muted{color:#64748b}a{color:#2563eb}code{background:#f1f5f9;padding:.1rem .25rem;border-radius:.25rem}
+    .hero{display:grid;grid-template-columns:minmax(0,1fr) 320px;gap:1.5rem;align-items:end;border-bottom:1px solid #d0d7de;padding-bottom:1.2rem;margin-bottom:1.25rem}.lede{font-size:1.08rem;color:#334155;max-width:74ch}.card,.panel,.room-list{border:1px solid #d0d7de;border-radius:18px;background:rgba(255,255,255,.92);box-shadow:0 8px 24px rgba(15,23,42,.05)}.card{padding:1rem}.layout{display:grid;grid-template-columns:310px minmax(0,1fr);gap:1.25rem;align-items:start}.sidebar{position:sticky;top:1rem;display:grid;gap:1rem}.room-list{padding:.8rem}.room-button{display:flex;justify-content:space-between;align-items:center;width:100%;text-align:left;background:white;color:#17202a;border:1px solid #e2e8f0;border-radius:12px;padding:.75rem;margin:.35rem 0;cursor:pointer}.room-button.active{border-color:#2563eb;background:#eff6ff;color:#1e3a8a}.room-button small{color:#64748b}.custom-room{display:flex;gap:.45rem;margin-top:.75rem}.custom-room input{min-width:0;flex:1}.panel{overflow:hidden}.chat-head{display:flex;justify-content:space-between;gap:1rem;align-items:center;padding:1rem;border-bottom:1px solid #e2e8f0;background:#f8fafc}.room-title{display:flex;gap:.6rem;align-items:center;flex-wrap:wrap}.status{display:inline-flex;gap:.45rem;align-items:center;border:1px solid #cbd5e1;border-radius:999px;padding:.3rem .55rem;background:white;color:#475569;font-size:.86rem}.dot{width:.55rem;height:.55rem;border-radius:999px;background:#94a3b8}.status.connected .dot{background:#16a34a}.status.closed .dot{background:#dc2626}.status.connecting .dot{background:#ca8a04}.badge{display:inline-flex;border-radius:999px;background:#dbeafe;color:#1e3a8a;padding:.18rem .55rem;font-size:.84rem;font-weight:700}.metrics{display:grid;grid-template-columns:repeat(3,minmax(0,1fr));gap:.75rem;padding:1rem;border-bottom:1px solid #e2e8f0}.metric{border:1px solid #e2e8f0;border-radius:12px;padding:.75rem;background:white}.metric strong{display:block;font-size:1.2rem}.messages{height:min(52vh,34rem);min-height:24rem;overflow:auto;padding:1rem;background:linear-gradient(180deg,#fff,#f8fafc);display:flex;flex-direction:column;gap:.75rem}.msg{max-width:76%;border:1px solid #e2e8f0;border-radius:16px;padding:.75rem .85rem;background:white;box-shadow:0 2px 10px rgba(15,23,42,.04)}.msg.mine{align-self:flex-end;background:#2563eb;color:white;border-color:#2563eb}.msg.mine .meta{color:#dbeafe}.msg.system{align-self:center;max-width:92%;background:#f1f5f9;color:#475569;text-align:center}.msg.replay{align-self:center;background:#ecfdf5;color:#166534}.meta{display:flex;gap:.5rem;justify-content:space-between;color:#64748b;font-size:.82rem;margin-bottom:.2rem}.composer{display:grid;grid-template-columns:180px minmax(0,1fr) auto;gap:.6rem;padding:1rem;border-top:1px solid #e2e8f0;background:white}input{font:inherit;border:1px solid #cbd5e1;border-radius:10px;padding:.65rem;width:100%}button{font:inherit;padding:.65rem .9rem;border:1px solid #2563eb;border-radius:10px;background:#2563eb;color:white;cursor:pointer;font-weight:700}button.secondary{background:white;color:#2563eb}.presence{display:flex;gap:.4rem;flex-wrap:wrap;margin-top:.75rem}.person{display:inline-flex;border-radius:999px;background:#dcfce7;color:#14532d;padding:.18rem .55rem;font-size:.84rem}.raw{border-top:1px solid #e2e8f0}.raw summary{cursor:pointer;padding:.75rem 1rem;background:#f8fafc}pre{margin:0;padding:1rem;background:#0d1117;color:#e6edf3;overflow:auto;white-space:pre-wrap;max-height:16rem}.empty{border:1px dashed #cbd5e1;border-radius:16px;padding:1rem;text-align:center;color:#64748b;background:white}
+    @media(max-width:900px){body{padding:1rem}.hero,.layout{display:block}.sidebar{position:static;margin-bottom:1rem}.composer{grid-template-columns:1fr}.messages{height:28rem}.msg{max-width:92%}.metrics{grid-template-columns:1fr}}
   </style>
 </head>
 <body>
-  <header class="hero"><div><p class="eyebrow">Durable Objects example</p><h1>Python Workers Chatroom</h1><p class="lede">A single Durable Object owns each room. Browser clients connect over WebSockets, messages broadcast to every tab, and dev routes expose replayable history.</p></div><aside class="card"><strong>What this proves</strong><p class="muted">Room identity, WebSocket fan-out, presence state, and transcript/export routes backed by one Durable Object instance.</p></aside></header>
+  <header class="hero">
+    <div><p class="eyebrow">Durable Objects example</p><h1>Python Workers Chatroom</h1><p class="lede">Pick exactly one room to watch. Each room name maps to its own Durable Object instance with separate WebSockets, presence, and message history — not one global chat singleton.</p></div>
+    <aside class="card"><strong>One room = one Durable Object</strong><p class="muted">The Worker routes <code>/room/&lt;name&gt;</code> to <code>ROOMS.idFromName(name)</code>. Switching rooms disconnects from one DO and connects to another.</p></aside>
+  </header>
   <main class="layout">
-    <aside class="steps">
-      <section class="step"><h2><span class="num">1</span>Choose a room</h2><p class="muted">Use the URL hash to switch rooms, for example <code>#lobby</code> or <code>#demo</code>.</p><p>Current room: <strong id="room"></strong></p></section>
-      <section class="step"><h2><span class="num">2</span>Send a message</h2><label>Name <input id="name" placeholder="name" value="Pythonista"></label><label>Message <input id="text" placeholder="message" autofocus></label><div class="button-row"><button id="send">Send to room</button></div></section>
-      <section class="step"><h2><span class="num">3</span>Verify replay</h2><p class="muted">Open another tab or use the dev transcript endpoint.</p><p><a id="export" href="/room/lobby/dev/export">Export dev transcript</a></p></section>
+    <aside class="sidebar">
+      <section class="room-list"><h2>Rooms</h2><p class="muted">Choose one room. The chat panel only shows that room’s Durable Object.</p><div id="rooms"></div><form id="custom" class="custom-room"><input id="customName" placeholder="custom-room"><button class="secondary">Go</button></form></section>
+      <section class="card"><h2>Try the isolation</h2><p class="muted">Send a message in <strong>lobby</strong>, switch to <strong>python</strong>, and notice the history is different. Open two tabs in the same room to see broadcast.</p><p><a id="export" href="/room/lobby/dev/export">Export this room</a></p><div id="presence" class="presence"></div></section>
     </aside>
-    <section class="panel"><div class="panel-head"><div><h2>Live room</h2><p class="muted">Messages append without reloading the page.</p></div><span class="status" id="state"><span class="dot"></span><span>connecting</span></span></div><div class="metrics"><div class="metric"><span class="muted">Messages</span><strong id="count">0</strong></div><div class="metric"><span class="muted">Transport</span><strong>WebSocket</strong></div><div class="metric"><span class="muted">Durability</span><strong>DO</strong></div></div><div id="messages" class="messages"><div class="msg system"><strong>Connecting…</strong><p class="muted">Open the page in two tabs to see broadcast behavior.</p></div></div><details class="raw"><summary>Raw event log</summary><pre id="log"></pre></details></section>
+    <section class="panel">
+      <div class="chat-head"><div><div class="room-title"><h2 id="roomTitle">#lobby</h2><span class="badge">focused room only</span></div><p class="muted" id="roomHint">Connected to one Durable Object instance.</p></div><span class="status connecting" id="state"><span class="dot"></span><span>connecting</span></span></div>
+      <div class="metrics"><div class="metric"><span class="muted">Room</span><strong id="roomMetric">lobby</strong></div><div class="metric"><span class="muted">Messages here</span><strong id="count">0</strong></div><div class="metric"><span class="muted">People here</span><strong id="people">0</strong></div></div>
+      <div id="messages" class="messages"><div class="empty">Choose a room and send a message. Only this room’s messages appear here.</div></div>
+      <div class="composer"><input id="name" placeholder="name" value="Pythonista"><input id="text" placeholder="Message this room" autofocus><button id="send">Send</button></div>
+      <details class="raw"><summary>Raw event log for current room</summary><pre id="log"></pre></details>
+    </section>
   </main>
   <script>
-    const room = location.hash.slice(1) || 'lobby';
-    document.querySelector('#room').textContent = room;
-    document.querySelector('#export').href = `/room/${room}/dev/export`;
-    const ws = new WebSocket(`${location.origin.replace('http', 'ws')}/room/${room}`);
+    const knownRooms = ['lobby', 'python', 'music', 'demo'];
+    let room = location.hash.slice(1) || 'lobby';
+    let ws = null;
+    let count = 0;
+    const roomsEl = document.querySelector('#rooms');
+    const messages = document.querySelector('#messages');
     const log = document.querySelector('#log');
     const state = document.querySelector('#state');
-    const messages = document.querySelector('#messages');
-    let count = 0;
     function esc(value){ return String(value ?? '').replace(/[&<>"']/g, c => ({'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;',"'":'&#39;'}[c])); }
     function setState(value){ state.className = 'status ' + value; state.querySelector('span:last-child').textContent = value; }
-    ws.onopen = () => { setState('connected'); };
-    ws.onclose = () => { setState('closed'); };
-    ws.onmessage = event => {
-      const data = JSON.parse(event.data);
-      log.textContent += JSON.stringify(data, null, 2) + '\n';
-      log.scrollTop = log.scrollHeight;
-      if (data.type === 'message') {
-        count += 1;
-        document.querySelector('#count').textContent = count;
-        messages.insertAdjacentHTML('beforeend', `<div class="msg"><strong>${esc(data.username || 'anonymous')}</strong><p>${esc(data.text)}</p></div>`);
-        messages.scrollTop = messages.scrollHeight;
-      } else {
-        messages.insertAdjacentHTML('beforeend', `<div class="msg system"><strong>${esc(data.type)}</strong><p class="muted">${esc(JSON.stringify(data))}</p></div>`);
-      }
-    };
+    function roomPath(name){ return '/room/' + encodeURIComponent(name); }
+    function renderRooms(){
+      const rooms = [...new Set([...knownRooms, room])];
+      roomsEl.innerHTML = rooms.map(name => `<button class="room-button ${name === room ? 'active' : ''}" data-room="${esc(name)}"><span>#${esc(name)}</span><small>own DO</small></button>`).join('');
+      document.querySelectorAll('[data-room]').forEach(button => button.onclick = () => switchRoom(button.dataset.room));
+    }
+    function resetRoomUi(){
+      count = 0;
+      document.querySelector('#count').textContent = '0';
+      document.querySelector('#people').textContent = '0';
+      document.querySelector('#roomMetric').textContent = room;
+      document.querySelector('#roomTitle').textContent = '#' + room;
+      document.querySelector('#roomHint').textContent = `Only events from /room/${room} are shown.`;
+      document.querySelector('#export').href = `${roomPath(room)}/dev/export`;
+      document.querySelector('#presence').innerHTML = '';
+      log.textContent = '';
+      messages.innerHTML = '<div class="empty">Now watching #' + esc(room) + '. This is a separate Durable Object instance.</div>';
+      renderRooms();
+    }
+    function addMessage(data, cls=''){
+      if (messages.querySelector('.empty')) messages.innerHTML = '';
+      const mine = data.username === document.querySelector('#name').value;
+      const klass = cls || (mine ? 'mine' : '');
+      messages.insertAdjacentHTML('beforeend', `<div class="msg ${klass}"><div class="meta"><strong>${esc(data.username || data.type || 'system')}</strong><span>${esc((data.at || '').slice(11,19))}</span></div><div>${esc(data.text || JSON.stringify(data))}</div></div>`);
+      messages.scrollTop = messages.scrollHeight;
+    }
+    function connect(){
+      if (ws) ws.close();
+      resetRoomUi();
+      setState('connecting');
+      ws = new WebSocket(`${location.origin.replace('http', 'ws')}${roomPath(room)}`);
+      ws.onopen = () => { setState('connected'); ws.send(JSON.stringify({type:'presence', username:document.querySelector('#name').value, avatar:'🙂'})); };
+      ws.onclose = () => setState('closed');
+      ws.onmessage = event => {
+        const data = JSON.parse(event.data);
+        log.textContent += JSON.stringify(data, null, 2) + '\n';
+        log.scrollTop = log.scrollHeight;
+        if (data.type === 'message') { count += 1; document.querySelector('#count').textContent = count; addMessage(data); return; }
+        if (data.type === 'replay') { (data.messages || []).forEach(item => { count += 1; addMessage(item, 'replay'); }); document.querySelector('#count').textContent = count; return; }
+        if (data.type === 'presence') { const users = data.users || []; document.querySelector('#people').textContent = users.length; document.querySelector('#presence').innerHTML = users.map(u => `<span class="person">${esc(u.avatar)} ${esc(u.username)}</span>`).join(''); return; }
+        addMessage(data, 'system');
+      };
+    }
+    function switchRoom(next){
+      room = String(next || 'lobby').trim().replace(/[^a-zA-Z0-9_-]/g, '-').toLowerCase() || 'lobby';
+      location.hash = room;
+      connect();
+    }
     function send(){
       const text = document.querySelector('#text').value.trim();
-      if (!text) return;
+      if (!text || !ws || ws.readyState !== WebSocket.OPEN) return;
       ws.send(JSON.stringify({ username: document.querySelector('#name').value, text }));
       document.querySelector('#text').value = '';
     }
     document.querySelector('#send').onclick = send;
     document.querySelector('#text').addEventListener('keydown', e => { if (e.key === 'Enter') send(); });
+    document.querySelector('#name').addEventListener('change', () => { if (ws && ws.readyState === WebSocket.OPEN) ws.send(JSON.stringify({type:'presence', username:document.querySelector('#name').value, avatar:'🙂'})); });
+    document.querySelector('#custom').onsubmit = event => { event.preventDefault(); switchRoom(document.querySelector('#customName').value); };
+    window.addEventListener('hashchange', () => { const next = location.hash.slice(1) || 'lobby'; if (next !== room) switchRoom(next); });
+    connect();
   </script>
 </body>
 </html>

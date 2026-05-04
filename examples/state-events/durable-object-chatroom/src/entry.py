@@ -24,11 +24,13 @@ class ChatRoom(DurableObject):
         self.message_history: list[dict[str, str]] = []
         self.presence: dict[int, dict[str, str]] = {}
         self.max_history = 10
+        self.room_name = "lobby"
 
     async def fetch(self, request: Any) -> Response:
         """Accept WebSockets and provide deterministic dev routes."""
 
         path = urlparse(str(request.url)).path
+        self.room_name = room_name_from_path(path)
         if path.endswith("/dev/history") or path.endswith("/dev/replay"):
             return Response.json({"messages": await self.history()})
         if path.endswith("/dev/presence"):
@@ -60,9 +62,22 @@ class ChatRoom(DurableObject):
         ident = id(server)
         self.presence[ident] = {"username": f"Visitor-{len(self.presence) + 1}", "avatar": "🙂"}
         if self.message_history:
-            server.send(json.dumps({"type": "replay", "messages": self.message_history}))
+            server.send(
+                json.dumps({
+                    "type": "replay",
+                    "messages": self.message_history,
+                    "room": self.room_name,
+                })
+            )
         self.broadcast_presence()
-        server.send(json.dumps({"type": "system", "text": "Connected", "at": self.now()}))
+        server.send(
+            json.dumps({
+                "type": "system",
+                "text": "Connected",
+                "room": self.room_name,
+                "at": self.now(),
+            })
+        )
         return Response(None, status=101, web_socket=client)
 
     async def webSocketMessage(self, ws: Any, message: str) -> None:
@@ -95,17 +110,17 @@ class ChatRoom(DurableObject):
             "type": "message",
             "username": str(data.get("username", "Anonymous")),
             "text": str(data.get("text", "")),
+            "room": self.room_name,
             "at": self.now(),
         }
 
     async def history(self) -> list[dict[str, str]]:
-        return ROOM_MEMORY.get("demo", self.message_history)
+        return ROOM_MEMORY.get(self.room_name, self.message_history)
 
     async def remember(self, event: dict[str, str]) -> None:
         history = [*await self.history(), event][-self.max_history :]
         self.message_history = history
-        ROOM_MEMORY["demo"] = history
-
+        ROOM_MEMORY[self.room_name] = history
 
     def broadcast(self, message: str) -> None:
         for ws in self.ctx.getWebSockets():
@@ -116,6 +131,13 @@ class ChatRoom(DurableObject):
 
     def now(self) -> str:
         return datetime.now(UTC).isoformat()
+
+
+def room_name_from_path(path: str) -> str:
+    if not path.startswith("/room/"):
+        return "lobby"
+    name = path.removeprefix("/room/").split("/", 1)[0]
+    return name or "lobby"
 
 
 class Default(WorkerEntrypoint):
