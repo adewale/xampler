@@ -1,3 +1,4 @@
+# ruff: noqa: E501
 from __future__ import annotations
 
 import json
@@ -489,83 +490,124 @@ def index_html() -> str:
 <head>
   <meta charset="utf-8">
   <meta name="viewport" content="width=device-width, initial-scale=1">
-  <title>HVSC AI/Data Pipeline</title>
+  <title>HVSC Catalog Search · Xampler</title>
   <style>
-    body { font-family: system-ui, sans-serif; max-width: 820px; }
-    body { margin: 3rem auto; padding: 0 1rem; }
-    button { margin: .25rem; padding: .7rem 1rem; border: 0; }
-    button { border-radius: .5rem; background: #2563eb; color: white; cursor: pointer; }
-    button.secondary { background: #475569; }
-    button.done { background: #16a34a; }
-    button.running { background: #ca8a04; }
-    button.failed { background: #dc2626; }
-    #runAll { display: block; width: 100%; font-size: 1.1rem; margin: 1rem 0; }
-    input { padding: .65rem; min-width: 14rem; }
-    pre { background: #0f172a; color: #e2e8f0; padding: 1rem; }
-    pre { border-radius: .5rem; overflow: auto; }
-    .progress { background: #e2e8f0; border-radius: 999px; overflow: hidden; height: 1rem; }
+    :root { color-scheme: light; --blue:#2563eb; --border:#d0d7de; --muted:#64748b; }
+    body { font: 16px/1.55 system-ui, sans-serif; max-width: 1120px; margin: 2rem auto; }
+    body { padding: 0 1rem; color: #17202a; background: #fff; }
+    header { display: flex; justify-content: space-between; gap: 1rem; align-items: end; }
+    header { border-bottom: 1px solid var(--border); padding-bottom: 1rem; margin-bottom: 1rem; }
+    h1, h2, h3 { margin: 0 0 .45rem; line-height: 1.2; }
+    p { margin: .35rem 0; }
+    code { background: #f1f5f9; padding: .1rem .25rem; border-radius: .25rem; }
+    button { font: inherit; padding: .65rem .95rem; border: 1px solid var(--blue); }
+    button { border-radius: .55rem; background: var(--blue); color: white; cursor: pointer; }
+    button.secondary { background: white; color: var(--blue); }
+    button.done { background: #16a34a; border-color: #16a34a; }
+    button.running { background: #ca8a04; border-color: #ca8a04; }
+    button.failed { background: #dc2626; border-color: #dc2626; }
+    button:disabled { opacity: .7; cursor: wait; }
+    input { box-sizing: border-box; padding: .65rem; border: 1px solid var(--border); }
+    input { border-radius: .5rem; font: inherit; }
+    .hero { background: linear-gradient(135deg, #eff6ff, #f8fafc); border: 1px solid var(--border); }
+    .hero { border-radius: 1rem; padding: 1rem; margin-bottom: 1rem; }
+    .grid { display: grid; grid-template-columns: 1.1fr .9fr; gap: 1rem; align-items: start; }
+    .steps { display: grid; gap: .75rem; counter-reset: step; }
+    .step { border: 1px solid var(--border); border-radius: .9rem; padding: 1rem; background: #fff; }
+    .step { display: grid; grid-template-columns: auto 1fr; gap: .8rem; }
+    .step::before { counter-increment: step; content: counter(step); width: 2rem; height: 2rem; }
+    .step::before { display: grid; place-items: center; border-radius: 999px; background: #dbeafe; }
+    .step::before { color: #1e3a8a; font-weight: 700; }
+    .step-actions { margin-top: .7rem; display: flex; gap: .5rem; flex-wrap: wrap; align-items: center; }
+    .card { border: 1px solid var(--border); border-radius: .9rem; padding: 1rem; background: #f8fafc; }
+    .muted { color: var(--muted); }
+    .pill { display: inline-flex; align-items: center; gap: .35rem; border-radius: 999px; }
+    .pill { background: #e0f2fe; color: #075985; padding: .18rem .55rem; font-size: .88rem; }
+    .progress { background: #e2e8f0; border-radius: 999px; overflow: hidden; height: .9rem; }
     .bar { background: #16a34a; height: 100%; width: 0%; transition: width .2s; }
-    #progressText { margin: .5rem 0 1rem; color: #334155; }
-    #results { margin: 1rem 0; }
-    .result { border: 1px solid #cbd5e1; border-radius: .6rem; padding: .8rem; }
-    .result + .result { margin-top: .6rem; }
-    .result h3 { margin: 0 0 .25rem; font-size: 1rem; }
-    .result p { margin: .2rem 0; color: #334155; }
-    .muted { color: #64748b; }
+    #progressText { margin: .5rem 0 0; color: #334155; }
+    #results { margin-top: 1rem; }
+    .result { border: 1px solid #cbd5e1; border-radius: .7rem; padding: .85rem; background: #fff; }
+    .result + .result { margin-top: .65rem; }
+    .result h3 { font-size: 1rem; }
+    .result p { margin: .18rem 0; color: #334155; }
+    pre { background: #0f172a; color: #e2e8f0; padding: 1rem; border-radius: .7rem; overflow: auto; }
+    details { margin-top: 1rem; }
+    @media (max-width: 860px) { .grid, header { display: block; } .card { margin-top: 1rem; } }
   </style>
 </head>
 <body>
-  <h1>HVSC AI/data pipeline</h1>
-  <p>Use real HVSC release metadata to exercise R2, D1, Queues, and AI/Vectorize seams.</p>
-  <p>The 80 MiB archive itself is not text-searchable until you unpack it locally,
-  build a JSONL catalog, and upload that catalog to R2. These buttons verify each step.</p>
+  <header>
+    <div>
+      <h1>HVSC full-catalog search</h1>
+      <p class="muted">Import the generated High Voltage SID Collection catalog from R2 into D1, then search real SID metadata.</p>
+    </div>
+    <span id="readiness" class="pill">Checking catalog…</span>
+  </header>
 
-  <button id="runAll" onclick="runAll()">▶ Run all dataset checks and prepare search</button>
+  <section class="hero">
+    <h2>Recommended flow</h2>
+    <p>This page is intentionally ordered: verify the full catalog is present, import every shard into D1, then search. The bundled sample path is no longer the main demo.</p>
+  </section>
 
-  <ol>
-    <li>
-      <button id="step1" onclick="archiveVerify()">1. Verify full archive object in R2</button>
-    </li>
-    <li>
-      <button id="step2" onclick="ingest()">2. Ingest release metadata + sample</button>
-    </li>
-    <li>
-      <button id="step3" onclick="catalogVerify()">3. Verify catalog JSONL in R2</button>
-    </li>
-    <li>
-      <button id="step4" onclick="shardedIngest()">4. Import all R2 catalog shards into D1</button>
-    </li>
-    <li>
-      <form id="searchForm">
-        <input id="q" value="maniacs" aria-label="search query" autocomplete="off">
-        <button id="step5" type="submit">5. Search D1 catalog</button>
-      </form>
-    </li>
-  </ol>
+  <main class="grid">
+    <section class="steps" aria-label="HVSC setup steps">
+      <article class="step">
+        <div>
+          <h2>Verify the full catalog in R2</h2>
+          <p>The browser import reads shards from <code>hvsc/84/catalog/shards/</code>. If this fails, seed local R2 from the repo root:</p>
+          <p><code>uv run python scripts/hvsc_upload_catalog.py xampler-datasets --local</code></p>
+          <div class="step-actions">
+            <button id="step1" onclick="verifyFullCatalog()">Verify full catalog</button>
+            <button class="secondary" onclick="catalogVerify()">Check tracks.jsonl object</button>
+          </div>
+        </div>
+      </article>
 
-  <details>
-    <summary>Optional setup / stress test buttons</summary>
-    <p>
-      <button onclick="archiveIngest()">Stream full 80 MiB archive from HVSC to R2</button>
-      <button class="secondary" onclick="catalogSample()">Ingest bundled sample only</button>
-      <button class="secondary" onclick="search('sid')">Search SID</button>
-      <button class="secondary" onclick="search('commodore')">Search Commodore</button>
-      <button class="secondary" onclick="search('hvsc')">Search HVSC</button>
-      <button class="secondary" onclick="search('maniacs')">Search Maniacs</button>
-    </p>
-  </details>
+      <article class="step">
+        <div>
+          <h2>Import all shards into D1</h2>
+          <p>This streams the full generated catalog shard-by-shard. It may take a moment; progress updates after each shard.</p>
+          <div class="progress"><div id="progressBar" class="bar"></div></div>
+          <p id="progressText">0% — not started</p>
+          <div class="step-actions">
+            <button id="step2" onclick="importFullCatalog()">Import full catalog</button>
+          </div>
+        </div>
+      </article>
 
-  <p>
-    <label>Catalog R2 key: <input id="catalogKey" value="hvsc/84/catalog/tracks.jsonl"></label>
-    <label>Import limit: <input id="limit" value="0"></label>
-  </p>
+      <article class="step">
+        <div>
+          <h2>Search the imported catalog</h2>
+          <form id="searchForm" class="step-actions">
+            <input id="q" value="hubbard" aria-label="search query" autocomplete="off">
+            <button id="step3" type="submit">Search D1 catalog</button>
+          </form>
+          <p class="muted">Try <button class="secondary" onclick="search('jeroen')" type="button">jeroen</button> <button class="secondary" onclick="search('galway')" type="button">galway</button> <button class="secondary" onclick="search('maniacs')" type="button">maniacs</button> <button class="secondary" onclick="search('last ninja')" type="button">last ninja</button></p>
+        </div>
+      </article>
+    </section>
 
-  <div class="progress"><div id="progressBar" class="bar"></div></div>
-  <p id="progressText">0% — not started</p>
-  <div id="results" aria-live="polite">
-    <p class="muted">Search results will appear here after the catalog is imported.</p>
-  </div>
-  <pre id="output">Start at button 1. Use button 4 after uploading catalog JSONL to R2.</pre>
+    <aside>
+      <section class="card">
+        <h2>Status</h2>
+        <p id="summary" class="muted">Checking local D1 and R2…</p>
+        <div id="results" aria-live="polite">
+          <p class="muted">Search results will appear here after the catalog is imported.</p>
+        </div>
+      </section>
+      <section class="card">
+        <h2>Latest operation</h2>
+        <pre id="output">Open this page, then follow steps 1 → 2 → 3.</pre>
+      </section>
+      <details class="card">
+        <summary>Advanced routes</summary>
+        <p><button class="secondary" onclick="ingestRelease()">Ingest release metadata</button></p>
+        <p><button class="secondary" onclick="archiveVerify()">Verify raw 7z archive object</button></p>
+        <p><button class="secondary" onclick="archiveIngest()">Stream raw 80 MiB archive to R2</button></p>
+      </details>
+    </aside>
+  </main>
 
   <script>
     function output(text) {
@@ -604,9 +646,11 @@ def index_html() -> str:
       if (!el) return;
       el.classList.remove('done', 'running', 'failed');
       if (state) el.classList.add(state);
-      if (state === 'done') el.textContent = '✓ ' + el.textContent.replace(/^[✓▶✗] /, '');
-      if (state === 'running') el.textContent = '▶ ' + el.textContent.replace(/^[✓▶✗] /, '');
-      if (state === 'failed') el.textContent = '✗ ' + el.textContent.replace(/^[✓▶✗] /, '');
+    }
+    function setReadiness(text, state = '') {
+      const el = document.getElementById('readiness');
+      el.textContent = text;
+      el.className = 'pill ' + state;
     }
     function setProgress(done, total, rows) {
       const percent = total ? Math.floor((done / total) * 100) : 0;
@@ -622,29 +666,57 @@ def index_html() -> str:
         return result;
       } catch (error) {
         setStep(id, 'failed');
+        output(String(error));
         throw error;
       }
     }
-    function catalogKey() {
-      return encodeURIComponent(document.getElementById('catalogKey').value);
+    function escapeHtml(value) {
+      return String(value ?? '').replace(/[&<>"']/g, char => ({
+        '&': '&amp;', '<': '&lt;', '>': '&gt;', '"': '&quot;', "'": '&#39;'
+      }[char]));
     }
-    function limit() {
-      return encodeURIComponent(document.getElementById('limit').value || '0');
+    function renderSearch(data) {
+      const query = escapeHtml(data.query || '');
+      const status = data.status || {};
+      if (!data.ready) {
+        setResults('<p class="muted">Import the full catalog first, then search.</p>');
+        return;
+      }
+      if (!data.tracks || data.tracks.length === 0) {
+        setResults('<p>No HVSC tracks matched <strong>' + query + '</strong>. ' +
+          '<span class="muted">' + escapeHtml(status.d1_tracks || 0) +
+          ' total D1 rows are imported.</span></p>');
+        return;
+      }
+      const rows = data.tracks.map(track => (
+        '<article class="result">' +
+          '<h3>' + escapeHtml(track.title || track.filename) + '</h3>' +
+          '<p><strong>File:</strong> ' + escapeHtml(track.path) + '</p>' +
+          (track.composer ? '<p><strong>Composer:</strong> ' + escapeHtml(track.composer) + '</p>' : '') +
+        '</article>'
+      )).join('');
+      setResults(
+        '<p>Showing <strong>' + data.matching_tracks + '</strong> matches. ' +
+        '<span class="muted">D1 currently has ' + status.d1_tracks +
+        ' total HVSC tracks imported.</span></p>' + rows
+      );
     }
-    async function ingest() {
-      return await show(await fetch('/ingest-fixture', { method: 'POST' }));
+    function setResults(html) {
+      document.getElementById('results').innerHTML = html;
     }
-    async function catalogSample() {
-      return await show(await fetch('/catalog/ingest-sample', { method: 'POST' }));
-    }
-    async function catalogVerify() {
-      return await show(await fetch('/catalog/verify-r2?key=' + catalogKey()));
-    }
-    async function catalogIngest() {
-      document.getElementById('output').textContent = 'Pulling catalog JSONL from R2 into D1...';
-      const path = '/catalog/ingest-r2?key=' + catalogKey();
-      const params = '&limit=' + limit();
-      return await show(await fetch(path + params, { method: 'POST' }));
+    async function verifyFullCatalog() {
+      const state = await show(await fetch('/ingest/start', { method: 'POST' }), {
+        compactIngest: true,
+      });
+      if (state.error) {
+        setReadiness('Full catalog missing');
+        throw new Error(state.error + '\\n\\nSeed local R2 with: uv run python scripts/hvsc_upload_catalog.py xampler-datasets --local');
+      }
+      setProgress(state.completed_shards, state.total_shards, state.imported_rows);
+      setReadiness(state.total_shards + ' shards ready');
+      document.getElementById('summary').textContent =
+        'Full catalog shards are available in R2. Continue with Step 2.';
+      return state;
     }
     async function ingestNextWithRetry() {
       for (let attempt = 0; attempt < 5; attempt++) {
@@ -661,79 +733,31 @@ def index_html() -> str:
       }
       throw new Error('Worker kept restarting during shard import. Try again.');
     }
-    async function shardedIngest() {
-      let state = await show(await fetch('/ingest/start', { method: 'POST' }), {
-        compactIngest: true,
-      });
-      if (state.error) {
-        if (String(state.error).includes('no shards found')) {
-          output(
-            state.error + '\\n\\n' +
-            'No prebuilt full-catalog shards are present in local R2, so the ' +
-            'playground is importing the bundled sample catalog instead. Run ' +
-            '`uv run python scripts/hvsc_full_pipeline.py --bucket xampler-datasets` ' +
-            'from the repo root to prepare the full shard set.'
-          );
-          const sample = await catalogSample();
-          const rows = Number(sample.tracks || 0);
-          setProgress(1, 1, rows);
-          return {
-            status: 'complete',
-            fallback: 'sample-catalog',
-            total_shards: 1,
-            completed_shards: 1,
-            imported_rows: rows,
-            sample,
-          };
+    async function importFullCatalog() {
+      let state = await step('step1', verifyFullCatalog);
+      setStep('step2', 'running');
+      try {
+        let lastRenderedShard = state.completed_shards;
+        while (state.status !== 'complete') {
+          if (state.completed_shards !== lastRenderedShard) {
+            const next = Math.min(state.completed_shards + 1, state.total_shards);
+            output('Importing shard ' + next + ' of ' + state.total_shards + '...');
+            lastRenderedShard = state.completed_shards;
+          }
+          state = await ingestNextWithRetry();
+          setProgress(state.completed_shards, state.total_shards, state.imported_rows);
+          await new Promise(resolve => setTimeout(resolve, 25));
         }
-        throw new Error(state.error);
+        setStep('step2', 'done');
+        setReadiness('Catalog imported');
+        output(JSON.stringify(compactIngestState(state), null, 2));
+        await refreshStatus();
+        return state;
+      } catch (error) {
+        setStep('step2', 'failed');
+        output(String(error));
+        throw error;
       }
-      setProgress(state.completed_shards, state.total_shards, state.imported_rows);
-      let lastRenderedShard = state.completed_shards;
-      while (state.status !== 'complete') {
-        if (state.completed_shards !== lastRenderedShard) {
-          const next = Math.min(state.completed_shards + 1, state.total_shards);
-          output('Importing shard ' + next + ' of ' + state.total_shards + '...');
-          lastRenderedShard = state.completed_shards;
-        }
-        state = await ingestNextWithRetry();
-        setProgress(state.completed_shards, state.total_shards, state.imported_rows);
-        await new Promise(resolve => setTimeout(resolve, 25));
-      }
-      output(JSON.stringify(compactIngestState(state), null, 2));
-      return state;
-    }
-    function setResults(html) {
-      document.getElementById('results').innerHTML = html;
-    }
-    function escapeHtml(value) {
-      return String(value ?? '').replace(/[&<>"']/g, char => ({
-        '&': '&amp;', '<': '&lt;', '>': '&gt;', '"': '&quot;', "'": '&#39;'
-      }[char]));
-    }
-    function renderSearch(data) {
-      const query = escapeHtml(data.query || '');
-      const status = data.status || {};
-      if (!data.ready) {
-        setResults('<p class="muted">Preparing the catalog before searching…</p>');
-        return;
-      }
-      if (!data.tracks || data.tracks.length === 0) {
-        setResults('<p>No HVSC tracks matched <strong>' + query + '</strong>.</p>');
-        return;
-      }
-      const rows = data.tracks.map(track => (
-        '<article class="result">' +
-          '<h3>' + escapeHtml(track.title || track.filename) + '</h3>' +
-          '<p><strong>File:</strong> ' + escapeHtml(track.path) + '</p>' +
-          (track.composer ? '<p><strong>Composer:</strong> ' +
-            escapeHtml(track.composer) + '</p>' : '') +
-        '</article>'
-      )).join('');
-      setResults(
-        '<p>Showing ' + data.tracks.length + ' of ' + status.d1_tracks +
-        ' imported tracks matching <strong>' + query + '</strong>.</p>' + rows
-      );
     }
     async function search(q) {
       const term = (q || '').trim();
@@ -741,63 +765,45 @@ def index_html() -> str:
         setResults('<p class="muted">Enter a search term.</p>');
         return null;
       }
-      let data = await show(await fetch('/tracks?q=' + encodeURIComponent(term)));
-      if (!data.ready) {
-        setResults(
-          '<p class="muted">Preparing the full HVSC catalog in local D1. ' +
-          'Search will run automatically when import finishes.</p>'
-        );
-        await step('step4', shardedIngest);
-        data = await show(await fetch('/tracks?q=' + encodeURIComponent(term)));
-      }
+      const data = await show(await fetch('/tracks?q=' + encodeURIComponent(term)));
       renderSearch(data);
       return data;
     }
-    async function archiveIngest() {
-      document.getElementById('output').textContent = 'Streaming ~80 MiB archive to local R2...';
-      return await show(await fetch('/archive/ingest', { method: 'POST' }));
-    }
-    async function archiveVerify() {
-      return await show(await fetch('/archive/verify'));
-    }
-    document.getElementById('searchForm').addEventListener('submit', event => {
-      event.preventDefault();
-      step('step5', () => search(document.getElementById('q').value));
-    });
     async function refreshStatus() {
       try {
         const state = await readResponse(await fetch('/ingest/status'));
         setProgress(state.completed_shards, state.total_shards, state.imported_rows);
-        if (state.status === 'complete') {
-          setResults(
-            '<p class="muted">Catalog ready. Try searches like jeroen, maniacs, ' +
-            'hubbard, or galway.</p>'
-          );
+        const status = await readResponse(await fetch('/catalog/status'));
+        document.getElementById('summary').textContent =
+          status.d1_tracks + ' total tracks are currently imported into D1.';
+        if (Number(status.d1_tracks || 0) > 1000) {
+          setReadiness('Full catalog ready');
+          setStep('step2', 'done');
+        } else if (Number(status.d1_tracks || 0) > 0) {
+          setReadiness(status.d1_tracks + ' sample rows');
+        } else {
+          setReadiness('Not imported');
         }
       } catch {}
     }
-    refreshStatus();
-    async function runAll() {
-      const runButton = document.getElementById('runAll');
-      runButton.disabled = true;
-      runButton.className = 'running';
-      runButton.textContent = '▶ Running dataset checks...';
-      try {
-        await step('step1', archiveVerify);
-        await step('step2', ingest);
-        await step('step3', catalogVerify);
-        await step('step4', shardedIngest);
-        await step('step5', () => search(document.getElementById('q').value || 'maniacs'));
-        runButton.className = 'done';
-        runButton.textContent = '✓ Dataset ready — arbitrary D1 catalog search is enabled';
-      } catch (error) {
-        runButton.className = 'failed';
-        runButton.textContent = '✗ Setup failed — see output';
-        document.getElementById('output').textContent = String(error);
-      } finally {
-        runButton.disabled = false;
-      }
+    async function catalogVerify() {
+      return await show(await fetch('/catalog/verify-r2?key=hvsc%2F84%2Fcatalog%2Ftracks.jsonl'));
     }
+    async function ingestRelease() {
+      return await show(await fetch('/ingest-fixture', { method: 'POST' }));
+    }
+    async function archiveVerify() {
+      return await show(await fetch('/archive/verify'));
+    }
+    async function archiveIngest() {
+      output('Streaming ~80 MiB archive to local R2...');
+      return await show(await fetch('/archive/ingest', { method: 'POST' }));
+    }
+    document.getElementById('searchForm').addEventListener('submit', event => {
+      event.preventDefault();
+      step('step3', () => search(document.getElementById('q').value));
+    });
+    refreshStatus();
   </script>
 </body>
 </html>"""

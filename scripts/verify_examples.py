@@ -453,7 +453,7 @@ EXAMPLES = {
     "examples/full-apps/hvsc-ai-data-search": Example(
         "examples/full-apps/hvsc-ai-data-search",
         [
-            Check("/", contains="HVSC AI/data pipeline"),
+            Check("/", contains="HVSC full-catalog search"),
             Check("/ingest-fixture", method="POST", contains="HVSC #84"),
             Check("/search?q=sid", contains="HVSC #84"),
             Check("/tracks?q=jeroen", contains="d1_tracks"),
@@ -594,25 +594,15 @@ def verify_inline_browser_scripts(port: int, paths: list[str]) -> None:
 
 
 def verify_hvsc_degraded_full_catalog_flow(port: int) -> None:
-    """Exercise the full-catalog button's missing-shards branch.
-
-    The local verifier usually starts with an empty local R2 bucket. That should
-    not make the app's primary browser flow fail with a raw "no shards found"
-    error; it should degrade to the bundled sample catalog and leave search
-    usable.
-    """
+    """Verify the full-catalog browser flow and its setup guidance."""
     verify_inline_browser_scripts(port, ["/"])
     start = request_json(port, Check("/ingest/start", method="POST"))
     if start.get("status") == "error" and "no shards found" in str(start.get("error", "")):
-        sample = request_json(port, Check("/catalog/ingest-sample", method="POST"))
-        if int(sample.get("tracks", 0)) <= 0:
-            raise AssertionError(f"HVSC sample fallback imported no tracks: {sample!r}")
-        tracks = request_json(port, Check("/tracks?q=maniacs"))
-        if not tracks.get("ready"):
-            raise AssertionError(f"HVSC search was not ready after sample fallback: {tracks!r}")
-        if not tracks.get("tracks"):
-            raise AssertionError(f"HVSC sample fallback returned no search results: {tracks!r}")
-        print("✓ HVSC missing-shards path falls back to searchable sample catalog")
+        html_body = request_text(port, Check("/"))
+        setup_command = "scripts/hvsc_upload_catalog.py xampler-datasets --local"
+        if setup_command not in html_body:
+            raise AssertionError("HVSC UI did not explain how to seed full catalog shards")
+        print("✓ HVSC missing-shards path gives full-catalog setup guidance")
         return
 
     if start.get("status") not in {"running", "complete"}:
