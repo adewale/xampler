@@ -104,7 +104,7 @@ Prefer product-qualified nouns when a generic Cloudflare word would collide acro
 Xampler uses modern Python typing to make examples teachable and checkable:
 
 - `dataclass(frozen=True)` for immutable request/result payloads.
-- `Protocol` for swappable real/demo transports and Runnable-style chains.
+- `Protocol` for capability boundaries shared by real/demo transports and Runnable-style chains; see [`protocols.md`](protocols.md).
 - `TypeVar` and generic helpers in `xampler.streaming` for typed streams and batches.
 - `Literal` for finite states and event kinds such as `"running"`, `"complete"`, `"token"`, `"tool_call"`.
 - `Any` is kept at the JavaScript/Cloudflare boundary; business logic should convert to typed Python values quickly.

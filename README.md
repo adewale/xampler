@@ -150,6 +150,7 @@ Start with [`docs/index.md`](docs/index.md). The highest-value user-facing docs 
 - [`docs/api/library-surface.md`](docs/api/library-surface.md)
 - [`docs/api/reference.md`](docs/api/reference.md)
 - [`docs/api/testability.md`](docs/api/testability.md)
+- [`docs/api/protocols.md`](docs/api/protocols.md)
 - [`docs/api/composition-and-operations.md`](docs/api/composition-and-operations.md)
 - [`docs/api/unified-api-surface.md`](docs/api/unified-api-surface.md)
 - [`docs/api/primitives-api-surface.md`](docs/api/primitives-api-surface.md)

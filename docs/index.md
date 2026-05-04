@@ -7,6 +7,7 @@ Long-term docs are grouped by purpose. Older planning snapshots live in [`archiv
 - [`api/library-surface.md`](api/library-surface.md) — importable library modules and stability levels.
 - [`api/reference.md`](api/reference.md) — concise API reference and copyable imports.
 - [`api/testability.md`](api/testability.md) — how to write red-green-refactor tests with fake bindings and `Demo*` clients.
+- [`api/protocols.md`](api/protocols.md) — why real/demo services share capability Protocols instead of inheritance.
 - [`api/composition-and-operations.md`](api/composition-and-operations.md) — composition, progress, checkpoint, retry, DLQ, workflow status, observability, and copyable pipeline patterns.
 - [`api/unified-api-surface.md`](api/unified-api-surface.md) — the shared Xampler API shape.
 - [`api/primitives-api-surface.md`](api/primitives-api-surface.md) — primitive coverage and Pythonic API matrix.
