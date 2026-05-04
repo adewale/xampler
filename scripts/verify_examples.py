@@ -525,9 +525,55 @@ def verify(example: Example, port: int, timeout: float) -> int:
             print(f"✓ {check.method} {check.path}")
         if example.name == "examples/state-events/durable-object-chatroom":
             verify_chatroom_websocket(port)
+        if example.name == "examples/full-apps/hvsc-ai-data-search":
+            verify_hvsc_degraded_full_catalog_flow(port)
         return 0
     finally:
         terminate_process_group(proc)
+
+
+def request_json(port: int, check: Check) -> dict[str, object]:
+    request = urllib.request.Request(
+        f"http://127.0.0.1:{port}{check.path}",
+        data=check.body,
+        method=check.method,
+        headers=check.headers,
+    )
+    with urllib.request.urlopen(request, timeout=30) as response:
+        body = response.read().decode("utf-8", errors="replace")
+    data = json.loads(body)
+    if not isinstance(data, dict):
+        raise AssertionError(f"{check.path}: expected JSON object, got {data!r}")
+    return data
+
+
+def verify_hvsc_degraded_full_catalog_flow(port: int) -> None:
+    """Exercise the full-catalog button's missing-shards branch.
+
+    The local verifier usually starts with an empty local R2 bucket. That should
+    not make the app's primary browser flow fail with a raw "no shards found"
+    error; it should degrade to the bundled sample catalog and leave search
+    usable.
+    """
+    start = request_json(port, Check("/ingest/start", method="POST"))
+    if start.get("status") == "error" and "no shards found" in str(start.get("error", "")):
+        sample = request_json(port, Check("/catalog/ingest-sample", method="POST"))
+        if int(sample.get("tracks", 0)) <= 0:
+            raise AssertionError(f"HVSC sample fallback imported no tracks: {sample!r}")
+        tracks = request_json(port, Check("/tracks?q=maniacs"))
+        if not tracks.get("ready"):
+            raise AssertionError(f"HVSC search was not ready after sample fallback: {tracks!r}")
+        if not tracks.get("tracks"):
+            raise AssertionError(f"HVSC sample fallback returned no search results: {tracks!r}")
+        print("✓ HVSC missing-shards path falls back to searchable sample catalog")
+        return
+
+    if start.get("status") not in {"running", "complete"}:
+        raise AssertionError(f"Unexpected HVSC ingest/start state: {start!r}")
+    total_shards = int(start.get("total_shards", 0))
+    if total_shards <= 0:
+        raise AssertionError(f"HVSC full-catalog state has no shards: {start!r}")
+    print("✓ HVSC full-catalog shard ingest can start")
 
 
 def verify_chatroom_websocket(port: int) -> None:

@@ -320,7 +320,7 @@ class HvscPipeline:
         return await self.db.get_ingest_state()
 
     async def ingest_sample_catalog(self) -> dict[str, Any]:
-        await self.r2.write_text(
+        await self.r2.put_text(
             HVSC_SAMPLE_CATALOG_KEY,
             HVSC_SAMPLE_CATALOG_JSONL,
             content_type="application/x-ndjson",
@@ -338,7 +338,8 @@ class HvscPipeline:
             return {"key": key, "tracks": 0, "error": "catalog object not found in R2"}
 
         count = 0
-        records = JsonlReader(self.r2.byte_stream(key).iter_lines()).records()
+        stream = await self.r2.byte_stream(key)
+        records = JsonlReader(stream.iter_lines()).records()
         async for record in records:
             await self.db.save_track(Track(**record))
             count += 1
