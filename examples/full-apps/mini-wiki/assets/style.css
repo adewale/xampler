@@ -17,7 +17,13 @@ pre { background: #8882; padding: 1rem; overflow: auto; border-radius: .5rem; }
 .syntax { border: 1px solid #9994; padding: .75rem; border-radius: .5rem; margin-top: 1rem; }
 .search-results mark { background: #fde68a; color: #111827; padding: 0 .15rem; }
 .snippet { margin-top: .25rem; }
-.diff { white-space: pre-wrap; }
+.flash { border: 1px solid #16a34a66; background: #dcfce7; color: #14532d; padding: .6rem .75rem; border-radius: .5rem; }
+.edit-meta { display: grid; grid-template-columns: 1fr 1fr; gap: 1rem; }
+.diff { width: 100%; border-collapse: collapse; font-family: ui-monospace, monospace; font-size: .92rem; }
+.diff td { padding: .15rem .4rem; border-bottom: 1px solid #9992; vertical-align: top; }
+.diff td:first-child { width: 2rem; text-align: center; color: #666; }
+.diff-add { background: #dcfce7; }
+.diff-del { background: #fee2e2; }
 .revision { border-top: 1px solid #9994; padding-top: 1rem; margin-top: 1rem; }
 .muted { color: #666; }
-@media (max-width: 760px) { header, .wiki-layout { display: block; } nav { margin-top: .5rem; } .panel { margin-top: 1rem; } }
+@media (max-width: 760px) { header, .wiki-layout, .edit-meta { display: block; } nav { margin-top: .5rem; } .panel { margin-top: 1rem; } }

@@ -382,7 +382,7 @@ EXAMPLES = {
             Check("/wanted", contains="Project Ideas"),
             Check("/wiki/page-links", contains="Backlinks"),
             Check("/wiki/home-page/edit", contains="Syntax guide"),
-            Check("/wiki/project-ideas", contains="Save revision"),
+            Check("/wiki/project-ideas", contains="Create page"),
             Check(
                 "/dev/render",
                 method="POST",
@@ -399,10 +399,11 @@ EXAMPLES = {
                     b"&author=Ada&message=update"
                 ),
                 headers={"content-type": "application/x-www-form-urlencoded"},
-                contains="D1Search",
+                contains="Revision saved.",
             ),
-            Check("/wiki/home-page/history", contains="Revert to r1"),
+            Check("/wiki/home-page/history", contains="diff-add"),
             Check("/search?q=D1Search", contains="<mark>D1Search</mark>"),
+            Check("/search?q=NoSuchPage", contains="Create No Such Page"),
             Check("/dev/cached/wiki/home-page", contains="D1Search"),
             Check("/dev/events", contains="http.request"),
             Check("/export.jsonl", contains='"revision":2'),
