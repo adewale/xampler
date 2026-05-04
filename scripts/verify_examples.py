@@ -15,6 +15,7 @@ import os
 import signal
 import subprocess
 import sys
+import tempfile
 import time
 import urllib.error
 import urllib.request
@@ -532,7 +533,7 @@ def verify(example: Example, port: int, timeout: float) -> int:
         terminate_process_group(proc)
 
 
-def request_json(port: int, check: Check) -> dict[str, object]:
+def request_text(port: int, check: Check) -> str:
     request = urllib.request.Request(
         f"http://127.0.0.1:{port}{check.path}",
         data=check.body,
@@ -540,11 +541,42 @@ def request_json(port: int, check: Check) -> dict[str, object]:
         headers=check.headers,
     )
     with urllib.request.urlopen(request, timeout=30) as response:
-        body = response.read().decode("utf-8", errors="replace")
+        return response.read().decode("utf-8", errors="replace")
+
+
+def request_json(port: int, check: Check) -> dict[str, object]:
+    body = request_text(port, check)
     data = json.loads(body)
     if not isinstance(data, dict):
         raise AssertionError(f"{check.path}: expected JSON object, got {data!r}")
     return data
+
+
+def verify_hvsc_index_script_compiles(port: int) -> None:
+    html_body = request_text(port, Check("/"))
+    scripts: list[str] = []
+    marker = "<script>"
+    end_marker = "</script>"
+    offset = 0
+    while True:
+        start = html_body.find(marker, offset)
+        if start < 0:
+            break
+        end = html_body.find(end_marker, start)
+        if end < 0:
+            raise AssertionError("HVSC index has an unterminated inline script")
+        scripts.append(html_body[start + len(marker) : end])
+        offset = end + len(end_marker)
+    if not scripts:
+        raise AssertionError("HVSC index has no inline script to drive the demo button")
+    with tempfile.NamedTemporaryFile("w", suffix=".js", delete=False) as script_file:
+        script_file.write("\n".join(scripts))
+        script_path = script_file.name
+    try:
+        subprocess.run(["node", "--check", script_path], check=True)
+    finally:
+        Path(script_path).unlink(missing_ok=True)
+    print("✓ HVSC index JavaScript compiles")
 
 
 def verify_hvsc_degraded_full_catalog_flow(port: int) -> None:
@@ -555,6 +587,7 @@ def verify_hvsc_degraded_full_catalog_flow(port: int) -> None:
     error; it should degrade to the bundled sample catalog and leave search
     usable.
     """
+    verify_hvsc_index_script_compiles(port)
     start = request_json(port, Check("/ingest/start", method="POST"))
     if start.get("status") == "error" and "no shards found" in str(start.get("error", "")):
         sample = request_json(port, Check("/catalog/ingest-sample", method="POST"))

@@ -639,7 +639,7 @@ def index_html() -> str:
       if (state.error) {
         if (String(state.error).includes('no shards found')) {
           output(
-            state.error + '\n\n' +
+            state.error + '\\n\\n' +
             'No prebuilt full-catalog shards are present in local R2, so the ' +
             'playground is importing the bundled sample catalog instead. Run ' +
             '`uv run python scripts/hvsc_full_pipeline.py --bucket xampler-datasets` ' +
