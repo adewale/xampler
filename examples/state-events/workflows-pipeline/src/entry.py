@@ -74,37 +74,50 @@ async def timeline(db: D1Database, instance_id: str) -> dict[str, Any]:
 
 
 def html_page(body: str) -> Response:
-    return Response(
-        f"""<!doctype html>
+    page = """<!doctype html>
 <meta name=viewport content="width=device-width, initial-scale=1">
 <title>Workflow Timeline · Xampler</title>
 <style>
-body{{font:16px/1.55 system-ui;max-width:980px;margin:2rem auto;padding:0 1rem;color:#17202a}}
-header{{display:flex;justify-content:space-between;gap:1rem;align-items:baseline;border-bottom:1px solid #d0d7de;margin-bottom:1rem}}
-a{{color:#2563eb}}button{{font:inherit;padding:.5rem .8rem;border:1px solid #2563eb;border-radius:.5rem;background:#2563eb;color:white;cursor:pointer}}
-.grid{{display:grid;grid-template-columns:repeat(auto-fit,minmax(240px,1fr));gap:1rem}}.card{{border:1px solid #d0d7de;border-radius:.75rem;padding:1rem;background:#f8fafc}}
-pre{{background:#0d1117;color:#e6edf3;padding:1rem;border-radius:.75rem;overflow:auto}}.pill{{display:inline-block;background:#dcfce7;color:#14532d;border-radius:999px;padding:.1rem .5rem}}
+*{box-sizing:border-box}body{font:16px/1.55 system-ui,-apple-system,Segoe UI,sans-serif;max-width:1120px;margin:0 auto;padding:2rem 1rem;color:#17202a;background:linear-gradient(180deg,#f8fafc,#fff 20rem)}a{color:#2563eb}h1{font-size:clamp(2.1rem,5vw,3.2rem);line-height:1.04;margin:.1rem 0 .75rem;letter-spacing:-.04em}h2{font-size:1.05rem;margin:0 0 .45rem}.eyebrow{font-size:.78rem;text-transform:uppercase;letter-spacing:.08em;color:#64748b;font-weight:800}.hero{display:grid;grid-template-columns:minmax(0,1fr) 300px;gap:1.5rem;align-items:end;border-bottom:1px solid #d0d7de;padding-bottom:1.3rem;margin-bottom:1.4rem}.lede{font-size:1.1rem;color:#334155;max-width:72ch}.card,.step,.panel{border:1px solid #d0d7de;border-radius:16px;background:rgba(255,255,255,.9);box-shadow:0 8px 24px rgba(15,23,42,.05)}.card{padding:1rem}.layout{display:grid;grid-template-columns:340px minmax(0,1fr);gap:1.4rem;align-items:start}.workflow{position:sticky;top:1rem;display:grid;gap:1rem}.step{padding:1rem}.num{display:inline-grid;place-items:center;width:1.65rem;height:1.65rem;border-radius:999px;background:#2563eb;color:white;font-weight:800;font-size:.85rem;margin-right:.45rem}.muted{color:#64748b}.button-row{display:flex;gap:.6rem;flex-wrap:wrap;margin-top:.8rem}button{font:inherit;padding:.55rem .8rem;border:1px solid #2563eb;border-radius:10px;background:#2563eb;color:white;cursor:pointer;font-weight:650}button.secondary{background:white;color:#2563eb}button:disabled{opacity:.65;cursor:wait}.panel{overflow:hidden}.panel-head{display:flex;justify-content:space-between;gap:1rem;align-items:center;padding:1rem;border-bottom:1px solid #e2e8f0;background:#f8fafc}.status{display:inline-flex;gap:.45rem;align-items:center;border:1px solid #cbd5e1;border-radius:999px;padding:.3rem .55rem;background:white;color:#475569;font-size:.86rem}.dot{width:.55rem;height:.55rem;border-radius:999px;background:#94a3b8}.status.running .dot{background:#2563eb}.status.ok .dot{background:#16a34a}.status.error .dot{background:#dc2626}.timeline{padding:1rem;display:grid;gap:.75rem}.event{display:grid;grid-template-columns:1.2rem minmax(0,1fr);gap:.75rem;align-items:start}.event-dot{width:.9rem;height:.9rem;border-radius:999px;background:#16a34a;margin-top:.35rem}.event-card{border:1px solid #e2e8f0;border-radius:12px;padding:.85rem;background:white}.event-card strong{display:block}.chips{display:flex;gap:.4rem;flex-wrap:wrap;margin-top:.45rem}.chip{border-radius:999px;background:#dcfce7;color:#14532d;padding:.14rem .5rem;font-size:.84rem}.metrics{display:grid;grid-template-columns:repeat(3,minmax(0,1fr));gap:.75rem;padding:1rem;border-bottom:1px solid #e2e8f0}.metric{border:1px solid #e2e8f0;border-radius:12px;padding:.8rem;background:white}.metric strong{display:block;font-size:1.35rem}pre{margin:0;padding:1rem;background:#0d1117;color:#e6edf3;overflow:auto;white-space:pre-wrap;max-height:24rem}.raw{border-top:1px solid #e2e8f0}.raw summary{cursor:pointer;padding:.75rem 1rem;background:#f8fafc}@media(max-width:860px){body{padding:1rem}.hero,.layout{display:block}.workflow{position:static;margin-bottom:1rem}.metrics{grid-template-columns:1fr}}
 </style>
-<header><h1>Workflow Timeline</h1><nav><a href=/demo/start>JSON demo</a></nav></header>
-{body}""",
-        headers={"content-type": "text/html; charset=utf-8"},
-    )
+__BODY__"""
+    return Response(page.replace("__BODY__", body), headers={"content-type": "text/html; charset=utf-8"})
 
 
 def index_html() -> Response:
     return html_page(
         """
-<section class=grid>
-  <article class=card><h2>Start demo workflow</h2><p>Runs a deterministic local workflow and records ordered D1 timeline events.</p><button id=start>Start demo</button></article>
-  <article class=card><h2>Timeline</h2><p>Each step stores state, checkpoint, details, and timestamp.</p><p><span class=pill>D1 sidecar</span></p></article>
-</section>
-<pre id=out>Click Start demo.</pre>
+<header class=hero><div><p class=eyebrow>State and events example</p><h1>Workflow Timeline</h1><p class=lede>Start a deterministic local workflow, record each durable step into D1, and inspect the timeline as a product-style status page instead of raw endpoint JSON.</p></div><aside class=card><strong>What this proves</strong><p class=muted>Workers Workflows orchestration plus a D1 sidecar for searchable, auditable progress events.</p></aside></header>
+<main class=layout><aside class=workflow><section class=step><h2><span class=num>1</span>Start local demo</h2><p class=muted>Creates a stable demo instance and writes three timeline events.</p><div class=button-row><button id=start>Start demo workflow</button></div></section><section class=step><h2><span class=num>2</span>Inspect status</h2><p class=muted>Fetches workflow status and the D1 timeline for the current instance.</p><div class=button-row><button id=refresh class=secondary>Refresh timeline</button><a href=/demo/start>JSON endpoint</a></div></section></aside><section class=panel><div class=panel-head><div><h2>Timeline dashboard</h2><p class=muted id=instance>Instance: none yet</p></div><span id=status class=status><span class=dot></span><span>Ready</span></span></div><div class=metrics><div class=metric><span class=muted>Steps</span><strong id=steps>—</strong></div><div class=metric><span class=muted>State</span><strong id=state>—</strong></div><div class=metric><span class=muted>Checkpoint</span><strong id=checkpoint>—</strong></div></div><div id=timeline class=timeline><div class=event-card><strong>Start with “Start demo workflow”.</strong><p class=muted>The page uses AJAX to run the same verified routes without losing context.</p></div></div><details class=raw><summary>Raw JSON</summary><pre id=out>{"hint":"Click Start demo workflow."}</pre></details></section></main>
 <script>
-document.querySelector('#start').onclick = async () => {
-  const started = await (await fetch('/demo/start')).json();
-  const timeline = await (await fetch('/timeline/' + started.instance_id)).json();
+let currentInstance = 'demo-instance';
+const statusEl = document.querySelector('#status');
+function setStatus(kind, text){ statusEl.className = 'status ' + kind; statusEl.querySelector('span:last-child').textContent = text; }
+function esc(value){ return String(value ?? '—').replace(/[&<>"']/g, c => ({'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;',"'":'&#39;'}[c])); }
+function render(timeline, started){
+  document.querySelector('#instance').textContent = 'Instance: ' + timeline.instance_id;
+  document.querySelector('#steps').textContent = timeline.count;
+  const last = timeline.events[timeline.events.length - 1] || {};
+  document.querySelector('#state').textContent = last.state || started?.status || 'complete';
+  document.querySelector('#checkpoint').textContent = last.checkpoint || '—';
+  document.querySelector('#timeline').innerHTML = timeline.events.map(e => '<div class=event><span class=event-dot></span><div class=event-card><strong>' + esc(e.step) + '</strong><p class=muted>' + esc(e.created_at) + '</p><div class=chips><span class=chip>' + esc(e.state) + '</span><span class=chip>' + esc(e.checkpoint) + '</span></div></div></div>').join('');
   document.querySelector('#out').textContent = JSON.stringify({started, timeline}, null, 2);
-};
+}
+async function loadTimeline(startFirst){
+  setStatus('running', 'Running…');
+  try {
+    const started = startFirst ? await (await fetch('/demo/start')).json() : null;
+    if (started) currentInstance = started.instance_id;
+    const timeline = await (await fetch('/timeline/' + currentInstance)).json();
+    render(timeline, started);
+    setStatus('ok', 'Complete');
+  } catch (err) {
+    document.querySelector('#out').textContent = JSON.stringify({error:String(err)}, null, 2);
+    setStatus('error', 'Error');
+  }
+}
+document.querySelector('#start').onclick = () => loadTimeline(true);
+document.querySelector('#refresh').onclick = () => loadTimeline(false);
 </script>
 """
     )
