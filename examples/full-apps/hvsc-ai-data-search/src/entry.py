@@ -635,7 +635,29 @@ def index_html() -> str:
       let state = await show(await fetch('/ingest/start', { method: 'POST' }), {
         compactIngest: true,
       });
-      if (state.error) throw new Error(state.error);
+      if (state.error) {
+        if (String(state.error).includes('no shards found')) {
+          output(
+            state.error + '\n\n' +
+            'No prebuilt full-catalog shards are present in local R2, so the ' +
+            'playground is importing the bundled sample catalog instead. Run ' +
+            '`uv run python scripts/hvsc_full_pipeline.py --bucket xampler-datasets` ' +
+            'from the repo root to prepare the full shard set.'
+          );
+          const sample = await catalogSample();
+          const rows = Number(sample.tracks || 0);
+          setProgress(1, 1, rows);
+          return {
+            status: 'complete',
+            fallback: 'sample-catalog',
+            total_shards: 1,
+            completed_shards: 1,
+            imported_rows: rows,
+            sample,
+          };
+        }
+        throw new Error(state.error);
+      }
       setProgress(state.completed_shards, state.total_shards, state.imported_rows);
       let lastRenderedShard = state.completed_shards;
       while (state.status !== 'complete') {
