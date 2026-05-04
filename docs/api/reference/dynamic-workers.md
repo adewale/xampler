@@ -1,6 +1,6 @@
 # Dynamic Workers
 
-Experimental helpers live in `xampler.experimental.dynamic_workers` because Cloudflare Dynamic Workers / Worker Loader is beta-gated for deployed usage.
+Experimental helpers live in `xampler.experimental.dynamic_workers` because Cloudflare Dynamic Workers / Worker Loader is beta-gated for deployed usage. The examples intentionally take inspiration from [`irvinebroque/dynamic-workers-python`](https://github.com/irvinebroque/dynamic-workers-python): a Python host Worker builds a Python child `WorkerCode` object and invokes that child through a `worker_loaders` binding.
 
 ```python
 from xampler.experimental.dynamic_workers import (
@@ -16,6 +16,12 @@ from xampler.experimental.dynamic_workers import (
 
 ```python
 code = python_fetch_worker(source, compatibility_date="2026-05-01")
+
+# One-off flow, closest to the small reference implementation.
+worker = env.LOADER.load(code.to_raw())
+response = await worker.getEntrypoint().fetch(request)
+
+# Cache-friendly flow used by generated-code playgrounds.
 worker = env.LOADER.get(stable_worker_id("demo", code), lambda: code.to_raw())
 response = await worker.getEntrypoint().fetch(request)
 ```

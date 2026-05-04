@@ -1,6 +1,6 @@
 # Python by Example Playground
 
-A Cloudflare Python Workers playground for [`pycollege/python-by-example`](https://github.com/pycollege/python-by-example), inspired by [Go by Example](https://gobyexample.com/).
+A Cloudflare Python Workers playground for [`pycollege/python-by-example`](https://github.com/pycollege/python-by-example), inspired by [Go by Example](https://gobyexample.com/) and the Python host/child Dynamic Worker shape from [`irvinebroque/dynamic-workers-python`](https://github.com/irvinebroque/dynamic-workers-python).
 
 Every vendored Python source example gets a page with:
 
@@ -40,13 +40,14 @@ Open <http://localhost:8787>.
 
 ## How execution works
 
-The parent Worker is Python. When you press **Run Python**, it creates a Dynamic Python Worker module that embeds the edited code, captures `stdout`/`stderr`, and returns JSON.
+The parent Worker is Python. When you press **Run Python**, it creates a Dynamic Python Worker module that embeds the edited code, captures `stdout`/`stderr`, and returns JSON. Like the reference repo, the child Worker source is assembled as Python source in the host and passed to the Worker Loader as a `WorkerCode` object. Unlike the minimal reference, the playground uses `LOADER.get(id, callback)` instead of one-off `LOADER.load(...)` so edited snippets get stable cache-friendly worker ids.
 
 The Dynamic Worker is configured with:
 
 - `globalOutbound = null` so examples cannot use network access by default;
 - small CPU/subrequest limits;
-- an ID derived from the generated code for cache-friendly reloads.
+- an ID derived from the generated code for cache-friendly reloads;
+- an optional Outbound Worker gateway for the HTTP Client example.
 
 This requires the Dynamic Workers / Worker Loader binding:
 

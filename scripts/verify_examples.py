@@ -430,6 +430,7 @@ EXAMPLES = {
             Check("/", contains="Dynamic Workers from a Python Worker"),
             Check("/worker-code", contains="worker.py"),
             Check("/run", contains="Dynamic Python Worker loaded by Python"),
+            Check("/forward", contains="hello via LOADER.load one-off Python Dynamic Worker"),
             Check("/blocked-network", contains="blocked:"),
         ],
         needs_setup="Dynamic Workers are local-first and beta-gated for deployed usage.",
