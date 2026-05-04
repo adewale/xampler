@@ -1,6 +1,8 @@
+# ruff: noqa: E501
 from __future__ import annotations
 
 import asyncio
+import html
 import json
 from datetime import UTC, datetime
 from typing import Any
@@ -71,10 +73,50 @@ async def timeline(db: D1Database, instance_id: str) -> dict[str, Any]:
     return {"instance_id": instance_id, "events": events, "count": len(events)}
 
 
+def html_page(body: str) -> Response:
+    return Response(
+        f"""<!doctype html>
+<meta name=viewport content="width=device-width, initial-scale=1">
+<title>Workflow Timeline · Xampler</title>
+<style>
+body{{font:16px/1.55 system-ui;max-width:980px;margin:2rem auto;padding:0 1rem;color:#17202a}}
+header{{display:flex;justify-content:space-between;gap:1rem;align-items:baseline;border-bottom:1px solid #d0d7de;margin-bottom:1rem}}
+a{{color:#2563eb}}button{{font:inherit;padding:.5rem .8rem;border:1px solid #2563eb;border-radius:.5rem;background:#2563eb;color:white;cursor:pointer}}
+.grid{{display:grid;grid-template-columns:repeat(auto-fit,minmax(240px,1fr));gap:1rem}}.card{{border:1px solid #d0d7de;border-radius:.75rem;padding:1rem;background:#f8fafc}}
+pre{{background:#0d1117;color:#e6edf3;padding:1rem;border-radius:.75rem;overflow:auto}}.pill{{display:inline-block;background:#dcfce7;color:#14532d;border-radius:999px;padding:.1rem .5rem}}
+</style>
+<header><h1>Workflow Timeline</h1><nav><a href=/demo/start>JSON demo</a></nav></header>
+{body}""",
+        headers={"content-type": "text/html; charset=utf-8"},
+    )
+
+
+def index_html() -> Response:
+    return html_page(
+        """
+<section class=grid>
+  <article class=card><h2>Start demo workflow</h2><p>Runs a deterministic local workflow and records ordered D1 timeline events.</p><button id=start>Start demo</button></article>
+  <article class=card><h2>Timeline</h2><p>Each step stores state, checkpoint, details, and timestamp.</p><p><span class=pill>D1 sidecar</span></p></article>
+</section>
+<pre id=out>Click Start demo.</pre>
+<script>
+document.querySelector('#start').onclick = async () => {
+  const started = await (await fetch('/demo/start')).json();
+  const timeline = await (await fetch('/timeline/' + started.instance_id)).json();
+  document.querySelector('#out').textContent = JSON.stringify({started, timeline}, null, 2);
+};
+</script>
+"""
+    )
+
+
 class Default(WorkerEntrypoint):
     async def fetch(self, request: Any) -> Response:
         url = urlparse(str(request.url))
         db = D1Database(self.env.DB)
+
+        if url.path == "/":
+            return index_html()
 
         if url.path == "/demo/start":
             started = await DemoWorkflowService().start()
@@ -97,4 +139,4 @@ class Default(WorkerEntrypoint):
             instance_id = url.path.removeprefix("/status/")
             return Response.json(jsonable(await service.status(instance_id)))
 
-        return Response("Use /start, then /status/<workflow_id>. Demo: /demo/start.\n")
+        return html_page(f"<h2>Not found</h2><p>{html.escape(url.path)}</p>")

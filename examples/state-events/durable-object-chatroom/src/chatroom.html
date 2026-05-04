@@ -1,23 +1,47 @@
 <!doctype html>
 <html lang="en">
-  <head><meta charset="utf-8"><title>Python Workers Chatroom</title></head>
-  <body>
-    <h1>Python Workers Chatroom</h1>
-    <input id="name" placeholder="name" value="Pythonista">
-    <input id="text" placeholder="message">
-    <button id="send">Send</button>
-    <pre id="log"></pre>
-    <script>
-      const room = location.hash.slice(1) || 'lobby';
-      const ws = new WebSocket(`${location.origin.replace('http', 'ws')}/room/${room}`);
-      const log = document.querySelector('#log');
-      ws.onmessage = event => { log.textContent += event.data + '\n'; };
-      document.querySelector('#send').onclick = () => {
-        ws.send(JSON.stringify({
-          username: document.querySelector('#name').value,
-          text: document.querySelector('#text').value
-        }));
-      };
-    </script>
-  </body>
+<head>
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1">
+  <title>Python Workers Chatroom</title>
+  <style>
+    body{font:16px/1.55 system-ui;max-width:980px;margin:2rem auto;padding:0 1rem;color:#17202a}
+    header{border-bottom:1px solid #d0d7de;margin-bottom:1rem}.grid{display:grid;grid-template-columns:minmax(0,1fr) 240px;gap:1rem}.card{border:1px solid #d0d7de;border-radius:.75rem;padding:1rem;background:#f8fafc}
+    input{box-sizing:border-box;width:100%;font:inherit;padding:.55rem;margin:.25rem 0 .75rem}button{font:inherit;padding:.55rem .9rem;border:1px solid #2563eb;border-radius:.5rem;background:#2563eb;color:white;cursor:pointer}
+    #log{background:#0d1117;color:#e6edf3;padding:1rem;border-radius:.75rem;min-height:20rem;overflow:auto;white-space:pre-wrap}.pill{display:inline-block;background:#dcfce7;color:#14532d;border-radius:999px;padding:.1rem .5rem;margin:.1rem}@media(max-width:760px){.grid{display:block}.card{margin-bottom:1rem}}
+  </style>
+</head>
+<body>
+  <header><h1>Python Workers Chatroom</h1><p>Durable Object room, WebSocket broadcast, presence, and last-message replay.</p></header>
+  <main class="grid">
+    <section class="card">
+      <label>Name <input id="name" placeholder="name" value="Pythonista"></label>
+      <label>Message <input id="text" placeholder="message" autofocus></label>
+      <button id="send">Send</button>
+      <p><span class="pill">room: <span id="room"></span></span> <span class="pill" id="state">connecting</span></p>
+      <pre id="log"></pre>
+    </section>
+    <aside class="card"><h2>Try it</h2><p>Open this page in two tabs. Messages broadcast through one Durable Object instance.</p><p>Change rooms with <code>#room-name</code>.</p><p><a href="/room/lobby/dev/export">Export dev transcript</a></p></aside>
+  </main>
+  <script>
+    const room = location.hash.slice(1) || 'lobby';
+    document.querySelector('#room').textContent = room;
+    const ws = new WebSocket(`${location.origin.replace('http', 'ws')}/room/${room}`);
+    const log = document.querySelector('#log');
+    const state = document.querySelector('#state');
+    ws.onopen = () => { state.textContent = 'connected'; };
+    ws.onclose = () => { state.textContent = 'closed'; };
+    ws.onmessage = event => {
+      const data = JSON.parse(event.data);
+      log.textContent += JSON.stringify(data, null, 2) + '\n';
+      log.scrollTop = log.scrollHeight;
+    };
+    function send(){
+      ws.send(JSON.stringify({ username: document.querySelector('#name').value, text: document.querySelector('#text').value }));
+      document.querySelector('#text').value = '';
+    }
+    document.querySelector('#send').onclick = send;
+    document.querySelector('#text').addEventListener('keydown', e => { if (e.key === 'Enter') send(); });
+  </script>
+</body>
 </html>

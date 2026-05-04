@@ -1,3 +1,4 @@
+# ruff: noqa: E501
 from __future__ import annotations
 
 import json
@@ -130,11 +131,35 @@ class AgentDurableObject(DurableObject):
         return Response.json(asdict(result))
 
 
+def index_html() -> Response:
+    return Response(
+        """<!doctype html>
+<meta name=viewport content="width=device-width, initial-scale=1">
+<title>Agent Tools · Xampler</title>
+<style>
+body{font:16px/1.55 system-ui;max-width:980px;margin:2rem auto;padding:0 1rem;color:#17202a}header{border-bottom:1px solid #d0d7de;margin-bottom:1rem}textarea{width:100%;min-height:7rem;font:inherit}button{font:inherit;padding:.5rem .8rem;border:1px solid #2563eb;border-radius:.5rem;background:#2563eb;color:white;cursor:pointer}.grid{display:grid;grid-template-columns:1fr 1fr;gap:1rem}.card{border:1px solid #d0d7de;border-radius:.75rem;padding:1rem;background:#f8fafc}pre{background:#0d1117;color:#e6edf3;padding:1rem;border-radius:.75rem;overflow:auto}.tool{display:inline-block;background:#dbeafe;color:#1e3a8a;border-radius:999px;padding:.1rem .5rem;margin:.1rem}@media(max-width:760px){.grid{display:block}.card{margin-bottom:1rem}}
+</style>
+<header><h1>Deterministic Agent Tools</h1><p>Try calculator, search, and weather tools without an LLM dependency.</p></header>
+<section class=grid><article class=card><h2>Prompt</h2><textarea id=message>calculate 2+3 and search D1</textarea><p><button id=run>Run agent</button></p><p><span class=tool>calculator.eval</span><span class=tool>docs.search</span><span class=tool>weather.lookup</span></p></article><article class=card><h2>Transcript</h2><pre id=out>Ready.</pre></article></section>
+<script>
+document.querySelector('#run').onclick = async () => {
+ const message = encodeURIComponent(document.querySelector('#message').value);
+ const data = await (await fetch('/demo?message=' + message)).json();
+ document.querySelector('#out').textContent = JSON.stringify(data, null, 2);
+};
+</script>""",
+        headers={"content-type": "text/html; charset=utf-8"},
+    )
+
+
 class Default(WorkerEntrypoint):
     async def fetch(self, request: Any) -> Response:
         parsed = urlparse(str(request.url))
         query = parse_qs(parsed.query)
         message = query.get("message", ["weather in Lagos"])[0]
+
+        if parsed.path == "/":
+            return index_html()
 
         if parsed.path == "/demo":
             result = await DemoAgent(
@@ -161,4 +186,4 @@ class Default(WorkerEntrypoint):
             stub = self.env.AGENT.get(self.env.AGENT.idFromName(name))
             return await stub.fetch(request)
 
-        return Response("Agents SDK example. Try /demo?message=weather%20in%20Lagos.")
+        return index_html()

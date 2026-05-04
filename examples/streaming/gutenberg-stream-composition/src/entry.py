@@ -1,3 +1,4 @@
+# ruff: noqa: E501
 from __future__ import annotations
 
 import html
@@ -372,9 +373,34 @@ async def stream_events() -> dict[str, Any]:
     }
 
 
+def index_html() -> Response:
+    return Response(
+        """<!doctype html>
+<meta name=viewport content="width=device-width, initial-scale=1">
+<title>Gutenberg Streaming · Xampler</title>
+<style>
+body{font:16px/1.55 system-ui;max-width:1060px;margin:2rem auto;padding:0 1rem;color:#17202a}header{border-bottom:1px solid #d0d7de;margin-bottom:1rem}button{font:inherit;padding:.5rem .8rem;border:1px solid #2563eb;border-radius:.5rem;background:#2563eb;color:white;cursor:pointer}input{font:inherit;padding:.45rem;width:16rem}.grid{display:grid;grid-template-columns:repeat(auto-fit,minmax(250px,1fr));gap:1rem}.card{border:1px solid #d0d7de;border-radius:.75rem;padding:1rem;background:#f8fafc}pre{background:#0d1117;color:#e6edf3;padding:1rem;border-radius:.75rem;overflow:auto;min-height:12rem}mark{background:#fde68a;color:#111827}
+</style>
+<header><h1>Gutenberg Streaming Composition</h1><p>R2 ZIP → byte/text streams → batches/checkpoints → D1 FTS.</p></header>
+<section class=grid>
+ <article class=card><h2>Local composition</h2><button data-path=/demo>Run demo</button></article>
+ <article class=card><h2>Checkpointed R2 pipeline</h2><button data-path=/pipeline/ingest-r2-lines>Ingest lines</button> <button data-path=/pipeline/status>Status</button></article>
+ <article class=card><h2>Search</h2><p><button data-path=/fts/ingest>Build FTS</button></p><input id=q value=hamlet> <button id=search>Search</button></article>
+</section><pre id=out>Choose an action.</pre>
+<script>
+async function show(path){document.querySelector('#out').textContent = JSON.stringify(await (await fetch(path)).json(), null, 2)}
+document.querySelectorAll('[data-path]').forEach(b => b.onclick = () => show(b.dataset.path));
+document.querySelector('#search').onclick = () => show('/fts/search?q=' + encodeURIComponent(document.querySelector('#q').value));
+</script>""",
+        headers={"content-type": "text/html; charset=utf-8"},
+    )
+
+
 class Default(WorkerEntrypoint):
     async def fetch(self, request: Any) -> Response:
         path = urlparse(str(request.url)).path
+        if path == "/":
+            return index_html()
         if path == "/demo":
             return Response.json(await composed_pipeline())
         if path == "/events":
@@ -408,4 +434,4 @@ class Default(WorkerEntrypoint):
                 "exists": exists,
                 "size": int(getattr(obj, "size", 0) or 0) if exists else 0,
             })
-        return Response("Streaming Gutenberg example. Try /demo, /events, or /golden.")
+        return index_html()
