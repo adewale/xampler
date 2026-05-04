@@ -534,12 +534,7 @@ async def backlinks_panel(wiki: Wiki, slug: str) -> str:
 async def show_page(wiki: Wiki, slug: str) -> Response:
     page = await wiki.get_page(slug)
     if page is None:
-        body = (
-            f"<h2>{html.escape(wiki_title(slug))}</h2><p>This page does not exist yet. "
-            f'<a class="missing" href="/wiki/{quote(slug)}/edit">Create it?</a></p>'
-            f"{await backlinks_panel(wiki, slug)}"
-        )
-        return html_response(shell(wiki_title(slug), body), status=404)
+        return await edit_page(wiki, slug)
     links = (
         f"<p class='page-tools'><a href='/wiki/{quote(slug)}/edit'>Edit</a> · "
         f"<a href='/wiki/{quote(slug)}/history'>History</a> · "

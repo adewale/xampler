@@ -382,6 +382,7 @@ EXAMPLES = {
             Check("/wanted", contains="Project Ideas"),
             Check("/wiki/page-links", contains="Backlinks"),
             Check("/wiki/home-page/edit", contains="Syntax guide"),
+            Check("/wiki/project-ideas", contains="Save revision"),
             Check(
                 "/dev/render",
                 method="POST",
