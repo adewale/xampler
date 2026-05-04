@@ -459,6 +459,7 @@ EXAMPLES = {
             Check("/tracks?q=jeroen", contains="d1_tracks"),
             Check("/archive/verify", contains='"verified"'),
             Check("/catalog/verify-r2", contains='"exists"'),
+            Check("/r2/status", contains='"ready_for_import"'),
             Check("/catalog/ingest-sample", method="POST", contains='"streamed"'),
         ],
         needs_setup=(
