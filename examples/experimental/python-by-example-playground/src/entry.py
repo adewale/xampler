@@ -21,8 +21,27 @@ from xampler.experimental.dynamic_workers import (
 )
 
 COMPATIBILITY_DATE = "2026-05-01"
+UNSUPPORTED_SLUGS = {"argparse-example", "exit", "http-server", "testing"}
+OUTBOUND_EXAMPLE_SLUG = "http-client"
+HTTP_CLIENT_CODE = '''from workers import fetch
+
+# This example is special in the playground: outbound network is controlled
+# by a checkbox that toggles Dynamic Workers globalOutbound.
+response = await fetch("https://example.com")
+body = await response.text()
+print(response.status)
+print(body[:120] + "...")
+'''
 EXAMPLE_BY_SLUG = {example["slug"]: example for example in EXAMPLES}
 _CALLBACKS: list[Any] = []
+
+
+class ExampleOutbound(WorkerEntrypoint):
+    async def fetch(self, request: Any) -> Response:
+        url = urlparse(str(request.url))
+        if url.hostname not in {"example.com", "www.example.com"}:
+            return Response("Outbound Worker blocked " + str(request.url), status=403)
+        return await cast(Any, js).fetch(str(request.url))
 
 
 class Default(WorkerEntrypoint):
@@ -53,13 +72,29 @@ class Default(WorkerEntrypoint):
         if path == "/api/run" and request.method == "POST":
             payload = await request.json()
             code = str(payload.get("code", ""))[:20_000]
-            return await run_code(self.env.LOADER, code)
+            allow_outbound = bool(payload.get("allowOutbound", False))
+            ctx = cast(Any, self).ctx
+            outbound_fetcher: Any | None = (
+                ctx.exports.ExampleOutbound(js_object({})) if allow_outbound else None
+            )
+            return await run_code(
+                self.env.LOADER,
+                code,
+                allow_outbound=allow_outbound,
+                outbound_fetcher=outbound_fetcher,
+            )
         if path == "/attribution":
             return html_response(attribution_html())
         return Response("not found", status=404)
 
 
-async def run_code(loader: Any, code: str) -> Response:
+async def run_code(
+    loader: Any,
+    code: str,
+    *,
+    allow_outbound: bool = False,
+    outbound_fetcher: Any | None = None,
+) -> Response:
     child_source = runner_source(code)
     worker_code = DynamicWorkerCode(
         compatibility_date=COMPATIBILITY_DATE,
@@ -67,12 +102,15 @@ async def run_code(loader: Any, code: str) -> Response:
         main_module="runner.py",
         modules={"runner.py": child_source},
         global_outbound=None,
-        limits=DynamicWorkerLimits(cpu_ms=50, subrequests=0),
+        limits=DynamicWorkerLimits(cpu_ms=50, subrequests=1 if allow_outbound else 0),
     )
     raw = with_workers_sdk(worker_code.to_raw())
 
     def load_code() -> Any:
-        return js_object(raw)
+        obj = js_object(raw)
+        if outbound_fetcher is not None:
+            obj.globalOutbound = outbound_fetcher
+        return obj
 
     worker = loader.get(stable_worker_id("python-by-example-runner", worker_code), keep_callback(load_code))
     return await worker.getEntrypoint().fetch("http://xampler.local/run")
@@ -81,7 +119,9 @@ async def run_code(loader: Any, code: str) -> Response:
 def runner_source(user_code: str) -> str:
     return f'''from __future__ import annotations
 
+import ast
 import contextlib
+import inspect
 import io
 import json
 import traceback
@@ -98,7 +138,15 @@ class Default(WorkerEntrypoint):
         try:
             namespace = {{"__name__": "__main__"}}
             with contextlib.redirect_stdout(stdout), contextlib.redirect_stderr(stderr):
-                exec(USER_CODE, namespace, namespace)
+                compiled = compile(
+                    USER_CODE,
+                    "<user_code>",
+                    "exec",
+                    flags=ast.PyCF_ALLOW_TOP_LEVEL_AWAIT,
+                )
+                result = eval(compiled, namespace, namespace)
+                if inspect.isawaitable(result):
+                    await result
             payload = {{"ok": True, "stdout": stdout.getvalue(), "stderr": stderr.getvalue()}}
         except BaseException:
             payload = {{"ok": False, "stdout": stdout.getvalue(), "stderr": stderr.getvalue() + traceback.format_exc()}}
@@ -125,31 +173,60 @@ def keep_callback(callback: Any) -> Any:
 
 
 def index_html() -> str:
-    cards = "\n".join(
-        f"""<a class=card href=/examples/{html.escape(example['slug'])}>
-<h2>{html.escape(example['title'])}</h2>
-<p>{html.escape(example['summary'])}</p>
-<small>{html.escape(example['source_path'])}</small>
-</a>"""
+    supported = [
+        example
         for example in EXAMPLES
+        if example["slug"] not in UNSUPPORTED_SLUGS | {OUTBOUND_EXAMPLE_SLUG}
+    ]
+    supported_links = example_links(supported)
+    unsupported_links = example_links(
+        [example for example in EXAMPLES if example["slug"] in UNSUPPORTED_SLUGS]
     )
+    outbound = EXAMPLE_BY_SLUG[OUTBOUND_EXAMPLE_SLUG]
     return page(
         "Python by Example Playground",
         f"""
-<header>
-<h1>Python by Example Playground</h1>
-<p>A Cloudflare Python Workers playground inspired by <a href=https://gobyexample.com/>Go by Example</a>. Each example includes a play button that runs editable Python code immediately in a Dynamic Python Worker isolate.</p>
-<p class=attrib>Examples adapted from <a href={SOURCE_URL}>{SOURCE_URL}</a> by {html.escape(SOURCE_AUTHOR)}, licensed under {html.escape(SOURCE_LICENSE)}. See <a href=/attribution>attribution</a>.</p>
+<header class=hero>
+<h1>Python by Example</h1>
+<p>Executable Python examples in the style of <a href=https://gobyexample.com/>Go by Example</a>, running inside Cloudflare Dynamic Python Worker isolates.</p>
+<p class=attrib>Adapted from <a href={SOURCE_URL}>{SOURCE_URL}</a> by {html.escape(SOURCE_AUTHOR)}, licensed under {html.escape(SOURCE_LICENSE)}. See <a href=/attribution>attribution</a>.</p>
 </header>
-<nav class=grid>{cards}</nav>
+<main class=layout>
+<section>
+<h2>Examples</h2>
+<nav class=example-list>{supported_links}</nav>
+</section>
+<aside>
+<section class=panel>
+<h2>Outbound Worker example</h2>
+<p><a href=/examples/{OUTBOUND_EXAMPLE_SLUG}>{html.escape(outbound['title'])}</a> is a special Dynamic Workers networking demo with a checkbox that enables or disables calls to <code>example.com</code>.</p>
+</section>
+<section class="panel unsupported">
+<h2>Unsupported in this playground</h2>
+<p>These examples intentionally exit the process, bind server sockets, or need command-line/test-runner behavior that is not a good fit for this Worker isolate.</p>
+<nav class=example-list>{unsupported_links}</nav>
+</section>
+</aside>
+</main>
 """,
     )
 
 
+def example_links(examples: list[dict[str, str]]) -> str:
+    return "\n".join(
+        f"""<a href=/examples/{html.escape(example['slug'])}><span>{html.escape(example['title'])}</span><small>{html.escape(example['summary'])}</small></a>"""
+        for example in examples
+    )
+
+
 def example_html(example: dict[str, str]) -> str:
-    code = html.escape(example["code"])
+    slug = example["slug"]
+    rendered_code = HTTP_CLIENT_CODE if slug == OUTBOUND_EXAMPLE_SLUG else example["code"]
+    code = html.escape(rendered_code)
     title = html.escape(example["title"])
     summary = html.escape(example["summary"])
+    unsupported = slug in UNSUPPORTED_SLUGS
+    outbound = slug == OUTBOUND_EXAMPLE_SLUG
     source_url = f"{SOURCE_URL}/blob/main/{example['source_path']}"
     lesson_url = f"{SOURCE_URL}/blob/main/{example['lesson_path']}"
     return page(
@@ -158,16 +235,19 @@ def example_html(example: dict[str, str]) -> str:
 <p><a href=/>← all examples</a></p>
 <h1>{title}</h1>
 <p>{summary}</p>
+{unsupported_note(unsupported)}
+{outbound_note(outbound)}
 <p class=attrib>Source: <a href={source_url}>{html.escape(example['source_path'])}</a> · Lesson: <a href={lesson_url}>{html.escape(example['lesson_path'])}</a></p>
 <div class=playground>
 <textarea id=code spellcheck=false>{code}</textarea>
-<div class=actions><button id=run>▶ Run Python</button><span id=status></span></div>
+<div class=actions><button id=run>▶ Run Python</button>{outbound_checkbox(outbound)}<span id=status></span></div>
 <pre id=out>Click Run Python to execute this example in a Dynamic Python Worker isolate.</pre>
 </div>
 <script>
 const code = document.querySelector('#code');
 const out = document.querySelector('#out');
 const status = document.querySelector('#status');
+const outbound = document.querySelector('#allow-outbound');
 document.querySelector('#run').onclick = async () => {{
   status.textContent = 'running…';
   out.textContent = '';
@@ -175,7 +255,7 @@ document.querySelector('#run').onclick = async () => {{
     const res = await fetch('/api/run', {{
       method: 'POST',
       headers: {{'content-type': 'application/json'}},
-      body: JSON.stringify({{code: code.value}})
+      body: JSON.stringify({{code: code.value, allowOutbound: Boolean(outbound && outbound.checked)}})
     }});
     const data = await res.json();
     status.textContent = data.ok ? 'ok' : 'error';
@@ -188,6 +268,24 @@ document.querySelector('#run').onclick = async () => {{
 </script>
 """,
     )
+
+
+def unsupported_note(enabled: bool) -> str:
+    if not enabled:
+        return ""
+    return """<div class=notice><strong>Unsupported.</strong> This lesson is kept for reading, but it relies on process-exit, socket-server, command-line, or test-runner behavior that this browser Worker playground does not model well.</div>"""
+
+
+def outbound_note(enabled: bool) -> str:
+    if not enabled:
+        return ""
+    return """<div class=notice><strong>Outbound Worker demo.</strong> Dynamic Workers can run with <code>globalOutbound = null</code> to block network access, or with an Outbound Worker/fetcher to allow and mediate outbound <code>fetch</code>. Use the checkbox below to attach outbound fetch capability for this isolate so it can call <code>https://example.com</code>.</div>"""
+
+
+def outbound_checkbox(enabled: bool) -> str:
+    if not enabled:
+        return ""
+    return """<label class=check><input id=allow-outbound type=checkbox> Enable Outbound Worker access to example.com</label>"""
 
 
 def attribution_html() -> str:
@@ -213,13 +311,16 @@ def page(title: str, body: str) -> str:
 <meta name=viewport content="width=device-width, initial-scale=1">
 <title>{html.escape(title)}</title>
 <style>
-body{{font:16px/1.5 system-ui,-apple-system,Segoe UI,sans-serif;max-width:1120px;margin:2rem auto;padding:0 1rem;color:#17202a}}
-a{{color:#0b66c3}}.attrib{{color:#536471}}.grid{{display:grid;grid-template-columns:repeat(auto-fill,minmax(260px,1fr));gap:1rem}}
-.card{{display:block;text-decoration:none;color:inherit;border:1px solid #d0d7de;border-radius:12px;padding:1rem;background:#fff;box-shadow:0 1px 2px #0001}}
-.card:hover{{border-color:#0b66c3}}.card h2{{font-size:1.1rem;margin:.1rem 0}}.card p{{color:#536471}}small{{color:#6b7280}}
+*{{box-sizing:border-box}}body{{font:16px/1.5 system-ui,-apple-system,Segoe UI,sans-serif;max-width:1120px;margin:2rem auto;padding:0 1rem;color:#17202a}}
+a{{color:#0b66c3}}.attrib,small{{color:#536471}}.hero{{border-bottom:1px solid #d0d7de;margin-bottom:1.25rem;padding-bottom:1rem}}
+.layout{{display:grid;grid-template-columns:minmax(0,1fr) 320px;gap:2rem;align-items:start}}h1{{font-size:2.4rem;margin:.2rem 0}}h2{{margin:1rem 0 .6rem}}
+.example-list{{columns:2 260px;column-gap:1.5rem}}.example-list a{{display:block;break-inside:avoid;text-decoration:none;color:#0b66c3;padding:.22rem 0}}
+.example-list a span{{display:block}}.example-list a small{{display:block;color:#6b7280;font-size:.82rem;line-height:1.25;margin-bottom:.35rem}}
+.panel,.notice{{border:1px solid #d0d7de;border-radius:12px;padding:1rem;background:#f8fafc;margin-bottom:1rem}}.unsupported{{background:#fff7ed;border-color:#fed7aa}}
 .playground{{border:1px solid #d0d7de;border-radius:12px;overflow:hidden}}textarea{{box-sizing:border-box;width:100%;min-height:380px;border:0;border-bottom:1px solid #d0d7de;padding:1rem;font:14px/1.45 ui-monospace,SFMono-Regular,Menlo,monospace}}
-.actions{{display:flex;gap:1rem;align-items:center;padding:.75rem 1rem;background:#f6f8fa;border-bottom:1px solid #d0d7de}}button{{font:inherit;padding:.45rem .8rem;border-radius:8px;border:1px solid #0b66c3;background:#0b66c3;color:white;cursor:pointer}}
-pre{{margin:0;padding:1rem;min-height:120px;background:#0d1117;color:#e6edf3;overflow:auto;white-space:pre-wrap}}code{{background:#f6f8fa;padding:.15rem .3rem;border-radius:5px}}
+.actions{{display:flex;gap:1rem;align-items:center;flex-wrap:wrap;padding:.75rem 1rem;background:#f6f8fa;border-bottom:1px solid #d0d7de}}button{{font:inherit;padding:.45rem .8rem;border-radius:8px;border:1px solid #0b66c3;background:#0b66c3;color:white;cursor:pointer}}
+.check{{display:inline-flex;gap:.45rem;align-items:center}}pre{{margin:0;padding:1rem;min-height:120px;background:#0d1117;color:#e6edf3;overflow:auto;white-space:pre-wrap}}code{{background:#f6f8fa;padding:.15rem .3rem;border-radius:5px}}
+@media(max-width:820px){{.layout{{display:block}}.example-list{{columns:1}}}}
 </style>
 {body}
 """

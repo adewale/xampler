@@ -437,8 +437,9 @@ EXAMPLES = {
     "examples/experimental/python-by-example-playground": Example(
         "examples/experimental/python-by-example-playground",
         [
-            Check("/", contains="Python by Example Playground"),
+            Check("/", contains="Unsupported in this playground"),
             Check("/examples/hello-world", contains="Run Python"),
+            Check("/examples/http-client", contains="Outbound Worker demo"),
             Check("/api/examples", contains="hello-world"),
             Check(
                 "/api/run",
@@ -446,6 +447,17 @@ EXAMPLES = {
                 body=b'{"code":"print(1 + 2)"}',
                 headers={"content-type": "application/json"},
                 contains='"stdout": "3\\n"',
+            ),
+            Check(
+                "/api/run",
+                method="POST",
+                body=(
+                    b'{"code":"from workers import fetch\\nresponse = await fetch('
+                    b'\\"https://example.com\\")\\nprint(response.status)",'
+                    b'"allowOutbound":true}'
+                ),
+                headers={"content-type": "application/json"},
+                contains='"stdout": "200\\n"',
             ),
         ],
         needs_setup="Runs editable snippets in Dynamic Python Worker isolates locally.",
