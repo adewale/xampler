@@ -33,6 +33,24 @@ HVSC_SAMPLE_CATALOG = [
         "search_text": "Jeroen Tel Cybernoid II Commodore 64 C64 SID",
     },
     {
+        "id": "hvsc:84:rob_hubbard:monty_on_the_run",
+        "version": 84,
+        "path": "MUSICIANS/H/Hubbard_Rob/Monty_on_the_Run.sid",
+        "filename": "Monty_on_the_Run.sid",
+        "title": "Monty on the Run",
+        "composer": "Rob Hubbard",
+        "search_text": "Rob Hubbard Monty on the Run Commodore 64 C64 SID",
+    },
+    {
+        "id": "hvsc:84:martin_galway:parallax",
+        "version": 84,
+        "path": "MUSICIANS/G/Galway_Martin/Parallax.sid",
+        "filename": "Parallax.sid",
+        "title": "Parallax",
+        "composer": "Martin Galway",
+        "search_text": "Martin Galway Parallax Commodore 64 C64 SID",
+    },
+    {
         "id": "hvsc:84:maniacs_of_noise:last_ninja_3",
         "version": 84,
         "path": "MUSICIANS/M/Maniacs_of_Noise/Last_Ninja_3.sid",
@@ -40,6 +58,15 @@ HVSC_SAMPLE_CATALOG = [
         "title": "Last Ninja 3",
         "composer": "Maniacs of Noise",
         "search_text": "Maniacs of Noise Last Ninja 3 Commodore 64 C64 SID",
+    },
+    {
+        "id": "hvsc:84:maniacs_of_noise:turbo_outrun",
+        "version": 84,
+        "path": "MUSICIANS/M/Maniacs_of_Noise/Turbo_Outrun.sid",
+        "filename": "Turbo Outrun.sid",
+        "title": "Turbo Outrun",
+        "composer": "Maniacs of Noise",
+        "search_text": "Maniacs of Noise Turbo Outrun Commodore 64 C64 SID",
     },
 ]
 HVSC_SAMPLE_CATALOG_JSONL = "\n".join(json.dumps(record) for record in HVSC_SAMPLE_CATALOG)
@@ -355,6 +382,7 @@ class HvscPipeline:
             "catalog_exists_in_r2": catalog.exists,
             "catalog_size": catalog.size,
             "d1_tracks": int(rows[0]["count"]) if rows else 0,
+            "meaning": "d1_tracks is total imported catalog rows, not the per-query match count.",
         }
 
     async def search_tracks(self, query: str) -> list[Track]:
@@ -426,6 +454,7 @@ class Default(WorkerEntrypoint):
             response = {
                 "query": term,
                 "count": len(tracks),
+                "matching_tracks": len(tracks),
                 "tracks": tracks,
                 "status": status,
                 "ready": int(status["d1_tracks"]) > 0,
