@@ -108,19 +108,36 @@ Good Protocol candidates:
 | Workflow start/status | `WorkflowService` | `DemoWorkflowService` |
 | Postgres query shape | `HyperdrivePostgres` | `DemoPostgres` |
 
-## Existing shared Protocols
+## Current Protocol inventory
 
-`xampler.types` contains a few general Protocols:
+This is the complete current inventory of Protocol use in the shared package and executable examples.
+
+| Protocol | Location | Scope | Rationale |
+|---|---|---|---|
+| `SupportsRaw` | `xampler.types` | Shared library | Marks objects that expose a `.raw` platform escape hatch without requiring inheritance from `CloudflareService` or `ResourceRef`. It is `@runtime_checkable` because checking for the escape hatch can be useful in generic tooling/tests. |
+| `DemoTransport[RequestT, ResultT]` | `xampler.types` | Shared library | Describes deterministic local transports that accept a typed request and return a typed result. `DemoAIService` implements this for text generation. It captures the demo convention without making demos inherit real services. |
+| `RemoteVerifier` | `xampler.types` | Shared library | Describes verifier-style objects that can prove remote behavior with `verify_remote() -> JsonObject`. It keeps verification as a capability separate from product wrappers. |
+| `ScheduledJob` | `xampler.cron` | Shared library | Describes cron job implementations with `run(ScheduledEventInfo) -> ScheduledRunResult`. The Worker scheduled handler can depend on this capability while tests use `DemoScheduledJob`. |
+| `AgentTool` | `examples/ai-agents/agents-sdk-tools/src/entry.py` | Example-local | Describes tool objects that have a `name` and async `run(**kwargs)`. It lets `DemoAgent` accept any tool with the right capability without introducing an Agents inheritance hierarchy before the API shape is stable. |
+| `Runnable` | `examples/ai-agents/langchain-style-chain/src/entry.py` | Example-local | Mirrors LangChain's Runnable idea with `invoke(PromptInput) -> PromptOutput`. It keeps package-orchestration code swappable while avoiding a hard dependency on LangChain runtime behavior inside Workers. |
+
+### Shared Protocols
+
+`xampler.types` contains the general-purpose Protocols:
 
 ```python
 from xampler.types import DemoTransport, RemoteVerifier, SupportsRaw
 ```
 
-- `SupportsRaw` means an object exposes a platform escape hatch.
-- `DemoTransport[RequestT, ResultT]` means a demo object can run a request and return a result.
-- `RemoteVerifier` is for verifier-style objects that can prove remote behavior.
+They are intentionally small. Do not build a large inheritance framework around them.
 
-These are intentionally small. Do not build a large inheritance framework around them.
+### Product-local Protocols
+
+`xampler.cron.ScheduledJob` is product-local because the capability is specific and stable: a scheduled event becomes a scheduled run result.
+
+### Example-local Protocols
+
+`AgentTool` and `Runnable` stay in examples because they are still abstraction research. If two or more examples need the same capability shape, promote the Protocol into `xampler/` with direct tests and docs.
 
 ## What not to do
 
