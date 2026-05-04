@@ -17,7 +17,7 @@ It demonstrates the streaming API shape Xampler wants across primitives:
 7. `AgentSession.stream()` for typed agent events.
 8. `AIService.stream_text()` / gateway-style text chunks.
 9. WebSocket `async for` session shape.
-10. `StreamCheckpoint` for resumable progress.
+10. `Checkpoint` for resumable progress.
 
 Run:
 

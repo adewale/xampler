@@ -9,10 +9,9 @@ Xampler is a Python library with examples that prove the APIs run in Python Work
 | `xampler.r2` | Stable | `R2Bucket`, `R2ObjectRef`, `R2HttpMetadata`, `R2Range`, `R2Conditional` |
 | `xampler.d1` | Stable | `D1Database`, `D1Statement` |
 | `xampler.kv` | Stable | `KVNamespace`, `KVKey`, `KVListResult` |
-| `xampler.streaming` | Stable | `ByteStream`, `JsonlReader`, `aiter_batches`, `StreamCheckpoint` |
+| `xampler.streaming` | Stable | `ByteStream`, `JsonlReader`, `aiter_batches`, `AgentEvent` |
 | `xampler.response` | Stable | `jsonable`, `error_payload` |
 | `xampler.status` | Stable | `Progress`, `Checkpoint`, `BatchResult` |
-| `xampler.ops` | Beta | `TimelineEvent`, `OperationTimeline`, `PipelineStatus` |
 | `xampler.cloudflare` | Stable base | `CloudflareService`, `ResourceRef`, `RestClient` |
 | `xampler.queues` | Beta | `QueueService`, `QueueJob`, `QueueConsumer`, `QueueBatchResult` |
 | `xampler.vectorize` | Beta | `VectorIndex`, `Vector`, `VectorQuery`, `DemoVectorIndex` |
@@ -56,6 +55,12 @@ These bases should stay tiny. Product behavior belongs in product modules; route
 - **Experimental**: product/auth behavior is still evolving or token-backed verification is not regular yet.
 
 ## Design contract
+
+The full vocabulary is documented in [`vocabulary.md`](vocabulary.md):
+
+```text
+Service → Ref → Request/Options → Result → Event/Handler → Stream/Page/Batch → Status → Policy → Demo → Raw
+```
 
 All product modules should preserve these rules:
 

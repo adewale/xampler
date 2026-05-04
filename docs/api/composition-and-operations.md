@@ -1,9 +1,9 @@
 # Composition and operations
 
-Xampler's small compositional vocabulary is:
+Xampler's small compositional vocabulary follows [`vocabulary.md`](vocabulary.md):
 
 ```text
-Service → Ref → Request → Result → Progress/Checkpoint → Timeline → Verifier
+Service → Ref → Request/Options → Result → Event/Handler → Stream/Page/Batch → Status → Policy → Demo → Raw
 ```
 
 For data pipelines, the memorable path is:
@@ -21,11 +21,11 @@ R2 bytes → ByteStream → records → batches → D1/FTS → Queue → Vectori
 | REST client | Token/HTTP-backed product client when no Python-usable binding path exists. | `BrowserRendering`, `R2SqlClient`, `R2DataCatalog`, `AIGateway` |
 | Request | Input shape. | `TextGenerationRequest`, `VectorQuery`, `ChatRequest` |
 | Result | Output shape. | `WorkflowStatus`, `BatchResult`, `ChatResponse` |
-| Progress | A known-size task is underway. | `Progress(current, total, state)` |
-| Checkpoint | A stream/import can resume from an offset. | `Checkpoint`, `StreamCheckpoint` |
-| Timeline | A process has ordered operational events. | `TimelineEvent`, `OperationTimeline` |
-| Pipeline status | A route should expose progress, checkpoint, and events together. | `PipelineStatus` |
-| Retry/DLQ | Queue work can fail independently. | `QueueConsumer`, `QueueBatchResult` |
+| Event | Runtime-delivered or stream-delivered input. | `ScheduledEventInfo`, `QueueMessage`, `IncomingEmail`, `AgentEvent` |
+| Handler | User code that processes events. | `ScheduledJob`, `QueueConsumer`, `EmailRouter` |
+| Stream/Page/Batch | Many values move over time, by cursor, or as grouped work. | `ByteStream`, `aiter_batches`, `BatchResult`, `QueueBatchResult` |
+| Status | Long-running or resumable state. | `Progress`, `Checkpoint`, product statuses such as `WorkflowStatus` |
+| Policy | Allow/reject/route/transform decision. | `EmailDecision` |
 | Local realism | Account-backed products need deterministic local behavior. | explicit `Demo*` clients |
 | Escape hatch | Advanced platform behavior is still available. | `.raw` |
 
@@ -56,14 +56,14 @@ Use when a dataset lands in object storage and should become queryable.
 ```python
 from xampler.d1 import D1Database
 from xampler.r2 import R2Bucket
-from xampler.status import BatchResult
-from xampler.streaming import JsonlReader, StreamCheckpoint, aiter_batches
+from xampler.status import BatchResult, Checkpoint
+from xampler.streaming import JsonlReader, aiter_batches
 
 bucket = R2Bucket(env.ARTIFACTS)
 db = D1Database(env.DB)
 stream = await bucket.object("datasets/items.jsonl").byte_stream()
 
-checkpoint = StreamCheckpoint("items", offset=0, records=0)
+checkpoint = Checkpoint("items", offset=0, records=0)
 batches = 0
 records = 0
 
@@ -75,7 +75,7 @@ async for batch in aiter_batches(JsonlReader(stream).records(), size=500):
     await db.batch_run(statements)
     batches += 1
     records += len(batch)
-    checkpoint = StreamCheckpoint("items", offset=records, records=records)
+    checkpoint = Checkpoint("items", offset=records, records=records)
 
 result = BatchResult(batches=batches, records=records, checkpoint=checkpoint)
 ```

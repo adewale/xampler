@@ -2,14 +2,18 @@
 
 Long-term docs are grouped by purpose. Older planning snapshots live in [`archive/`](archive/).
 
-## API design
+## Start here
 
-- [`api/library-surface.md`](api/library-surface.md) — importable library modules and stability levels.
-- [`api/reference.md`](api/reference.md) — concise API reference and copyable imports.
-- [`api/testability.md`](api/testability.md) — how to write red-green-refactor tests with fake bindings and `Demo*` clients.
-- [`api/protocols.md`](api/protocols.md) — why real/demo services share capability Protocols instead of inheritance.
-- [`api/composition-and-operations.md`](api/composition-and-operations.md) — composition, progress, checkpoint, retry, DLQ, workflow status, observability, and copyable pipeline patterns.
+1. [`api/vocabulary.md`](api/vocabulary.md) — the canonical Service/Ref/Request/Result/Event/Status vocabulary across Cloudflare products.
+2. [`api/library-surface.md`](api/library-surface.md) — importable library modules, base classes, and stability levels.
+3. [`api/reference.md`](api/reference.md) — concise API reference and copyable imports.
+4. [`api/testability.md`](api/testability.md) — fake bindings, `Demo*` clients, and remote verification boundaries.
+
+## API design details
+
+- [`api/composition-and-operations.md`](api/composition-and-operations.md) — composition, checkpoint, retry, DLQ, workflow status, observability, and copyable pipeline patterns.
 - [`api/unified-api-surface.md`](api/unified-api-surface.md) — the shared Xampler API shape.
+- [`api/protocols.md`](api/protocols.md) — why real/demo services share capability Protocols instead of inheritance.
 - [`api/primitives-api-surface.md`](api/primitives-api-surface.md) — primitive coverage and Pythonic API matrix.
 - [`api/primitive-test-realism.md`](api/primitive-test-realism.md) — verification honesty matrix.
 - [`api/native-python-workers-comparison.md`](api/native-python-workers-comparison.md) — Xampler wrappers vs native Python Workers bindings.

@@ -9,14 +9,6 @@ T = TypeVar("T")
 
 
 @dataclass(frozen=True)
-class StreamCheckpoint:
-    name: str
-    offset: int
-    records: int
-    status: Literal["running", "complete", "failed"] = "running"
-
-
-@dataclass(frozen=True)
 class AgentEvent:
     type: Literal["token", "tool_call", "done", "error"]
     data: dict[str, Any]

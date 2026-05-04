@@ -15,7 +15,7 @@ Streaming is now a first-class Xampler API shape. The goal is that R2 objects, J
 | 5. Agent streaming | `DemoAgentSession.stream() -> AgentEvent` | `examples/streaming/gutenberg-stream-composition /events` |
 | 6. AI/gateway token streaming | `DemoAIService.stream_text()` | `examples/streaming/gutenberg-stream-composition /events` |
 | 7. WebSocket session stream | `DemoWebSocketSession.__aiter__()` | `examples/streaming/gutenberg-stream-composition /events` |
-| 8. Resumable checkpoints | `StreamCheckpoint` | `examples/streaming/gutenberg-stream-composition /demo` |
+| 8. Resumable checkpoints | `Checkpoint` | `examples/streaming/gutenberg-stream-composition /demo` |
 
 ## Stream-to-stream target
 

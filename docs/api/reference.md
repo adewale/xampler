@@ -1,6 +1,6 @@
 # API reference
 
-This is a concise hand-written reference for the importable Xampler library surface. Per-module pages live in [`docs/api/reference/`](reference/).
+This is a concise hand-written reference for the importable Xampler library surface. Start with [`vocabulary.md`](vocabulary.md) for the API vocabulary; per-module pages live in [`docs/api/reference/`](reference/).
 
 ## Storage and data
 
@@ -92,6 +92,6 @@ status = await workflow.status(started.instance_id)
 ```python
 from xampler.streaming import ByteStream, JsonlReader, aiter_batches
 from xampler.response import json_response, jsonable, text_response
-from xampler.status import Progress, Checkpoint
+from xampler.status import BatchResult, Checkpoint, Progress
 from xampler.cloudflare import CloudflareService, ResourceRef, RestClient
 ```

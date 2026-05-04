@@ -85,15 +85,13 @@ Real examples include product-specific parsing and SQL details, but the composit
 - [`examples/full-apps/hvsc-ai-data-search`](examples/full-apps/hvsc-ai-data-search) composes R2 datasets, D1 ingestion state/search, Queue-style jobs, Workers AI, and Vectorize seams into an interactive app.
 - [`examples/state-events/queues-producer-consumer`](examples/state-events/queues-producer-consumer) and [`examples/ai-agents/agents-sdk-tools`](examples/ai-agents/agents-sdk-tools) show typed jobs and durable sessions/tools.
 
-Reusable wrapper ideas across examples:
+Reusable wrapper ideas across examples follow one documented vocabulary:
 
-1. **Service wrappers** around bindings: `R2Bucket`, `D1Database`, `QueueService`, `VectorIndex`, `AgentSession`.
-2. **Resource handles** for named things: object keys, KV keys, Durable Object refs, workflow instances.
-3. **Dataclasses and typed results** instead of loose dicts at the application boundary.
-4. **Async iteration** for streams, pages, records, batches, events, and WebSockets.
-5. **Checkpoint/progress records** for long-running imports and pipelines.
-6. **Explicit demo/remote seams** so local verification is deterministic without hiding real Cloudflare vocabulary.
-7. **`.raw` escape hatches** and `cfboundary` conversion at the JS/Python boundary only.
+```text
+Service → Ref → Request/Options → Result → Event/Handler → Stream/Page/Batch → Status → Policy → Demo → Raw
+```
+
+See [`docs/api/vocabulary.md`](docs/api/vocabulary.md) for the full mapping across Cloudflare Developer Platform products.
 
 ## Categories
 
@@ -145,14 +143,18 @@ These examples are useful, but they contain a local stand-in, deterministic tran
 
 ## Pythonic API principles
 
-Start with [`docs/index.md`](docs/index.md). The highest-value user-facing docs are:
+Start with [`docs/index.md`](docs/index.md). The main user journey is:
 
-- [`docs/api/library-surface.md`](docs/api/library-surface.md)
-- [`docs/api/reference.md`](docs/api/reference.md)
-- [`docs/api/testability.md`](docs/api/testability.md)
-- [`docs/api/protocols.md`](docs/api/protocols.md)
+1. [`docs/api/vocabulary.md`](docs/api/vocabulary.md) — the canonical vocabulary and Cloudflare product mapping.
+2. [`docs/api/library-surface.md`](docs/api/library-surface.md) — importable modules, base classes, and stability.
+3. [`docs/api/reference.md`](docs/api/reference.md) — copyable imports and examples.
+4. [`docs/api/testability.md`](docs/api/testability.md) — fake bindings, `Demo*` clients, and remote verification.
+
+Then use focused docs as needed:
+
 - [`docs/api/composition-and-operations.md`](docs/api/composition-and-operations.md)
 - [`docs/api/unified-api-surface.md`](docs/api/unified-api-surface.md)
+- [`docs/api/protocols.md`](docs/api/protocols.md)
 - [`docs/api/primitives-api-surface.md`](docs/api/primitives-api-surface.md)
 - [`docs/api/primitive-test-realism.md`](docs/api/primitive-test-realism.md)
 - [`docs/runtime/python-workers-runtime-guidance.md`](docs/runtime/python-workers-runtime-guidance.md)
@@ -164,14 +166,7 @@ Start with [`docs/index.md`](docs/index.md). The highest-value user-facing docs 
 
 Repo-internal audits, lessons, and planning notes live under `docs/project/` and `docs/archive/`; they are useful for maintainers but are not the main user journey.
 
-The short version:
-
-1. Wrap each Cloudflare binding in a small service object.
-2. Use resource handles where that matches Python expectations.
-3. Return native Python values and dataclasses.
-4. Keep `cfboundary` conversion at the JS/Python boundary.
-5. Use `async for` for pagination/streams and `async with` for lifecycles.
-6. Keep `.raw` as an explicit escape hatch.
+The short version: services do work, refs name things, requests/options describe inputs, results describe outputs, events go to handlers, streams/pages/batches move many things, status describes long-running work, policies return decisions, demos prove local behavior, and `.raw` exposes the platform.
 
 ## Stable shared base layer
 

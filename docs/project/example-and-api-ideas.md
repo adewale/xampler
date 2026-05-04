@@ -11,8 +11,8 @@ Goal: keep Xampler consistent and simple by reusing a few Pythonic patterns acro
 | Request | Dataclass input shape. | `VectorQuery`, `TextGenerationRequest`, `ChatRequest` |
 | Result | Dataclass output shape. | `WorkflowStatus`, `QueueBatchResult`, `ChatResponse` |
 | Progress | Known-size operation state. | `Progress` |
-| Checkpoint | Resumable stream/import state. | `Checkpoint`, `StreamCheckpoint` |
-| Timeline | Ordered operational events. | proposed `TimelineEvent` |
+| Checkpoint | Resumable stream/import state. | `Checkpoint` |
+| Event | Ordered operational events in examples until a shared type is justified. | example-local event dataclasses |
 | Demo transport | Deterministic local substitute. | `DemoAIService`, `DemoAIGateway`, `DemoVectorIndex` |
 | Raw escape | Access to the platform object. | `.raw` |
 
@@ -44,8 +44,11 @@ What it proves:
 Potential API learned:
 
 ```python
-TimelineEvent(name="fetch input", state="complete", details={"records": 100})
-OperationTimeline(instance_id="...", events=[...])
+@dataclass(frozen=True)
+class ImportEvent:
+    name: str
+    state: OperationState
+    details: dict[str, object] | None = None
 ```
 
 ### 2. Queue retry dashboard
@@ -192,39 +195,11 @@ What it proves:
 
 ## API improvements to consider
 
-### `xampler.ops`
+### Example-local operational events
 
-Candidate types:
+Keep timeline-shaped operational events local until multiple examples prove one shared type.
 
-```python
-@dataclass(frozen=True)
-class TimelineEvent:
-    name: str
-    state: OperationState
-    details: dict[str, object] | None = None
-
-@dataclass(frozen=True)
-class OperationTimeline:
-    id: str
-    events: list[TimelineEvent]
-```
-
-Why: Workflows, Queues, Durable Objects, Gutenberg, and HVSC all need visible operational events.
-
-### `xampler.pipeline`
-
-Candidate type:
-
-```python
-@dataclass(frozen=True)
-class PipelineStatus:
-    name: str
-    progress: Progress
-    checkpoint: Checkpoint | None
-    recent_events: list[TimelineEvent]
-```
-
-Why: avoids each complex example inventing a different `/status` shape.
+Why: Workflows, Queues, Durable Objects, Gutenberg, and HVSC all need visible operational events, but a shared operations or pipeline module would be premature before route-level examples converge.
 
 ### `xampler.testing`
 

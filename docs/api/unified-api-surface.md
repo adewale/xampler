@@ -2,7 +2,7 @@
 
 Last reviewed: 2026-05-02.
 
-The examples converge on one shape: Cloudflare bindings become small services, named resources become handles, inputs/results are dataclasses, long-running work exposes status, and every wrapper keeps `.raw` for platform escape hatches.
+The examples converge on the vocabulary in [`vocabulary.md`](vocabulary.md): Cloudflare bindings become small services, named resources become refs, inputs/results are dataclasses, events go to handlers, streams/pages/batches use Python iteration, long-running work exposes status, and every wrapper keeps `.raw` for platform escape hatches.
 
 ```python
 # Bindings become services.
@@ -77,7 +77,7 @@ The API surface is deliberately small. A few concepts repeat across products so 
 | Service wrapper | `R2Bucket`, `D1Database`, `QueueService`, `AIService`, `VectorIndex`, `HyperdrivePostgres` | One object owns the binding/client and boundary conversion. |
 | Resource handle | `bucket.object(key)`, `kv.key(name)`, `workflow.instance(id)`, `room("name")` | Handles are cheap, passable references with domain verbs. |
 | Dataclass input | `QueueJob`, `VectorQuery`, `TextGenerationRequest`, `PostgresQuery`, `AgentMessage` | A typed result from one primitive can become another primitive's input. |
-| Dataclass result/status | `VectorQueryResult`, `WorkflowStatus`, `StreamCheckpoint`, `AgentRunResult` | Long-running and composed flows can report state without raw dictionaries. |
+| Dataclass result/status | `VectorQueryResult`, `WorkflowStatus`, `Checkpoint`, `AgentRunResult` | Long-running and composed flows can report state without raw dictionaries. |
 | Async iteration | `iter_objects`, `iter_keys`, `iter_lines`, `AgentSession.stream()` | Streams and pagination use Python's native `async for` shape. |
 | Context manager | R2 multipart upload | Lifecycle-bound work uses `async with` for cleanup/abort semantics. |
 | Demo transport | `DemoAIService`, `DemoAIGateway`, `DemoPostgres`, `DemoAgent` | Account-backed APIs are locally verifiable without pretending the remote service ran. |
@@ -143,7 +143,7 @@ The target is not to type every Cloudflare `JsProxy` directly. The target is to 
 | HVSC AI/data app | Pipeline service composes R2 + D1 + Queues + AI/vector seams; shard ingestion; progress/status; browser run-all/search flow. |
 | Hyperdrive | `HyperdriveConfig.from_binding`; typed Postgres query/result; production/demo client split; `/config`, `/query`, `/demo`. |
 | Agents SDK | Typed messages; tool calls; run result; deterministic tool; Durable Object session routing; `AgentSession` raw wrapper shape. |
-| Streaming composition | `ByteStream.iter_bytes/text/lines`; `JsonlReader.records`; `RecordStream`; `aiter_batches`; `StreamCheckpoint`; checkpointed D1 line pipeline; AI/agent/WebSocket event streams. |
+| Streaming composition | `ByteStream.iter_bytes/text/lines`; `JsonlReader.records`; `RecordStream`; `aiter_batches`; `Checkpoint`; checkpointed D1 line pipeline; AI/agent/WebSocket event streams. |
 
 ## Design rule
 

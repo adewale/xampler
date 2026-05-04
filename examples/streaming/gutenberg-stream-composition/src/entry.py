@@ -17,12 +17,11 @@ from workers import Response, WorkerEntrypoint  # type: ignore[import-not-found]
 from xampler.ai import DemoAIService
 from xampler.d1 import D1Database, D1Statement
 from xampler.response import jsonable
-from xampler.status import BatchResult, Progress
+from xampler.status import BatchResult, Checkpoint, Progress
 from xampler.streaming import (
     AgentEvent,
     ByteStream,
     JsonlReader,
-    StreamCheckpoint,
     aiter_batches,
     async_enumerate,
 )
@@ -54,18 +53,18 @@ async def bytes_from_text(text: str, chunk_size: int = 48) -> AsyncIterator[byte
 class DemoD1Sink:
     def __init__(self) -> None:
         self.rows: list[TextRecord] = []
-        self.checkpoint = StreamCheckpoint("gutenberg-demo", 0, 0)
+        self.checkpoint = Checkpoint("gutenberg-demo", 0, 0)
 
     async def insert_batch(self, rows: list[TextRecord]) -> None:
         self.rows.extend(rows)
-        self.checkpoint = StreamCheckpoint(
+        self.checkpoint = Checkpoint(
             "gutenberg-demo",
             offset=self.checkpoint.offset + len(rows),
             records=len(self.rows),
         )
 
-    async def complete(self) -> StreamCheckpoint:
-        self.checkpoint = StreamCheckpoint(
+    async def complete(self) -> Checkpoint:
+        self.checkpoint = Checkpoint(
             self.checkpoint.name,
             self.checkpoint.offset,
             self.checkpoint.records,

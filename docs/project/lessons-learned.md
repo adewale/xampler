@@ -190,7 +190,7 @@ Early on, many wrappers lived only inside individual examples. That was good for
 
 What changed:
 
-- Added `xampler.streaming` with `ByteStream`, `RecordStream`, `JsonlReader`, `aiter_batches`, `async_enumerate`, `StreamCheckpoint`, and `AgentEvent`.
+- Added `xampler.streaming` with `ByteStream`, `RecordStream`, `JsonlReader`, `aiter_batches`, `async_enumerate`, and `AgentEvent`; resumable state now uses `xampler.status.Checkpoint`.
 - Added `xampler.status` with `OperationState`, `Progress`, `Checkpoint`, and `BatchResult`.
 - Added `xampler.response` with `jsonable()` and `error_payload()`.
 - Added `xampler.types` with `NewType` ids/keys, `SupportsRaw`, `DemoTransport`, and `RemoteVerifier`.

@@ -8,6 +8,7 @@ OperationState = Literal["not_started", "running", "complete", "failed"]
 
 @dataclass(frozen=True)
 class Progress:
+    """Known-size work status."""
     current: int
     total: int
     state: OperationState = "running"
@@ -21,6 +22,7 @@ class Progress:
 
 @dataclass(frozen=True)
 class Checkpoint:
+    """Resumable work position for imports, streams, and pipelines."""
     name: str
     offset: int
     records: int
@@ -32,6 +34,11 @@ T = TypeVar("T")
 
 @dataclass(frozen=True)
 class BatchResult[T]:
+    """Grouped work result, usually paired with a checkpoint."""
+
     batches: int
     records: int
     checkpoint: T
+
+
+__all__ = ["BatchResult", "Checkpoint", "OperationState", "Progress"]
