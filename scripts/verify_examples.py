@@ -524,6 +524,16 @@ def verify(example: Example, port: int, timeout: float) -> int:
         for check in example.checks:
             run_check(port, check)
             print(f"✓ {check.method} {check.path}")
+        interactive_script_paths = {
+            "examples/ai-agents/agents-sdk-tools": ["/"],
+            "examples/experimental/python-by-example-playground": ["/examples/hello-world"],
+            "examples/full-apps/mini-wiki": ["/wiki/home-page/edit"],
+            "examples/state-events/durable-object-chatroom": ["/"],
+            "examples/state-events/workflows-pipeline": ["/"],
+            "examples/streaming/gutenberg-stream-composition": ["/"],
+        }
+        if example.name in interactive_script_paths:
+            verify_inline_browser_scripts(port, interactive_script_paths[example.name])
         if example.name == "examples/state-events/durable-object-chatroom":
             verify_chatroom_websocket(port)
         if example.name == "examples/full-apps/hvsc-ai-data-search":
@@ -552,31 +562,35 @@ def request_json(port: int, check: Check) -> dict[str, object]:
     return data
 
 
-def verify_hvsc_index_script_compiles(port: int) -> None:
-    html_body = request_text(port, Check("/"))
-    scripts: list[str] = []
-    marker = "<script>"
-    end_marker = "</script>"
-    offset = 0
-    while True:
-        start = html_body.find(marker, offset)
-        if start < 0:
-            break
-        end = html_body.find(end_marker, start)
-        if end < 0:
-            raise AssertionError("HVSC index has an unterminated inline script")
-        scripts.append(html_body[start + len(marker) : end])
-        offset = end + len(end_marker)
-    if not scripts:
-        raise AssertionError("HVSC index has no inline script to drive the demo button")
-    with tempfile.NamedTemporaryFile("w", suffix=".js", delete=False) as script_file:
-        script_file.write("\n".join(scripts))
-        script_path = script_file.name
-    try:
-        subprocess.run(["node", "--check", script_path], check=True)
-    finally:
-        Path(script_path).unlink(missing_ok=True)
-    print("✓ HVSC index JavaScript compiles")
+def verify_inline_browser_scripts(port: int, paths: list[str]) -> None:
+    for path in paths:
+        html_body = request_text(port, Check(path))
+        scripts: list[str] = []
+        search_offset = 0
+        while True:
+            start = html_body.find("<script", search_offset)
+            if start < 0:
+                break
+            tag_end = html_body.find(">", start)
+            if tag_end < 0:
+                raise AssertionError(f"{path}: unterminated opening script tag")
+            close = html_body.find("</script>", tag_end)
+            if close < 0:
+                raise AssertionError(f"{path}: unterminated inline script")
+            script_tag = html_body[start:tag_end].lower()
+            if " src=" not in script_tag and "type=\"application/json\"" not in script_tag:
+                scripts.append(html_body[tag_end + 1 : close])
+            search_offset = close + len("</script>")
+        if not scripts:
+            continue
+        with tempfile.NamedTemporaryFile("w", suffix=".js", delete=False) as script_file:
+            script_file.write("\n".join(scripts))
+            script_path = script_file.name
+        try:
+            subprocess.run(["node", "--check", script_path], check=True)
+        finally:
+            Path(script_path).unlink(missing_ok=True)
+        print(f"✓ {path} inline JavaScript compiles")
 
 
 def verify_hvsc_degraded_full_catalog_flow(port: int) -> None:
@@ -587,7 +601,7 @@ def verify_hvsc_degraded_full_catalog_flow(port: int) -> None:
     error; it should degrade to the bundled sample catalog and leave search
     usable.
     """
-    verify_hvsc_index_script_compiles(port)
+    verify_inline_browser_scripts(port, ["/"])
     start = request_json(port, Check("/ingest/start", method="POST"))
     if start.get("status") == "error" and "no shards found" in str(start.get("error", "")):
         sample = request_json(port, Check("/catalog/ingest-sample", method="POST"))
