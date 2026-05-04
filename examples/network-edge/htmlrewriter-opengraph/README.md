@@ -1,6 +1,6 @@
 # HTMLRewriter 11 — OpenGraph
 
-Pythonic metadata dataclasses plus Cloudflare HTMLRewriter as the platform primitive.
+Pythonic metadata dataclasses plus Cloudflare HTMLRewriter as the platform primitive. `/extract` parses OpenGraph and canonical-link metadata from fixture HTML.
 
 ## Cloudflare docs
 

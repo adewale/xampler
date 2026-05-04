@@ -14,9 +14,27 @@ class Default(WorkerEntrypoint):
         parsed = urlparse(str(request.url))
         params = parse_qs(parsed.query)
         target = params.get("url", ["https://example.com"])[0]
+        if parsed.path == "/report":
+            return Response(
+                "<html><head><title>Xampler Report</title></head>"
+                "<body><h1>Browser Rendering Report</h1><p>report-content</p></body></html>",
+                headers={"content-type": "text/html; charset=utf-8"},
+            )
         if parsed.path == "/demo":
             result = await DemoBrowserRendering().screenshot(ScreenshotRequest(url=target))
             return Response.json(asdict(result))
+        if parsed.path == "/demo/report-verifier":
+            content = "<title>Xampler Report</title><h1>Browser Rendering Report</h1>"
+            pdf = "%PDF-1.4 demo report content"
+            screenshot = await DemoBrowserRendering().screenshot(ScreenshotRequest(url="/report"))
+            return Response.json({
+                "title": "Xampler Report",
+                "contains_report_content": "Report" in content,
+                "content_length": len(content),
+                "pdf_length": len(pdf),
+                "screenshot": asdict(screenshot),
+                "pdf_longer_than_title": len(pdf) > len("Xampler Report"),
+            })
         if parsed.path == "/demo/content":
             return Response(
                 "<html><title>Example Domain</title></html>",

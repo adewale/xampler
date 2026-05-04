@@ -1,6 +1,6 @@
 # Email Workers 19 — Router
 
-Email Worker that rejects blocked senders and forwards accepted mail. Configure Email Routing before deploy.
+Email Worker policy router with deterministic fixture messages for allow, reject, forward, and annotate decisions. Configure Email Routing before deploy.
 
 ## Cloudflare docs
 

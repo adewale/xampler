@@ -1,6 +1,7 @@
 from __future__ import annotations
 
 import json
+import re
 from contextlib import suppress
 from dataclasses import asdict, dataclass
 from typing import Any, Protocol
@@ -45,6 +46,34 @@ class WeatherTool:
         return {"city": city, "forecast": "sunny", "temperature_c": 29}
 
 
+class CalculatorTool:
+    name = "calculator.eval"
+
+    async def run(self, **kwargs: Any) -> dict[str, Any]:
+        expression = str(kwargs.get("expression", "2+3"))
+        match = re.fullmatch(r"\s*(\d+)\s*([+\-*/])\s*(\d+)\s*", expression)
+        if match is None:
+            raise ValueError("calculator only accepts simple binary arithmetic")
+        left, op, right = match.groups()
+        a = int(left)
+        b = int(right)
+        value = {"+": a + b, "-": a - b, "*": a * b, "/": a / b}[op]
+        return {"expression": expression, "value": value}
+
+
+class SearchTool:
+    name = "docs.search"
+
+    async def run(self, **kwargs: Any) -> dict[str, Any]:
+        query = str(kwargs.get("query", "workers"))
+        corpus = {
+            "workers": "Workers run application code at Cloudflare's edge.",
+            "d1": "D1 is a serverless SQL database with SQLite semantics.",
+        }
+        key = "d1" if "d1" in query.lower() else "workers"
+        return {"query": query, "hit": key, "snippet": corpus[key]}
+
+
 class DemoAgent:
     def __init__(self, *, name: str, tools: list[AgentTool]):
         self.name = name
@@ -53,15 +82,23 @@ class DemoAgent:
 
     async def run(self, message: str) -> AgentRunResult:
         messages = [AgentMessage("user", message)]
-        city = "Lagos"
-        if "london" in message.lower():
-            city = "London"
-        tool = self.tools["weather.lookup"]
-        weather = await tool.run(city=city)
-        call = AgentToolCall(tool.name, {"city": city}, weather)
-        final = f"{city} is {weather['forecast']} at {weather['temperature_c']}°C."
+        calls: list[AgentToolCall] = []
+        lower = message.lower()
+        if "calculate" in lower or "2+3" in lower:
+            expression = "2+3" if "2+3" in message else "40+2"
+            result = await self.tools["calculator.eval"].run(expression=expression)
+            calls.append(AgentToolCall("calculator.eval", {"expression": expression}, result))
+        if "search" in lower or "d1" in lower:
+            query = "d1" if "d1" in lower else "workers"
+            result = await self.tools["docs.search"].run(query=query)
+            calls.append(AgentToolCall("docs.search", {"query": query}, result))
+        if not calls:
+            city = "London" if "london" in lower else "Lagos"
+            weather = await self.tools["weather.lookup"].run(city=city)
+            calls.append(AgentToolCall("weather.lookup", {"city": city}, weather))
+        final = "; ".join(f"{call.name} -> {call.result}" for call in calls)
         messages.append(AgentMessage("assistant", final))
-        return AgentRunResult(self.name, messages, [call], final)
+        return AgentRunResult(self.name, messages, calls, final)
 
 
 class AgentSession:
@@ -79,7 +116,9 @@ class AgentSession:
 class AgentDurableObject(DurableObject):
     def __init__(self, state: Any, env: Any):
         super().__init__(state, env)
-        self.agent = DemoAgent(name="durable-demo-agent", tools=[WeatherTool()])
+        self.agent = DemoAgent(
+            name="durable-demo-agent", tools=[WeatherTool(), CalculatorTool(), SearchTool()]
+        )
 
     async def fetch(self, request: Any) -> Response:
         body = "{}"
@@ -98,8 +137,24 @@ class Default(WorkerEntrypoint):
         message = query.get("message", ["weather in Lagos"])[0]
 
         if parsed.path == "/demo":
-            result = await DemoAgent(name="demo-agent", tools=[WeatherTool()]).run(message)
+            result = await DemoAgent(
+                name="demo-agent", tools=[WeatherTool(), CalculatorTool(), SearchTool()]
+            ).run(message)
             return Response.json(asdict(result))
+
+        if parsed.path == "/demo/transcript":
+            result = await DemoAgent(
+                name="demo-agent", tools=[WeatherTool(), CalculatorTool(), SearchTool()]
+            ).run("calculate 2+3 and search D1")
+            payload = asdict(result)
+            calculator_called = any(call.name == "calculator.eval" for call in result.tool_calls)
+            search_called = any(call.name == "docs.search" for call in result.tool_calls)
+            payload["assertions"] = {
+                "calculator_called": calculator_called,
+                "search_called": search_called,
+                "transcript_complete": result.status == "complete" and len(result.messages) == 2,
+            }
+            return Response.json(payload)
 
         if parsed.path.startswith("/agents/") and parsed.path.endswith("/run"):
             name = parsed.path.split("/")[2]

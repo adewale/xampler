@@ -16,22 +16,32 @@ async def route_email(router: EmailRouter, message: Any) -> IncomingEmail:
         return email
     headers = js.Headers.new()
     headers.set("X-Processed-By", "xampler-email-workers-19")
+    if decision.action == "annotate":
+        headers.set("X-Xampler-Annotation", decision.reason)
     await message.forward(router.forward_to, headers)
     return email
 
 
 class Default(WorkerEntrypoint):
     async def fetch(self, request: Any) -> Response:
-        sample = IncomingEmail(
-            sender="ada@example.com",
-            recipient="search@example.net",
-            subject="search: jeroen",
-            size=128,
-        )
+        url = str(request.url)
+        path = url.split("/fixtures/email/", 1)[-1] if "/fixtures/email/" in url else "forward"
+        fixtures = {
+            "allow": IncomingEmail("ada@trusted.test", "wiki@example.net", "hello", 128),
+            "reject": IncomingEmail("bot@blocked.test", "wiki@example.net", "spam", 128),
+            "forward": IncomingEmail("ada@example.com", "wiki@example.net", "search: jeroen", 128),
+            "annotate": IncomingEmail(
+                "ada@example.com", "wiki@example.net", "tag: needs-review", 128
+            ),
+        }
+        sample = fixtures.get(path, fixtures["forward"])
         decision = EmailRouter(
-            forward_to="archive@example.net", blocked_domains={"blocked.test"}
+            forward_to="archive@example.net",
+            blocked_domains={"blocked.test"},
+            allow_domains={"trusted.test"},
         ).decide(sample)
         return Response.json({
+            "fixture": path,
             "action": decision.action,
             "reason": decision.reason,
             "email": decision.email.__dict__,

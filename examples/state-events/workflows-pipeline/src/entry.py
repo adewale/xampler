@@ -1,11 +1,14 @@
 from __future__ import annotations
 
 import asyncio
+import json
+from datetime import UTC, datetime
 from typing import Any
 from urllib.parse import urlparse
 
 from workers import Response, WorkerEntrypoint, WorkflowEntrypoint  # type: ignore[import-not-found]
 
+from xampler.d1 import D1Database
 from xampler.response import jsonable
 from xampler.workflows import DemoWorkflowService, WorkflowService
 
@@ -30,12 +33,57 @@ class Pipeline(WorkflowEntrypoint):
         await summarize()
 
 
+async def record_timeline(db: D1Database, instance_id: str) -> None:
+    now = datetime.now(UTC).isoformat()
+    steps = [
+        ("fetch input", "complete", "r2://input", {"records": 3}),
+        ("transform", "complete", "batch:1", {"records": 3}),
+        ("summarize", "complete", "final", {"summary": "INPUT"}),
+    ]
+    await db.statement("DELETE FROM workflow_timeline WHERE instance_id = ?").run(instance_id)
+    for step, state, checkpoint, details in steps:
+        await db.statement(
+            """
+            INSERT INTO workflow_timeline (
+              instance_id, step, state, checkpoint, details, created_at
+            ) VALUES (?, ?, ?, ?, ?, ?)
+            """
+        ).run(instance_id, step, state, checkpoint, json.dumps(details), now)
+
+
+async def timeline(db: D1Database, instance_id: str) -> dict[str, Any]:
+    rows = await db.query(
+        """
+        SELECT step, state, checkpoint, details, created_at
+        FROM workflow_timeline
+        WHERE instance_id = ?
+        ORDER BY id
+        """,
+        instance_id,
+    )
+    events = [
+        {
+            **row,
+            "details": json.loads(str(row.get("details") or "{}")),
+        }
+        for row in rows
+    ]
+    return {"instance_id": instance_id, "events": events, "count": len(events)}
+
+
 class Default(WorkerEntrypoint):
     async def fetch(self, request: Any) -> Response:
         url = urlparse(str(request.url))
+        db = D1Database(self.env.DB)
 
         if url.path == "/demo/start":
-            return Response.json(jsonable(await DemoWorkflowService().start()))
+            started = await DemoWorkflowService().start()
+            await record_timeline(db, started.instance_id)
+            return Response.json(jsonable(started))
+
+        if url.path.startswith("/timeline/"):
+            instance_id = url.path.removeprefix("/timeline/")
+            return Response.json(await timeline(db, instance_id))
 
         if url.path.startswith("/demo/status/"):
             instance_id = url.path.removeprefix("/demo/status/")

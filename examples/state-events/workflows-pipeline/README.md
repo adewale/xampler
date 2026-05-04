@@ -1,6 +1,6 @@
 # Workflows 10 — Pipeline
 
-A Workflow service wrapper for creating and checking workflow instances.
+A Workflow service wrapper for creating/checking workflow instances plus a D1-backed timeline route. The deterministic `/demo/start` path writes progress checkpoints to D1 so `/timeline/<id>` can be verified locally.
 
 ## Cloudflare docs
 

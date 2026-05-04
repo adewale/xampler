@@ -177,12 +177,26 @@ EXAMPLES = {
         [
             Check("/demo/start", contains="demo-instance"),
             Check("/demo/status/demo-instance", contains="complete"),
+            Check("/timeline/demo-instance", contains="fetch input"),
         ],
         needs_setup="/start uses real Workflows; /demo/* is deterministic for local verification.",
+        setup_commands=[
+            [
+                "uv",
+                "run",
+                "pywrangler",
+                "d1",
+                "execute",
+                "xampler-workflows",
+                "--local",
+                "--file",
+                "db_init.sql",
+            ]
+        ],
     ),
     "examples/network-edge/htmlrewriter-opengraph": Example(
         "examples/network-edge/htmlrewriter-opengraph",
-        [Check("/", contains="og:title")],
+        [Check("/", contains="og:title"), Check("/extract", contains="canonical_url")],
     ),
     "examples/ai-agents/vectorize-search": Example(
         "examples/ai-agents/vectorize-search",
@@ -227,17 +241,29 @@ EXAMPLES = {
                 contains="hello room",
             ),
             Check("/room/demo/dev/history", contains="hello room"),
+            Check("/room/demo/dev/replay", contains="hello room"),
+            Check("/room/demo/dev/export", contains="transcript"),
         ],
     ),
     "examples/network-edge/browser-rendering-screenshot": Example(
         "examples/network-edge/browser-rendering-screenshot",
-        [Check("/demo?url=https://example.com", contains="demo-browser-rendering")],
+        [
+            Check("/demo?url=https://example.com", contains="demo-browser-rendering"),
+            Check("/report", contains="Browser Rendering Report"),
+            Check("/demo/report-verifier", contains="pdf_longer_than_title"),
+        ],
         needs_setup="/ uses real Browser Rendering REST API; /demo is deterministic locally.",
         ready_path="/demo",
     ),
     "examples/network-edge/email-worker-router": Example(
         "examples/network-edge/email-worker-router",
-        [Check("/", contains="forward to archive@example.net")],
+        [
+            Check("/", contains="forward to archive@example.net"),
+            Check("/fixtures/email/allow", contains='"action": "allow"'),
+            Check("/fixtures/email/reject", contains='"action": "reject"'),
+            Check("/fixtures/email/forward", contains='"action": "forward"'),
+            Check("/fixtures/email/annotate", contains='"action": "annotate"'),
+        ],
         needs_setup=(
             "Email event routing is deployed-only; HTTP route verifies deterministic policy."
         ),
@@ -306,6 +332,7 @@ EXAMPLES = {
         "examples/ai-agents/agents-sdk-tools",
         [
             Check("/demo?message=weather%20in%20Lagos", contains="weather.lookup"),
+            Check("/demo/transcript", contains="calculator.eval"),
             Check(
                 "/agents/demo/run",
                 method="POST",
@@ -376,6 +403,8 @@ EXAMPLES = {
             ),
             Check("/wiki/HomePage/history", contains="r2"),
             Check("/search?q=D1Search", contains="HomePage"),
+            Check("/cached/wiki/HomePage", contains="D1Search"),
+            Check("/events", contains="http.request"),
             Check("/export.jsonl", contains='"revision":2'),
         ],
         needs_setup="Initializes local D1; CSS is served by Workers Static Assets.",

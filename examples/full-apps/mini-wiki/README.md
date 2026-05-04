@@ -19,6 +19,8 @@ POST /wiki/<slug>          save revision
 GET  /wiki/<slug>/history  revision history
 GET  /wiki/<slug>/raw      raw wiki text
 GET  /search?q=...         D1 FTS search
+GET  /cached/wiki/<slug>   Cache API wrapper around read-only wiki pages
+GET  /events               D1 wide-event observability rows
 GET  /export.jsonl         export revisions
 ```
 
@@ -33,4 +35,4 @@ page = await db.query_one("SELECT * FROM pages WHERE slug = ?", "HomePage")
 
 ## Local verification
 
-The verifier initializes local D1 from `db_init.sql`, starts the Worker, creates and edits a page, checks history/raw/search, and verifies static CSS is served by Assets.
+The verifier initializes local D1 from `db_init.sql`, starts the Worker, creates and edits a page, checks history/raw/search, exercises the Cache API wrapper, checks D1 wide-event observability rows, and verifies static CSS is served by Assets.

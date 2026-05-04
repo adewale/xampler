@@ -5,9 +5,11 @@ import json
 import re
 from dataclasses import asdict, dataclass
 from datetime import UTC, datetime
-from typing import Any
+from typing import Any, cast
 from urllib.parse import parse_qs, quote, unquote, urlparse
 
+import js  # type: ignore[import-not-found]
+from cfboundary.ffi import to_js
 from workers import Response, WorkerEntrypoint  # type: ignore[import-not-found]
 
 from xampler.d1 import D1Database
@@ -147,6 +149,30 @@ class Wiki:
         )
         return [WikiSearchResult(**row) for row in rows]
 
+    async def record_event(self, event_name: str, route: str, method: str) -> None:
+        await self.db.statement(
+            """
+            INSERT INTO wide_events (event_name, route, method, dimensions, created_at)
+            VALUES (?, ?, ?, ?, ?)
+            """
+        ).run(
+            event_name,
+            route,
+            method,
+            json.dumps({"route": route, "method": method, "app": "mini-wiki"}),
+            datetime.now(UTC).isoformat(),
+        )
+
+    async def wide_events(self) -> list[dict[str, Any]]:
+        return await self.db.query(
+            """
+            SELECT event_name, route, method, dimensions, created_at
+            FROM wide_events
+            ORDER BY id DESC
+            LIMIT 25
+            """
+        )
+
     async def export_revisions(self) -> str:
         rows = await self.db.query(
             """
@@ -237,7 +263,13 @@ class Default(WorkerEntrypoint):
         parsed = urlparse(str(request.url))
         path = parsed.path.rstrip("/") or "/"
         wiki = Wiki(D1Database(self.env.DB))
+        await wiki.record_event("http.request", path, str(request.method))
         try:
+            if path == "/events":
+                return Response.json({"events": await wiki.wide_events()})
+            if path.startswith("/cached/wiki/"):
+                slug = unquote(path.removeprefix("/cached/wiki/"))
+                return await cached_wiki_page(wiki, slug)
             if path == "/":
                 return await recent_page(wiki)
             if path == "/recent":
@@ -253,6 +285,42 @@ class Default(WorkerEntrypoint):
         except ValueError as exc:
             body = f"<p>{html.escape(str(exc))}</p>"
             return html_response(shell("Bad request", body), status=400)
+
+
+async def cached_wiki_page(wiki: Wiki, slug: str) -> Response:
+    validate_slug(slug)
+    cache = cast(Any, js).caches.default
+    cache_url = f"https://mini-wiki.local/wiki/{quote(slug)}"
+    cached = await cache.match(cache_url)
+    if cached:
+        text = str(await cached.text())
+        response_cls = cast(Any, Response)
+        return response_cls(
+            text,
+            status=200,
+            headers={"content-type": "text/html; charset=utf-8", "x-wiki-cache": "HIT"},
+        )
+    page = await wiki.get_page(slug)
+    if page is None:
+        return await show_page(wiki, slug)
+    page_body = (
+        f"<h2>{html.escape(page.title)}</h2>"
+        f"<article class='page'>{render_markup(page.body)}</article>"
+    )
+    body = shell(page.title, page_body)
+    await cache.put(
+        cache_url,
+        cast(Any, js).Response.new(
+            body,
+            to_js({"headers": {"content-type": "text/html; charset=utf-8"}}),
+        ),
+    )
+    response_cls = cast(Any, Response)
+    return response_cls(
+        body,
+        status=200,
+        headers={"content-type": "text/html; charset=utf-8", "x-wiki-cache": "MISS"},
+    )
 
 
 async def recent_page(wiki: Wiki) -> Response:

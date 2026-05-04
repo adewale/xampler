@@ -4,5 +4,8 @@
   "main": "src/entry.py",
   "compatibility_date": "2026-05-01",
   "compatibility_flags": ["python_workers"],
-  "workflows": [{"name": "xampler-pipeline", "binding": "PIPELINE", "class_name": "Pipeline"}]
+  "workflows": [{"name": "xampler-pipeline", "binding": "PIPELINE", "class_name": "Pipeline"}],
+  "d1_databases": [
+    {"binding": "DB", "database_name": "xampler-workflows", "database_id": "REPLACE_WITH_D1_DATABASE_ID"}
+  ]
 }

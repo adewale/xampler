@@ -1,6 +1,6 @@
 # Durable Objects 15 — Chatroom
 
-Combines Durable Objects and WebSockets. The Pythonic model is `ChatRoom` + `ChatSession`.
+Combines Durable Objects and WebSockets. The Pythonic model is `ChatRoom` + `ChatSession`. The room keeps ephemeral presence and only the last 10 messages in memory; `/dev/replay` and `/dev/export` expose the replay/transcript shape for verification.
 
 ## Cloudflare docs
 
