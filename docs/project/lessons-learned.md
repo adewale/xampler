@@ -1,6 +1,6 @@
 # Lessons Learned
 
-Last updated: 2026-05-02.
+Last updated: 2026-05-04.
 
 This project is building Pythonic, executable Cloudflare examples. These are the lessons learned so far.
 
@@ -438,3 +438,30 @@ What changed:
 - Kept remote/paid checks opt-in while proposing deterministic fixture-heavy examples that can run locally.
 
 Lesson: when an abstraction is unclear, do not force it into `xampler/` prematurely. Add one more low-cost, fixture-driven example that exercises a second shape. Good examples are how Xampler discovers the right library API.
+
+## 36. Minimal full apps should follow Cloudflare's storage decision tree
+
+The first design for a minimal Instiki-style wiki over-composed the stack by adding R2/KV-style storage ideas before the workload needed them. Cloudflare's storage guide points to a simpler answer: a wiki is structured relational app data with revision history and search, so D1 should be the source of truth.
+
+What changed:
+
+- Added `examples/full-apps/mini-wiki` as a deliberately small full app.
+- The wiki uses only Workers, Static Assets, and D1.
+- D1 stores pages, immutable revisions, recent changes, and an FTS5 search table.
+- Static Assets serves CSS without waking Python.
+- No KV, R2, Durable Objects, Queues, or AI are included in the minimal version.
+
+Lesson: do not add primitives just to exercise more APIs. Use the smallest honest Cloudflare architecture for the problem, then add optional phases only when a feature requires them: R2 for attachments/large exports, KV for eventually consistent config/cache, Durable Objects for live collaboration/locks, Queues for background work.
+
+## 37. Full apps can reveal library bugs that unit tests miss
+
+The mini-wiki was the first example to rely heavily on shared `xampler.response` helpers for normal HTML application routes. It exposed that the helpers were constructing Python Workers `Response` objects with positional options, which failed at runtime even though the API looked plausible.
+
+What changed:
+
+- Fixed `xampler.response.response()` and the JSON fallback to pass `status=` and `headers=` as keyword arguments.
+- Added the mini-wiki to `scripts/verify_examples.py` with checks for static CSS, missing-page flow, create/edit, raw output, history, FTS search, and JSONL export.
+- Added the mini-wiki source to `pyright.examples.json` so the app stays strictly typed.
+- Verified the example through `scripts/use_local_xampler.py` so the Worker consumed the local wheel, not the last pushed GitHub version.
+
+Lesson: route-level examples are not just demos. They are integration tests for the library API, packaging path, Python Workers runtime behavior, and documented architecture choices.
