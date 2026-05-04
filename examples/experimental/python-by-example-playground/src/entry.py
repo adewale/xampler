@@ -306,39 +306,82 @@ def index_html() -> str:
         [example for example in ordered_examples() if example["slug"] in UNSUPPORTED_SLUGS]
     )
     outbound = EXAMPLE_BY_SLUG[OUTBOUND_EXAMPLE_SLUG]
+    first = supported[0]
     return page(
         "Python by Example Playground",
         f"""
 <header class=hero>
+<p class=eyebrow>Executable reference</p>
 <h1>Python by Example</h1>
-<p>Executable Python examples in the style of <a href=https://gobyexample.com/>Go by Example</a>, running inside Cloudflare Dynamic Python Worker isolates.</p>
-<p class=attrib>Ordered from basics → control flow → data structures → functions/classes → files/JSON/time → async/networking. Runtime: Cloudflare Python Workers currently use Python 3.13/Pyodide locally; Python 3.14 support depends on Cloudflare upgrading that runtime.</p>
+<p class=lede>Learn Python through small, editable examples that run in isolated Cloudflare Dynamic Python Workers.</p>
+<div class=start-here>
+  <div>
+    <strong>Start here</strong>
+    <span>Begin with <a href=/examples/{html.escape(first['slug'])}>{html.escape(first['title'])}</a>, then follow the list top to bottom.</span>
+  </div>
+  <a class=buttonish href=/examples/{html.escape(first['slug'])}>Start lesson</a>
+</div>
+<p class=attrib>Runtime: Cloudflare Python Workers currently use Python 3.13/Pyodide locally; Python 3.14 support depends on Cloudflare upgrading that runtime.</p>
 <p class=attrib>Adapted from <a href={SOURCE_URL}>{SOURCE_URL}</a> by {html.escape(SOURCE_AUTHOR)}, licensed under {html.escape(SOURCE_LICENSE)}. See <a href=/attribution>attribution</a>.</p>
 </header>
 <main class=layout>
-<section>
-<h2>Examples</h2>
-<nav class=example-list>{supported_links}</nav>
+<section class=main-column>
+<div class=section-head>
+  <div>
+    <h2>Examples in learning order</h2>
+    <p class=muted>Basics → collections → control flow → functions/classes → files/JSON/time → async/networking.</p>
+  </div>
+  <label class=filter><span>Filter</span><input id=filterExamples placeholder="lists, async, files…" autocomplete=off></label>
+</div>
+<nav id=examples class=example-list>{supported_links}</nav>
+<p id=filterEmpty class="muted hidden">No examples matched that filter.</p>
 </section>
-<aside>
+<aside class=side-column>
 <section class=panel>
-<h2>Outbound Worker example</h2>
-<p><a href=/examples/{OUTBOUND_EXAMPLE_SLUG}>{html.escape(outbound['title'])}</a> is a special Dynamic Workers networking demo with a checkbox that enables or disables calls to <code>example.com</code>.</p>
+<h2>Special capability</h2>
+<p><a href=/examples/{OUTBOUND_EXAMPLE_SLUG}>{html.escape(outbound['title'])}</a> demonstrates Dynamic Workers outbound control: run once blocked, then enable the Outbound Worker gateway for <code>example.com</code>.</p>
 </section>
 <section class="panel unsupported">
 <h2>Unsupported in this playground</h2>
-<p>These examples intentionally exit the process, bind server sockets, or need command-line/test-runner behavior that is not a good fit for this Worker isolate.</p>
-<nav class=example-list>{unsupported_links}</nav>
+<p>Kept for reading, but not part of the happy path because they require process-level CLI, test-runner, or server-socket behavior.</p>
+<nav class=compact-list>{unsupported_links}</nav>
 </section>
 </aside>
 </main>
+<script>
+const filter = document.querySelector('#filterExamples');
+const list = document.querySelector('#examples');
+const empty = document.querySelector('#filterEmpty');
+const original = list.innerHTML;
+let examplesCache = null;
+function linkFor(example) {{
+  const a = document.createElement('a');
+  a.href = '/examples/' + example.slug;
+  a.dataset.title = (example.title + ' ' + example.summary).toLowerCase();
+  a.innerHTML = '<span>' + escapeHtml(example.title) + '</span><small>' + escapeHtml(example.summary) + '</small>';
+  return a;
+}}
+function escapeHtml(value) {{
+  return String(value).replace(/[&<>"']/g, c => ({{'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;',"'":'&#39;'}}[c]));
+}}
+filter.addEventListener('input', async () => {{
+  const q = filter.value.trim().toLowerCase();
+  if (!q) {{ list.innerHTML = original; empty.classList.add('hidden'); return; }}
+  examplesCache ||= await (await fetch('/api/examples')).json();
+  const unsupported = {json.dumps(sorted(UNSUPPORTED_SLUGS))};
+  const supported = examplesCache.filter(e => !unsupported.includes(e.slug) && e.slug !== '{OUTBOUND_EXAMPLE_SLUG}');
+  const matches = supported.filter(e => (e.title + ' ' + e.summary + ' ' + e.slug).toLowerCase().includes(q));
+  list.replaceChildren(...matches.map(linkFor));
+  empty.classList.toggle('hidden', matches.length !== 0);
+}});
+</script>
 """,
     )
 
 
 def example_links(examples: list[dict[str, str]]) -> str:
     return "\n".join(
-        f"""<a href=/examples/{html.escape(example['slug'])}><span>{html.escape(example['title'])}</span><small>{html.escape(example['summary'])}</small></a>"""
+        f"""<a href=/examples/{html.escape(example['slug'])} data-title=\"{html.escape((example['title'] + ' ' + example['summary']).lower())}\"><span>{html.escape(example['title'])}</span><small>{html.escape(example['summary'])}</small></a>"""
         for example in examples
     )
 
@@ -347,35 +390,62 @@ def example_html(example: dict[str, str]) -> str:
     slug = example["slug"]
     rendered_code = HTTP_CLIENT_CODE if slug == OUTBOUND_EXAMPLE_SLUG else example["code"]
     code = html.escape(rendered_code)
+    original_code_json = json.dumps(rendered_code)
     title = html.escape(example["title"])
     summary = html.escape(example["summary"])
     unsupported = slug in UNSUPPORTED_SLUGS
     outbound = slug == OUTBOUND_EXAMPLE_SLUG
     source_url = f"{SOURCE_URL}/blob/main/{example['source_path']}"
     lesson_url = f"{SOURCE_URL}/blob/main/{example['lesson_path']}"
+    run_label = "Run anyway" if unsupported else "Run Python"
     return page(
         title,
         f"""
-<p><a href=/>← all examples</a></p>
-<h1>{title}</h1>
-<p>{summary}</p>
+<nav class=crumb><a href=/>← all examples</a></nav>
+<header class=lesson-head>
+  <p class=eyebrow>{'Unsupported lesson' if unsupported else 'Runnable lesson'}</p>
+  <h1>{title}</h1>
+  <p class=lede>{summary}</p>
+  <p class=attrib>Source: <a href={source_url}>{html.escape(example['source_path'])}</a> · Lesson: <a href={lesson_url}>{html.escape(example['lesson_path'])}</a></p>
+</header>
 {unsupported_note(unsupported)}
 {outbound_note(outbound)}
-<p class=attrib>Source: <a href={source_url}>{html.escape(example['source_path'])}</a> · Lesson: <a href={lesson_url}>{html.escape(example['lesson_path'])}</a></p>
 <div class=limits><strong>Sandbox limits:</strong> CPU budget 50 ms, Python trace budget 200,000 events, outbound network blocked by default, subrequests 0 unless the Outbound Worker checkbox is enabled.</div>
 <div class=playground>
-<textarea id=code spellcheck=false>{code}</textarea>
-<div class=actions><button id=run>▶ Run Python</button>{outbound_checkbox(outbound)}<span id=status></span></div>
-<pre id=out>Click Run Python to execute this example in a Dynamic Python Worker isolate.</pre>
+  <div class=editor-head><strong>Code</strong><button id=reset type=button class=secondary>Reset</button></div>
+  <textarea id=code spellcheck=false>{code}</textarea>
+  <div class=actions><button id=run>▶ {run_label}</button>{outbound_checkbox(outbound)}<span id=status class=status>Ready</span></div>
+  <div id=resultBanner class="result-banner idle">Ready to run.</div>
+  <pre id=out aria-live=polite>Output will appear here without moving the rest of the page.</pre>
+  <details id=traceWrap class=trace hidden><summary>Raw traceback / stderr</summary><pre id=trace></pre></details>
 </div>
 <script>
+const ORIGINAL_CODE = {original_code_json};
 const code = document.querySelector('#code');
 const out = document.querySelector('#out');
+const trace = document.querySelector('#trace');
+const traceWrap = document.querySelector('#traceWrap');
 const status = document.querySelector('#status');
+const banner = document.querySelector('#resultBanner');
 const outbound = document.querySelector('#allow-outbound');
+function setBanner(kind, text) {{
+  banner.className = 'result-banner ' + kind;
+  banner.textContent = text;
+}}
+document.querySelector('#reset').onclick = () => {{
+  code.value = ORIGINAL_CODE;
+  status.textContent = 'Ready';
+  setBanner('idle', 'Reset to the original lesson code.');
+  out.textContent = 'Output will appear here without moving the rest of the page.';
+  trace.textContent = '';
+  traceWrap.classList.add('hidden');
+}};
 document.querySelector('#run').onclick = async () => {{
-  status.textContent = 'running…';
+  status.textContent = 'Running…';
+  setBanner('running', 'Running in a Dynamic Python Worker isolate…');
   out.textContent = '';
+  trace.textContent = '';
+  traceWrap.classList.add('hidden');
   try {{
     const res = await fetch('/api/run', {{
       method: 'POST',
@@ -383,11 +453,23 @@ document.querySelector('#run').onclick = async () => {{
       body: JSON.stringify({{code: code.value, allowOutbound: Boolean(outbound && outbound.checked)}})
     }});
     const data = await res.json();
-    status.textContent = data.ok ? 'ok' : (data.error_type || 'error');
-    const friendly = data.friendly_error ? data.friendly_error + '\\n\\n' : '';
-    out.textContent = friendly + (data.stdout || '') + (data.stderr || '');
+    status.textContent = data.ok ? 'OK' : (data.error_type || 'Error');
+    if (data.ok) {{
+      setBanner('success', 'Run completed successfully.');
+      out.textContent = data.stdout || '(no stdout)';
+    }} else {{
+      const friendly = data.friendly_error || 'The example raised an error.';
+      const kind = data.error_type === 'sandbox_limit' ? 'warning' : 'error';
+      setBanner(kind, friendly);
+      out.textContent = data.stdout || '(no stdout before the error)';
+    }}
+    if (data.stderr) {{
+      trace.textContent = data.stderr;
+      traceWrap.classList.remove('hidden');
+    }}
   }} catch (err) {{
-    status.textContent = 'error';
+    status.textContent = 'Network error';
+    setBanner('error', 'The playground request failed before the example could run.');
     out.textContent = String(err);
   }}
 }};
@@ -399,20 +481,19 @@ document.querySelector('#run').onclick = async () => {{
 def unsupported_note(enabled: bool) -> str:
     if not enabled:
         return ""
-    return """<div class=notice><strong>Unsupported.</strong> This lesson is kept for reading, but it relies on process-exit, socket-server, command-line, or test-runner behavior that this browser Worker playground does not model well.</div>"""
+    return """<div class=notice><strong>Unsupported in this playground.</strong> This lesson is useful to read, but the Run button is intentionally labeled “Run anyway” because it relies on process-exit, socket-server, command-line, or test-runner behavior that browser Worker isolates do not model well.</div>"""
 
 
 def outbound_note(enabled: bool) -> str:
     if not enabled:
         return ""
-    return """<div class=notice><strong>Outbound Worker demo.</strong> Dynamic Workers can run with <code>globalOutbound = null</code> to block network access, or with an Outbound Worker/fetcher to allow and mediate outbound <code>fetch</code>. Use the checkbox below to attach outbound fetch capability for this isolate so it can call <code>https://example.com</code>.</div>"""
+    return """<div class=notice><strong>Outbound Worker experiment.</strong><ol><li>Run with the checkbox off: <code>globalOutbound = null</code> blocks network access.</li><li>Enable the checkbox and run again: the parent attaches an <code>ExampleOutbound</code> gateway that only allows <code>example.com</code>.</li></ol></div>"""
 
 
 def outbound_checkbox(enabled: bool) -> str:
     if not enabled:
         return ""
     return """<label class=check><input id=allow-outbound type=checkbox> Enable Outbound Worker access to example.com</label>"""
-
 
 def attribution_html() -> str:
     return page(
@@ -437,17 +518,19 @@ def page(title: str, body: str) -> str:
 <meta name=viewport content="width=device-width, initial-scale=1">
 <title>{html.escape(title)}</title>
 <style>
-*{{box-sizing:border-box}}body{{font:16px/1.5 system-ui,-apple-system,Segoe UI,sans-serif;max-width:1120px;margin:2rem auto;padding:0 1rem;color:#17202a}}
-a{{color:#0b66c3}}.attrib,small{{color:#536471}}.hero{{border-bottom:1px solid #d0d7de;margin-bottom:1.25rem;padding-bottom:1rem}}
-.layout{{display:grid;grid-template-columns:minmax(0,1fr) 320px;gap:2rem;align-items:start}}h1{{font-size:2.4rem;margin:.2rem 0}}h2{{margin:1rem 0 .6rem}}
-.example-list{{columns:2 260px;column-gap:1.5rem}}.example-list a{{display:block;break-inside:avoid;text-decoration:none;color:#0b66c3;padding:.22rem 0}}
-.example-list a span{{display:block}}.example-list a small{{display:block;color:#6b7280;font-size:.82rem;line-height:1.25;margin-bottom:.35rem}}
-.panel,.notice,.limits{{border:1px solid #d0d7de;border-radius:12px;padding:1rem;background:#f8fafc;margin-bottom:1rem}}.unsupported{{background:#fff7ed;border-color:#fed7aa}}
-.limits{{background:#eff6ff;border-color:#bfdbfe;color:#1e3a8a}}
-.playground{{border:1px solid #d0d7de;border-radius:12px;overflow:hidden}}textarea{{box-sizing:border-box;width:100%;min-height:380px;border:0;border-bottom:1px solid #d0d7de;padding:1rem;font:14px/1.45 ui-monospace,SFMono-Regular,Menlo,monospace}}
-.actions{{display:flex;gap:1rem;align-items:center;flex-wrap:wrap;padding:.75rem 1rem;background:#f6f8fa;border-bottom:1px solid #d0d7de}}button{{font:inherit;padding:.45rem .8rem;border-radius:8px;border:1px solid #0b66c3;background:#0b66c3;color:white;cursor:pointer}}
-.check{{display:inline-flex;gap:.45rem;align-items:center}}pre{{margin:0;padding:1rem;min-height:120px;background:#0d1117;color:#e6edf3;overflow:auto;white-space:pre-wrap}}code{{background:#f6f8fa;padding:.15rem .3rem;border-radius:5px}}
-@media(max-width:820px){{.layout{{display:block}}.example-list{{columns:1}}}}
+*{{box-sizing:border-box}}body{{font:16px/1.55 system-ui,-apple-system,Segoe UI,sans-serif;max-width:1120px;margin:2rem auto;padding:0 1rem;color:#17202a;background:#fff}}
+a{{color:#0b66c3}}.muted,.attrib,small{{color:#536471}}.hidden{{display:none!important}}.eyebrow{{font-size:.78rem;text-transform:uppercase;letter-spacing:.08em;color:#6b7280;font-weight:700;margin:0 0 .25rem}}
+h1{{font-size:clamp(2rem,5vw,3rem);line-height:1.05;margin:.2rem 0 .7rem;letter-spacing:-.03em}}h2{{margin:0 0 .6rem;font-size:1.15rem}}.lede{{font-size:1.1rem;max-width:72ch;color:#334155}}
+.hero,.lesson-head{{border-bottom:1px solid #d0d7de;margin-bottom:1.5rem;padding-bottom:1.25rem}}.layout{{display:grid;grid-template-columns:minmax(0,1fr) 320px;gap:2rem;align-items:start}}.main-column,.side-column{{min-width:0}}.side-column{{position:sticky;top:1rem}}
+.start-here{{display:flex;justify-content:space-between;gap:1rem;align-items:center;border:1px solid #d0d7de;border-radius:14px;background:#f8fafc;padding:1rem;margin:1rem 0}}.start-here strong,.start-here span{{display:block}}.buttonish{{display:inline-block;text-decoration:none;background:#0b66c3;color:white;border-radius:8px;padding:.55rem .8rem;white-space:nowrap}}
+.section-head{{display:flex;justify-content:space-between;gap:1rem;align-items:end;margin-bottom:1rem}}.filter{{display:grid;gap:.25rem;min-width:220px}}input{{font:inherit;border:1px solid #d0d7de;border-radius:8px;padding:.5rem .65rem;min-width:0}}
+.example-list{{columns:2 260px;column-gap:1.75rem}}.example-list a,.compact-list a{{display:block;break-inside:avoid;text-decoration:none;color:#0b66c3;padding:.25rem 0;overflow-wrap:anywhere}}.example-list a span,.compact-list a span{{display:block;font-weight:600}}.example-list a small,.compact-list a small{{display:block;color:#6b7280;font-size:.82rem;line-height:1.25;margin-bottom:.45rem}}
+.panel,.notice,.limits{{border:1px solid #d0d7de;border-radius:12px;padding:1rem;background:#f8fafc;margin-bottom:1rem;overflow-wrap:anywhere}}.unsupported{{background:#fff7ed;border-color:#fed7aa}}.limits{{background:#eff6ff;border-color:#bfdbfe;color:#1e3a8a}}
+.crumb{{margin-bottom:1rem}}.playground{{border:1px solid #d0d7de;border-radius:12px;overflow:hidden;margin-top:1rem}}.editor-head{{display:flex;justify-content:space-between;align-items:center;padding:.7rem 1rem;background:#f8fafc;border-bottom:1px solid #d0d7de}}textarea{{box-sizing:border-box;width:100%;min-height:360px;max-height:48vh;border:0;border-bottom:1px solid #d0d7de;padding:1rem;font:14px/1.45 ui-monospace,SFMono-Regular,Menlo,monospace;resize:vertical}}
+.actions{{display:flex;gap:1rem;align-items:center;flex-wrap:wrap;padding:.75rem 1rem;background:#f6f8fa;border-bottom:1px solid #d0d7de}}button{{font:inherit;padding:.5rem .8rem;border-radius:8px;border:1px solid #0b66c3;background:#0b66c3;color:white;cursor:pointer}}button.secondary{{background:white;color:#0b66c3}}.status{{min-width:4rem;color:#536471}}.check{{display:inline-flex;gap:.45rem;align-items:center}}
+.result-banner{{padding:.75rem 1rem;border-bottom:1px solid #d0d7de;font-weight:600}}.result-banner.idle{{background:#f8fafc;color:#536471}}.result-banner.running{{background:#eff6ff;color:#1e3a8a}}.result-banner.success{{background:#dcfce7;color:#14532d}}.result-banner.warning{{background:#fef3c7;color:#92400e}}.result-banner.error{{background:#fee2e2;color:#991b1b}}
+pre{{margin:0;padding:1rem;background:#0d1117;color:#e6edf3;overflow:auto;white-space:pre-wrap;overflow-wrap:anywhere}}#out{{min-height:10rem;max-height:40vh}}.trace{{border-top:1px solid #d0d7de;background:#f8fafc}}.trace summary{{cursor:pointer;padding:.65rem 1rem}}.trace pre{{max-height:18rem}}code{{background:#f6f8fa;padding:.15rem .3rem;border-radius:5px}}
+@media(max-width:820px){{body{{margin:1rem auto}}.layout,.section-head,.start-here{{display:block}}.side-column{{position:static}}.example-list{{columns:1}}.filter{{margin-top:1rem}}.buttonish{{margin-top:.75rem}}}}
 </style>
 {body}
 """

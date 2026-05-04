@@ -440,7 +440,7 @@ EXAMPLES = {
         [
             Check("/", contains="Unsupported in this playground"),
             Check("/examples/hello-world", contains="Run Python"),
-            Check("/examples/http-client", contains="Outbound Worker demo"),
+            Check("/examples/http-client", contains="Outbound Worker experiment"),
             Check("/api/examples", contains="hello-world"),
             Check(
                 "/api/run",
