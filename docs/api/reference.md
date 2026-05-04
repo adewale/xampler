@@ -78,6 +78,7 @@ from xampler.agents import AgentMessage, AgentSession, DemoAgent
 from xampler.ai_gateway import AIGateway, ChatMessage, ChatRequest
 from xampler.experimental.email import EmailRouter, IncomingEmail
 from xampler.experimental.htmlrewriter import OpenGraphPage, OpenGraphRewriter
+from xampler.experimental.dynamic_workers import DynamicWorkerCode, python_fetch_worker
 from xampler.hyperdrive import HyperdriveConfig, PostgresQuery
 ```
 

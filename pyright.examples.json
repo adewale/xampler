@@ -4,7 +4,9 @@
     "examples/storage-data/r2-data-catalog/src",
     "examples/ai-agents/workers-ai-inference/src",
     "examples/streaming/gutenberg-stream-composition/src",
-    "examples/full-apps/mini-wiki/src"
+    "examples/full-apps/mini-wiki/src",
+    "examples/experimental/dynamic-workers-loader/src",
+    "examples/experimental/python-by-example-playground/src"
   ],
   "exclude": [
     "**/.venv",

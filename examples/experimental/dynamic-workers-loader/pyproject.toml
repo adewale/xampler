@@ -1,0 +1,13 @@
+[project]
+name = "xampler-experimental-dynamic-workers-loader"
+version = "0.1.0"
+requires-python = ">=3.13"
+dependencies = [
+    "xampler @ git+https://github.com/adewale/xampler@main",
+]
+
+[dependency-groups]
+dev = [
+    "workers-py",
+    "workers-runtime-sdk",
+]

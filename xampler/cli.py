@@ -35,6 +35,8 @@ EXAMPLES = {
     "htmlrewriter": "examples/network-edge/htmlrewriter-opengraph",
     "hyperdrive": "examples/storage-data/hyperdrive-postgres",
     "mini-wiki": "examples/full-apps/mini-wiki",
+    "dynamic-workers": "examples/experimental/dynamic-workers-loader",
+    "python-by-example": "examples/experimental/python-by-example-playground",
 }
 
 DOCS = {
@@ -59,6 +61,7 @@ DOCS = {
     "email": "docs/api/reference/email.md",
     "htmlrewriter": "docs/api/reference/htmlrewriter.md",
     "hyperdrive": "docs/api/reference/hyperdrive.md",
+    "dynamic-workers": "docs/api/reference/dynamic-workers.md",
 }
 
 

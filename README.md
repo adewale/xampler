@@ -58,6 +58,8 @@ examples/full-apps/hvsc-ai-data-search/
 | [`examples/network-edge/service-bindings-rpc/`](examples/network-edge/service-bindings-rpc) | Service bindings / RPC | Python RPC service shape with TypeScript client scaffold. |
 | [`examples/network-edge/outbound-websocket-consumer/`](examples/network-edge/outbound-websocket-consumer) | WebSockets | WebSocket example scaffold and session model direction. |
 | [`examples/state-events/durable-object-chatroom/`](examples/state-events/durable-object-chatroom) | Durable Objects + WebSockets | Chatroom durable object scaffold. |
+| [`examples/experimental/dynamic-workers-loader/`](examples/experimental/dynamic-workers-loader) | Dynamic Workers | Python Worker Loader example that starts a sandboxed Worker isolate at runtime and documents Dynamic Python WorkerCode. |
+| [`examples/experimental/python-by-example-playground/`](examples/experimental/python-by-example-playground) | Python playground | CC BY 4.0 Python by Example playground with editable/runnable examples. |
 
 ## Composable API surface
 

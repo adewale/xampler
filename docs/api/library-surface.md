@@ -28,6 +28,7 @@ Xampler is a Python library with examples that prove the APIs run in Python Work
 | `xampler.ai_gateway` | Experimental | `AIGateway`, `ChatRequest`, `ChatMessage`, `ChatResponse`, `DemoAIGateway` |
 | `xampler.experimental.email` | Experimental | `IncomingEmail`, `EmailDecision`, `EmailRouter` |
 | `xampler.experimental.htmlrewriter` | Experimental | `OpenGraphPage`, `OpenGraphRewriter` |
+| `xampler.experimental.dynamic_workers` | Experimental | `DynamicWorkerCode`, `DynamicModule`, `DynamicWorkerLimits`, `stable_worker_id` |
 | `xampler.hyperdrive` | Experimental | `HyperdriveConfig`, `PostgresQuery`, `PostgresResult`, `HyperdrivePostgres`, `DemoPostgres` |
 
 ## Base vocabulary: service, ref, REST client

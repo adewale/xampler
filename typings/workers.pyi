@@ -1,7 +1,14 @@
 from typing import Any, Self
 
 class Response:
-    def __init__(self, body: object = ..., init: object = ...) -> None: ...
+    def __init__(
+        self,
+        body: object = ...,
+        init: object = ...,
+        *,
+        status: int = ...,
+        headers: dict[str, str] = ...,
+    ) -> None: ...
     @classmethod
     def json(cls, data: object, init: object = ...) -> Self: ...
 

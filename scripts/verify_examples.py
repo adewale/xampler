@@ -422,6 +422,32 @@ EXAMPLES = {
             ]
         ],
     ),
+    "examples/experimental/dynamic-workers-loader": Example(
+        "examples/experimental/dynamic-workers-loader",
+        [
+            Check("/", contains="Dynamic Workers from a Python Worker"),
+            Check("/worker-code", contains="worker.py"),
+            Check("/run", contains="Dynamic Worker loaded by Python"),
+            Check("/blocked-network", contains="blocked:"),
+        ],
+        needs_setup="Dynamic Workers are local-first and beta-gated for deployed usage.",
+    ),
+    "examples/experimental/python-by-example-playground": Example(
+        "examples/experimental/python-by-example-playground",
+        [
+            Check("/", contains="Python by Example Playground"),
+            Check("/examples/hello-world", contains="Run Python"),
+            Check("/api/examples", contains="hello-world"),
+            Check(
+                "/api/run",
+                method="POST",
+                body=b'{"code":"print(1 + 2)"}',
+                headers={"content-type": "application/json"},
+                contains='"stdout": "3\\n"',
+            ),
+        ],
+        needs_setup="Runs editable snippets in the Python Worker runtime for local verification.",
+    ),
     "examples/full-apps/hvsc-ai-data-search": Example(
         "examples/full-apps/hvsc-ai-data-search",
         [
