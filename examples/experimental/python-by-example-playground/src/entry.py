@@ -130,7 +130,7 @@ from typing import Any
 from workers import Response, WorkerEntrypoint
 
 USER_CODE = {user_code!r}
-MAX_TRACE_EVENTS = 20_000
+MAX_TRACE_EVENTS = 200_000
 
 
 class SandboxLimitExceeded(RuntimeError):
@@ -298,7 +298,7 @@ def example_html(example: dict[str, str]) -> str:
 {unsupported_note(unsupported)}
 {outbound_note(outbound)}
 <p class=attrib>Source: <a href={source_url}>{html.escape(example['source_path'])}</a> · Lesson: <a href={lesson_url}>{html.escape(example['lesson_path'])}</a></p>
-<div class=limits><strong>Sandbox limits:</strong> CPU budget 50 ms, Python trace budget 20,000 events, outbound network blocked by default, subrequests 0 unless the Outbound Worker checkbox is enabled.</div>
+<div class=limits><strong>Sandbox limits:</strong> CPU budget 50 ms, Python trace budget 200,000 events, outbound network blocked by default, subrequests 0 unless the Outbound Worker checkbox is enabled.</div>
 <div class=playground>
 <textarea id=code spellcheck=false>{code}</textarea>
 <div class=actions><button id=run>▶ Run Python</button>{outbound_checkbox(outbound)}<span id=status></span></div>
