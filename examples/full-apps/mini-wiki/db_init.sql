@@ -1,4 +1,5 @@
 DROP TABLE IF EXISTS page_search;
+DROP TABLE IF EXISTS page_links;
 DROP TABLE IF EXISTS revisions;
 DROP TABLE IF EXISTS wide_events;
 DROP TABLE IF EXISTS pages;
@@ -23,6 +24,14 @@ CREATE TABLE revisions (
   PRIMARY KEY (slug, revision)
 );
 
+CREATE TABLE page_links (
+  from_slug TEXT NOT NULL,
+  to_slug TEXT NOT NULL,
+  label TEXT NOT NULL,
+  created_at TEXT NOT NULL,
+  PRIMARY KEY (from_slug, to_slug, label)
+);
+
 CREATE VIRTUAL TABLE page_search USING fts5(
   page_id UNINDEXED,
   slug UNINDEXED,
@@ -32,6 +41,7 @@ CREATE VIRTUAL TABLE page_search USING fts5(
 
 CREATE INDEX idx_pages_updated_at ON pages(updated_at DESC);
 CREATE INDEX idx_revisions_slug_revision ON revisions(slug, revision DESC);
+CREATE INDEX idx_page_links_to_slug ON page_links(to_slug);
 
 CREATE TABLE wide_events (
   id INTEGER PRIMARY KEY AUTOINCREMENT,
@@ -78,3 +88,12 @@ SELECT slug, current_revision, title, body, 'Seed', 'initial page', updated_at F
 
 INSERT INTO page_search (page_id, slug, title, body)
 SELECT id, slug, title, body FROM pages;
+
+INSERT INTO page_links (from_slug, to_slug, label, created_at) VALUES
+('home-page', 'home-page', 'Home Page', '2026-05-01T00:00:00+00:00'),
+('home-page', 'wiki-guide', 'Wiki Guide', '2026-05-01T00:00:00+00:00'),
+('home-page', 'project-ideas', 'Project Ideas', '2026-05-01T00:00:00+00:00'),
+('home-page', 'page-links', 'Page Links', '2026-05-01T00:00:00+00:00'),
+('wiki-guide', 'page-name', 'Page Name', '2026-05-01T00:01:00+00:00'),
+('page-links', 'home-page', 'Home Page', '2026-05-01T00:02:00+00:00'),
+('page-links', 'project-ideas', 'Project Ideas', '2026-05-01T00:02:00+00:00');

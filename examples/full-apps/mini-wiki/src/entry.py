@@ -83,17 +83,31 @@ class Wiki:
         return [WikiPage(**row) for row in rows]
 
     async def backlinks(self, slug: str) -> list[WikiPage]:
-        pages = await self.all_pages()
-        return [page for page in pages if slug in extract_links(page.body) and page.slug != slug]
+        rows = await self.db.query(
+            """
+            SELECT p.slug, p.title, p.body, p.current_revision, p.updated_at
+            FROM page_links l
+            JOIN pages p ON p.slug = l.from_slug
+            WHERE l.to_slug = ? AND l.from_slug != ?
+            ORDER BY p.updated_at DESC
+            """,
+            slug,
+            slug,
+        )
+        return [WikiPage(**row) for row in rows]
 
     async def wanted_pages(self) -> list[tuple[str, int]]:
-        existing = {page.slug for page in await self.all_pages()}
-        counts: dict[str, int] = {}
-        for page in await self.all_pages():
-            for linked in extract_links(page.body):
-                if linked not in existing:
-                    counts[linked] = counts.get(linked, 0) + 1
-        return sorted(counts.items(), key=lambda item: (-item[1], item[0]))
+        rows = await self.db.query(
+            """
+            SELECT l.to_slug AS slug, COUNT(*) AS link_count
+            FROM page_links l
+            LEFT JOIN pages p ON p.slug = l.to_slug
+            WHERE p.slug IS NULL
+            GROUP BY l.to_slug
+            ORDER BY link_count DESC, l.to_slug
+            """
+        )
+        return [(str(row["slug"]), int(row["link_count"])) for row in rows]
 
     async def revision(self, slug: str, revision: int) -> WikiRevision | None:
         row = await self.db.query_one(
@@ -166,6 +180,14 @@ class Wiki:
         await self.db.statement(
             "INSERT INTO page_search (page_id, slug, title, body) VALUES (?, ?, ?, ?)"
         ).run(page_id, slug, title, body)
+        await self.db.statement("DELETE FROM page_links WHERE from_slug = ?").run(slug)
+        for target_slug, label in extract_link_targets(body):
+            await self.db.statement(
+                """
+                INSERT OR IGNORE INTO page_links (from_slug, to_slug, label, created_at)
+                VALUES (?, ?, ?, ?)
+                """
+            ).run(slug, target_slug, label, now)
         page = await self.get_page(slug)
         if page is None:  # pragma: no cover - defensive guard for impossible write failure.
             raise RuntimeError("page was not saved")
@@ -263,11 +285,20 @@ def shell(title: str, body: str, *, query: str = "") -> str:
 </body>
 </html>"""
 
-def extract_links(text: str) -> set[str]:
-    links = {slugify(match.group(1)) for match in WIKI_LINK_RE.finditer(text)}
+def extract_link_targets(text: str) -> list[tuple[str, str]]:
+    targets: dict[str, str] = {}
+    for match in WIKI_LINK_RE.finditer(text):
+        label = match.group(1).strip()
+        targets.setdefault(slugify(label), label)
     masked = WIKI_LINK_RE.sub(" ", text)
-    links.update(slugify(match.group(0)) for match in WIKI_WORD_RE.finditer(masked))
-    return links
+    for match in WIKI_WORD_RE.finditer(masked):
+        label = match.group(0)
+        targets.setdefault(slugify(label), label)
+    return sorted(targets.items())
+
+
+def extract_links(text: str) -> set[str]:
+    return {slug for slug, _label in extract_link_targets(text)}
 
 
 def render_inline(text: str) -> str:

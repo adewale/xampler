@@ -380,7 +380,7 @@ EXAMPLES = {
             Check("/style.css", contains="wiki-layout"),
             Check("/all", contains="Wiki Guide"),
             Check("/wanted", contains="Project Ideas"),
-            Check("/wiki/page-links", contains="Backlinks"),
+            Check("/wiki/page-links", contains="Home Page"),
             Check("/wiki/home-page/edit", contains="Syntax guide"),
             Check("/wiki/project-ideas", contains="Create page"),
             Check(

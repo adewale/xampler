@@ -45,7 +45,7 @@ WikiWords           still auto-link for classic wiki feel
 
 ## Backlinks with D1
 
-The current example computes backlinks by scanning page bodies in Python. For a larger D1 wiki, make links relational:
+The example stores parsed page links in D1 so backlinks and wanted pages are ordinary indexed queries:
 
 ```sql
 CREATE TABLE page_links (
@@ -59,7 +59,7 @@ CREATE TABLE page_links (
 CREATE INDEX idx_page_links_to_slug ON page_links(to_slug);
 ```
 
-On every save, parse `[[Page Name]]`/WikiWord links, delete old rows for `from_slug`, and insert the new outbound links in the same logical save flow. Then backlinks are cheap:
+On every save, Xampler parses `[[Page Name]]`/WikiWord links, deletes old rows for `from_slug`, and inserts the new outbound links in the same logical save flow. Backlinks are cheap:
 
 ```sql
 SELECT p.slug, p.title, p.current_revision, p.updated_at
