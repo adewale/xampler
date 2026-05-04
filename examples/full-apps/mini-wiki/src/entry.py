@@ -1,5 +1,7 @@
+# ruff: noqa: E501
 from __future__ import annotations
 
+import difflib
 import html
 import json
 import re
@@ -15,7 +17,8 @@ from workers import Response, WorkerEntrypoint  # type: ignore[import-not-found]
 from xampler.d1 import D1Database
 from xampler.response import html_response, json_response, text_response
 
-SLUG_RE = re.compile(r"^[A-Z][A-Za-z0-9]{2,63}$")
+SLUG_RE = re.compile(r"^[a-z0-9][a-z0-9-]{1,79}$")
+WIKI_LINK_RE = re.compile(r"\[\[([^\]\n]{1,80})\]\]")
 WIKI_WORD_RE = re.compile(r"\b[A-Z][a-z0-9]+[A-Z][A-Za-z0-9]*\b")
 
 
@@ -57,6 +60,16 @@ class Wiki:
         )
         return None if row is None else WikiPage(**row)
 
+    async def all_pages(self) -> list[WikiPage]:
+        rows = await self.db.query(
+            """
+            SELECT slug, title, body, current_revision, updated_at
+            FROM pages
+            ORDER BY lower(title), slug
+            """
+        )
+        return [WikiPage(**row) for row in rows]
+
     async def recent(self, limit: int = 20) -> list[WikiPage]:
         rows = await self.db.query(
             """
@@ -68,6 +81,31 @@ class Wiki:
             limit,
         )
         return [WikiPage(**row) for row in rows]
+
+    async def backlinks(self, slug: str) -> list[WikiPage]:
+        pages = await self.all_pages()
+        return [page for page in pages if slug in extract_links(page.body) and page.slug != slug]
+
+    async def wanted_pages(self) -> list[tuple[str, int]]:
+        existing = {page.slug for page in await self.all_pages()}
+        counts: dict[str, int] = {}
+        for page in await self.all_pages():
+            for linked in extract_links(page.body):
+                if linked not in existing:
+                    counts[linked] = counts.get(linked, 0) + 1
+        return sorted(counts.items(), key=lambda item: (-item[1], item[0]))
+
+    async def revision(self, slug: str, revision: int) -> WikiRevision | None:
+        row = await self.db.query_one(
+            """
+            SELECT slug, revision, title, body, author, message, created_at
+            FROM revisions
+            WHERE slug = ? AND revision = ?
+            """,
+            slug,
+            revision,
+        )
+        return None if row is None else WikiRevision(**row)
 
     async def history(self, slug: str) -> list[WikiRevision]:
         rows = await self.db.query(
@@ -184,16 +222,22 @@ class Wiki:
         return "\n".join(json.dumps(row, separators=(",", ":")) for row in rows) + "\n"
 
 
+def slugify(label: str) -> str:
+    spaced = re.sub(r"(?<=[a-z0-9])(?=[A-Z])", "-", label.strip())
+    slug = re.sub(r"[^A-Za-z0-9]+", "-", spaced.lower()).strip("-")
+    return slug or "page"
+
+
 def validate_slug(slug: str) -> None:
     if not SLUG_RE.fullmatch(slug):
-        raise ValueError("slugs must be WikiWords like HomePage or PythonWorkers")
+        raise ValueError("slugs must be lowercase words like home-page or python-workers")
 
 
 def wiki_title(slug: str) -> str:
-    return re.sub(r"(?<!^)([A-Z])", r" \1", slug).strip()
+    return slug.replace("-", " ").title()
 
 
-def shell(title: str, body: str) -> str:
+def shell(title: str, body: str, *, query: str = "") -> str:
     return f"""<!doctype html>
 <html lang="en">
 <head>
@@ -205,49 +249,101 @@ def shell(title: str, body: str) -> str:
 <body>
   <header>
     <h1><a href="/">Mini Wiki</a></h1>
+    <form class="header-search" action="/search">
+      <input name="q" value="{html.escape(query)}" placeholder="Search wiki">
+    </form>
     <nav>
-      <a href="/wiki/HomePage">HomePage</a>
-      <a href="/recent">Recent</a>
-      <a href="/search">Search</a>
-      <a href="/export.jsonl">Export</a>
+      <a href="/wiki/home-page">Home</a>
+      <a href="/all">All pages</a>
+      <a href="/recent-changes">Recent changes</a>
+      <a href="/wanted">Wanted</a>
     </nav>
   </header>
   {body}
 </body>
 </html>"""
 
+def extract_links(text: str) -> set[str]:
+    links = {slugify(match.group(1)) for match in WIKI_LINK_RE.finditer(text)}
+    masked = WIKI_LINK_RE.sub(" ", text)
+    links.update(slugify(match.group(0)) for match in WIKI_WORD_RE.finditer(masked))
+    return links
+
+
+def render_inline(text: str) -> str:
+    escaped = html.escape(text)
+
+    def bracket(match: re.Match[str]) -> str:
+        label = html.unescape(match.group(1)).strip()
+        slug = slugify(label)
+        return f'<a href="/wiki/{quote(slug)}">{html.escape(label)}</a>'
+
+    linked = WIKI_LINK_RE.sub(bracket, escaped)
+
+    def wiki_word(match: re.Match[str]) -> str:
+        label = match.group(0)
+        slug = slugify(label)
+        return f'<a href="/wiki/{quote(slug)}">{label}</a>'
+
+    return WIKI_WORD_RE.sub(wiki_word, linked)
+
 
 def render_markup(text: str) -> str:
-    escaped = html.escape(text)
     paragraphs: list[str] = []
     in_code = False
+    in_list = False
     code_lines: list[str] = []
-    for raw_line in escaped.splitlines():
-        line = raw_line.rstrip()
-        if line.startswith("```"):
+    for raw_line in text.splitlines():
+        stripped = raw_line.rstrip()
+        if stripped.startswith("```"):
+            if in_list:
+                paragraphs.append("</ul>")
+                in_list = False
             if in_code:
                 paragraphs.append(f"<pre>{'\n'.join(code_lines)}</pre>")
                 code_lines = []
             in_code = not in_code
             continue
         if in_code:
-            code_lines.append(line)
-        elif line.startswith("# "):
-            paragraphs.append(f"<h2>{link_wiki_words(line[2:])}</h2>")
-        elif line:
-            paragraphs.append(f"<p>{link_wiki_words(line)}</p>")
+            code_lines.append(html.escape(stripped))
+        elif stripped.startswith("# "):
+            if in_list:
+                paragraphs.append("</ul>")
+                in_list = False
+            paragraphs.append(f"<h2>{render_inline(stripped[2:])}</h2>")
+        elif stripped.startswith("## "):
+            if in_list:
+                paragraphs.append("</ul>")
+                in_list = False
+            paragraphs.append(f"<h3>{render_inline(stripped[3:])}</h3>")
+        elif stripped.startswith("- "):
+            if not in_list:
+                paragraphs.append("<ul>")
+                in_list = True
+            paragraphs.append(f"<li>{render_inline(stripped[2:])}</li>")
+        elif stripped:
+            if in_list:
+                paragraphs.append("</ul>")
+                in_list = False
+            paragraphs.append(f"<p>{render_inline(stripped)}</p>")
+    if in_list:
+        paragraphs.append("</ul>")
     if code_lines:
         paragraphs.append(f"<pre>{'\n'.join(code_lines)}</pre>")
     return "\n".join(paragraphs) or "<p class='muted'>Empty page.</p>"
 
 
-def link_wiki_words(text: str) -> str:
-    def replace(match: re.Match[str]) -> str:
-        slug = match.group(0)
-        return f'<a href="/wiki/{quote(slug)}">{slug}</a>'
-
-    return WIKI_WORD_RE.sub(replace, text)
-
+def revision_diff(before: WikiRevision | None, after: WikiRevision) -> str:
+    before_lines = [] if before is None else before.body.splitlines()
+    after_lines = after.body.splitlines()
+    rows = difflib.unified_diff(
+        before_lines,
+        after_lines,
+        fromfile=f"r{before.revision if before else 0}",
+        tofile=f"r{after.revision}",
+        lineterm="",
+    )
+    return "\n".join(rows)
 
 def redirect(location: str, status: int = 303) -> Response:
     return Response("", status=status, headers={"location": location})  # type: ignore[call-arg]
@@ -265,15 +361,24 @@ class Default(WorkerEntrypoint):
         wiki = Wiki(D1Database(self.env.DB))
         await wiki.record_event("http.request", path, str(request.method))
         try:
-            if path == "/events":
+            if path == "/dev/events":
                 return Response.json({"events": await wiki.wide_events()})
-            if path.startswith("/cached/wiki/"):
-                slug = unquote(path.removeprefix("/cached/wiki/"))
+            if path.startswith("/dev/cached/wiki/"):
+                slug = slugify(unquote(path.removeprefix("/dev/cached/wiki/")))
                 return await cached_wiki_page(wiki, slug)
+            if path == "/dev/render" and request.method == "POST":
+                data = await form_data(request)
+                return html_response(render_markup(data.get("body", "")))
+            if path in {"/events", "/cached/wiki"} or path.startswith("/cached/wiki/"):
+                return redirect("/dev" + path)
             if path == "/":
+                return await show_page(wiki, "home-page")
+            if path in {"/recent", "/recent-changes"}:
                 return await recent_page(wiki)
-            if path == "/recent":
-                return await recent_page(wiki)
+            if path == "/all":
+                return await all_pages(wiki)
+            if path == "/wanted":
+                return await wanted_page(wiki)
             if path == "/search":
                 query = parse_qs(parsed.query).get("q", [""])[0]
                 return await search_page(wiki, query)
@@ -302,12 +407,15 @@ async def cached_wiki_page(wiki: Wiki, slug: str) -> Response:
         )
     page = await wiki.get_page(slug)
     if page is None:
-        return await show_page(wiki, slug)
-    page_body = (
-        f"<h2>{html.escape(page.title)}</h2>"
-        f"<article class='page'>{render_markup(page.body)}</article>"
-    )
-    body = shell(page.title, page_body)
+        body = shell(
+            wiki_title(slug),
+            f"<h2>{html.escape(wiki_title(slug))}</h2><p>This page does not exist yet.</p>",
+        )
+    else:
+        body = shell(
+            page.title,
+            f"<h2>{html.escape(page.title)}</h2><article class='page'>{render_markup(page.body)}</article>",
+        )
     await cache.put(
         cache_url,
         cast(Any, js).Response.new(
@@ -325,45 +433,51 @@ async def cached_wiki_page(wiki: Wiki, slug: str) -> Response:
 
 async def recent_page(wiki: Wiki) -> Response:
     pages = await wiki.recent()
-    if not pages:
-        body = """
-        <p>No pages yet. Start with <a href="/wiki/HomePage/edit">HomePage</a>.</p>
-        <form action="/search"><input name="q" placeholder="Search"><button>Search</button></form>
-        """
-    else:
-        items = "".join(
-            f'<li><a href="/wiki/{quote(page.slug)}">{html.escape(page.title)}</a> '
-            f'<span class="muted">r{page.current_revision} · '
-            f"{html.escape(page.updated_at)}</span></li>"
-            for page in pages
-        )
-        search_form = (
-            "<form action='/search'><input name='q' placeholder='Search'>"
-            "<button>Search</button></form>"
-        )
-        body = f"<h2>Recent pages</h2><ul>{items}</ul>{search_form}"
-    return html_response(shell("Recent", body))
+    items = "".join(
+        f'<li><a href="/wiki/{quote(page.slug)}">{html.escape(page.title)}</a> '
+        f'<span class="muted">r{page.current_revision} · {html.escape(page.updated_at)}</span></li>'
+        for page in pages
+    )
+    body = f"<h2>Recent changes</h2><ul class='page-list'>{items}</ul>"
+    return html_response(shell("Recent changes", body))
+
+
+async def all_pages(wiki: Wiki) -> Response:
+    pages = await wiki.all_pages()
+    items = "".join(
+        f'<li><a href="/wiki/{quote(page.slug)}">{html.escape(page.title)}</a></li>'
+        for page in pages
+    )
+    return html_response(shell("All pages", f"<h2>All pages</h2><ul class='page-list'>{items}</ul>"))
+
+
+async def wanted_page(wiki: Wiki) -> Response:
+    wanted = await wiki.wanted_pages()
+    items = "".join(
+        f'<li><a class="missing" href="/wiki/{quote(slug)}/edit">{html.escape(wiki_title(slug))}</a> '
+        f'<span class="muted">linked {count}×</span></li>'
+        for slug, count in wanted
+    )
+    body = "<h2>Wanted pages</h2>" + (f"<ul>{items}</ul>" if items else "<p>No wanted pages.</p>")
+    return html_response(shell("Wanted pages", body))
 
 
 async def search_page(wiki: Wiki, query: str) -> Response:
     results = await wiki.search(query) if query else []
     items = "".join(
         f'<li><a href="/wiki/{quote(result.slug)}">{html.escape(result.title)}</a>'
-        f"<br>{result.snippet}</li>"
+        f"<p class='snippet'>{result.snippet}</p></li>"
         for result in results
     )
-    form = (
-        f"<form action='/search'><input name='q' value='{html.escape(query)}' "
-        "placeholder='Search'><button>Search</button></form>"
-    )
-    body = f"{form}<h2>Search results</h2><ul>{items}</ul>"
-    return html_response(shell("Search", body))
+    body = f"<h2>Search results</h2><p class='muted'>Query: {html.escape(query)}</p>"
+    body += f"<ul class='search-results'>{items}</ul>" if items else "<p>No results yet.</p>"
+    return html_response(shell("Search", body, query=query))
 
 
 async def wiki_route(wiki: Wiki, request: Any, path: str) -> Response:
     rest = path.removeprefix("/wiki/")
     parts = rest.split("/")
-    slug = unquote(parts[0])
+    slug = slugify(unquote(parts[0]))
     validate_slug(slug)
     action = parts[1] if len(parts) > 1 else "show"
     if request.method == "POST" and action == "show":
@@ -377,6 +491,20 @@ async def wiki_route(wiki: Wiki, request: Any, path: str) -> Response:
             base_revision=int(data["base_revision"]) if data.get("base_revision") else None,
         )
         return redirect(f"/wiki/{quote(page.slug)}")
+    if request.method == "POST" and action == "revert":
+        data = await form_data(request)
+        revision = int(data.get("revision", "0"))
+        old = await wiki.revision(slug, revision)
+        if old is None:
+            return html_response(shell("Missing revision", "<p>Revision not found.</p>"), status=404)
+        await wiki.save_page(
+            slug=slug,
+            title=old.title,
+            body=old.body,
+            author=data.get("author") or "revert",
+            message=f"revert to r{revision}",
+        )
+        return redirect(f"/wiki/{quote(slug)}")
     if action == "edit":
         return await edit_page(wiki, slug)
     if action == "history":
@@ -394,25 +522,37 @@ async def wiki_route(wiki: Wiki, request: Any, path: str) -> Response:
     return await show_page(wiki, slug)
 
 
+async def backlinks_panel(wiki: Wiki, slug: str) -> str:
+    backlinks = await wiki.backlinks(slug)
+    if backlinks:
+        items = "".join(
+            f'<li><a href="/wiki/{quote(page.slug)}">{html.escape(page.title)}</a></li>'
+            for page in backlinks
+        )
+        return f"<aside class='panel'><h3>Backlinks</h3><ul>{items}</ul></aside>"
+    return "<aside class='panel'><h3>Backlinks</h3><p class='muted'>No pages link here yet.</p></aside>"
+
+
 async def show_page(wiki: Wiki, slug: str) -> Response:
     page = await wiki.get_page(slug)
     if page is None:
         body = (
-            f"<h2>{html.escape(slug)}</h2><p>This page does not exist yet. "
-            f'<a class="missing" href="/wiki/{quote(slug)}/edit">'
-            f"Create {html.escape(slug)}?</a></p>"
+            f"<h2>{html.escape(wiki_title(slug))}</h2><p>This page does not exist yet. "
+            f'<a class="missing" href="/wiki/{quote(slug)}/edit">Create it?</a></p>'
+            f"{await backlinks_panel(wiki, slug)}"
         )
-        return html_response(shell(slug, body), status=404)
+        return html_response(shell(wiki_title(slug), body), status=404)
     links = (
-        f"<p><a href='/wiki/{quote(slug)}/edit'>Edit</a> · "
+        f"<p class='page-tools'><a href='/wiki/{quote(slug)}/edit'>Edit</a> · "
         f"<a href='/wiki/{quote(slug)}/history'>History</a> · "
         f"<a href='/wiki/{quote(slug)}/raw'>Raw</a></p>"
     )
     body = (
+        f"<main class='wiki-layout'><section>"
         f"<h2>{html.escape(page.title)}</h2>"
-        f"<p class='muted'>Revision {page.current_revision} · "
-        f"{html.escape(page.updated_at)}</p>"
+        f"<p class='muted'>Revision {page.current_revision} · {html.escape(page.updated_at)}</p>"
         f"{links}<article class='page'>{render_markup(page.body)}</article>"
+        f"</section>{await backlinks_panel(wiki, slug)}</main>"
     )
     return html_response(shell(page.title, body))
 
@@ -420,28 +560,66 @@ async def show_page(wiki: Wiki, slug: str) -> Response:
 async def edit_page(wiki: Wiki, slug: str) -> Response:
     page = await wiki.get_page(slug)
     title = page.title if page else wiki_title(slug)
-    body_text = page.body if page else f"# {title}\n\nDescribe {slug} here. Link to HomePage."
+    body_text = page.body if page else f"# {title}\n\nDescribe [[{title}]] here. Link to [[Home Page]]."
     revision = page.current_revision if page else 0
+    guide = """
+    <details class="syntax" open><summary>Syntax guide</summary>
+      <ul>
+        <li><code>[[Page Name]]</code> links to another page and creates it if missing.</li>
+        <li><code># Heading</code> and <code>## Subheading</code>.</li>
+        <li><code>- item</code> for lists.</li>
+        <li><code>```</code> fenced code blocks.</li>
+        <li>Traditional WikiWords still link automatically.</li>
+      </ul>
+    </details>
+    """
     form = f"""
-    <h2>Edit {html.escape(slug)}</h2>
-    <form method="post" action="/wiki/{quote(slug)}">
+    <h2>Edit {html.escape(title)}</h2>
+    <p class="tabs"><button type="button" data-tab="edit">Edit</button> <button type="button" data-tab="preview">Preview</button></p>
+    <form id="edit-form" method="post" action="/wiki/{quote(slug)}">
       <input type="hidden" name="base_revision" value="{revision}">
       <label>Title <input name="title" value="{html.escape(title)}"></label>
-      <label>Body <textarea name="body">{html.escape(body_text)}</textarea></label>
+      <section id="edit-tab">
+        <label>Body <textarea id="body" name="body">{html.escape(body_text)}</textarea></label>
+      </section>
+      <section id="preview-tab" hidden><article id="preview" class="page"></article></section>
       <label>Author <input name="author" value="Pythonista"></label>
-      <label>Message <input name="message" value="edit {html.escape(slug)}"></label>
+      <label>Message <input name="message" value="edit {html.escape(title)}"></label>
       <button>Save revision</button>
     </form>
+    {guide}
+    <script>
+    const body = document.querySelector('#body');
+    const preview = document.querySelector('#preview');
+    async function updatePreview() {{
+      const res = await fetch('/dev/render', {{method:'POST', body:new URLSearchParams({{body: body.value}})}});
+      preview.innerHTML = await res.text();
+    }}
+    document.querySelectorAll('[data-tab]').forEach(btn => btn.onclick = async () => {{
+      const showPreview = btn.dataset.tab === 'preview';
+      document.querySelector('#edit-tab').hidden = showPreview;
+      document.querySelector('#preview-tab').hidden = !showPreview;
+      if (showPreview) await updatePreview();
+    }});
+    body.addEventListener('input', () => {{ if (!document.querySelector('#preview-tab').hidden) updatePreview(); }});
+    </script>
     """
-    return html_response(shell(f"Edit {slug}", form))
+    return html_response(shell(f"Edit {title}", form))
 
 
 async def history_page(wiki: Wiki, slug: str) -> Response:
     revisions = await wiki.history(slug)
-    items = "".join(
-        f"<li>r{rev.revision}: {html.escape(rev.title)} — {html.escape(rev.created_at)} "
-        f"<span class='muted'>{html.escape(rev.message or '')}</span></li>"
-        for rev in revisions
-    )
-    body = f"<h2>History for {html.escape(slug)}</h2><ul>{items}</ul>"
+    blocks: list[str] = []
+    previous: WikiRevision | None = None
+    for rev in sorted(revisions, key=lambda item: item.revision):
+        diff = html.escape(revision_diff(previous, rev))
+        blocks.append(
+            f"<section class='revision'><h3>r{rev.revision}: {html.escape(rev.title)}</h3>"
+            f"<p class='muted'>{html.escape(rev.created_at)} · {html.escape(rev.author or 'unknown')} · {html.escape(rev.message or '')}</p>"
+            f"<form method='post' action='/wiki/{quote(slug)}/revert'>"
+            f"<input type='hidden' name='revision' value='{rev.revision}'><button>Revert to r{rev.revision}</button></form>"
+            f"<pre class='diff'>{diff}</pre></section>"
+        )
+        previous = rev
+    body = f"<h2>History for {html.escape(wiki_title(slug))}</h2>{''.join(reversed(blocks))}"
     return html_response(shell(f"History {slug}", body))

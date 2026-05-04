@@ -376,35 +376,34 @@ EXAMPLES = {
     "examples/full-apps/mini-wiki": Example(
         "examples/full-apps/mini-wiki",
         [
-            Check("/", contains="Mini Wiki"),
-            Check("/style.css", contains="font-family"),
-            Check("/wiki/HomePage", status=404, contains="Create HomePage"),
+            Check("/", contains="Good wiki loop"),
+            Check("/style.css", contains="wiki-layout"),
+            Check("/all", contains="Wiki Guide"),
+            Check("/wanted", contains="Project Ideas"),
+            Check("/wiki/page-links", contains="Backlinks"),
+            Check("/wiki/home-page/edit", contains="Syntax guide"),
             Check(
-                "/wiki/HomePage",
+                "/dev/render",
                 method="POST",
-                body=(
-                    b"title=HomePage&body=%23%20HomePage%0A%0AWelcome%20to%20PythonWorkers%20wiki."
-                    b"&author=Ada&message=create"
-                ),
+                body=b"body=%23%20Preview%0A%0ASee%20%5B%5BPage%20Links%5D%5D",
                 headers={"content-type": "application/x-www-form-urlencoded"},
-                contains="PythonWorkers",
+                contains="/wiki/page-links",
             ),
-            Check("/wiki/HomePage/raw", contains="Welcome to PythonWorkers wiki."),
-            Check("/search?q=PythonWorkers", contains="HomePage"),
             Check(
-                "/wiki/HomePage",
+                "/wiki/home-page",
                 method="POST",
                 body=(
-                    b"base_revision=1&title=HomePage&body=%23%20HomePage%0A%0AUpdated%20wiki%20text%20about%20D1Search."
+                    b"base_revision=1&title=Home%20Page&body=%23%20Home%20Page%0A%0A"
+                    b"Updated%20wiki%20text%20about%20D1Search%20and%20%5B%5BProject%20Ideas%5D%5D."
                     b"&author=Ada&message=update"
                 ),
                 headers={"content-type": "application/x-www-form-urlencoded"},
                 contains="D1Search",
             ),
-            Check("/wiki/HomePage/history", contains="r2"),
-            Check("/search?q=D1Search", contains="HomePage"),
-            Check("/cached/wiki/HomePage", contains="D1Search"),
-            Check("/events", contains="http.request"),
+            Check("/wiki/home-page/history", contains="Revert to r1"),
+            Check("/search?q=D1Search", contains="<mark>D1Search</mark>"),
+            Check("/dev/cached/wiki/home-page", contains="D1Search"),
+            Check("/dev/events", contains="http.request"),
             Check("/export.jsonl", contains='"revision":2'),
         ],
         needs_setup="Initializes local D1; CSS is served by Workers Static Assets.",
