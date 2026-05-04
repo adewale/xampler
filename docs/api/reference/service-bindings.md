@@ -1,9 +1,11 @@
 # Service Bindings
 
+Experimental surface: currently a small RPC-shaped helper and demo binding, not the final Service Bindings API.
+
 ## Import
 
 ```python
-from xampler.service_bindings import ServiceBinding
+from xampler.experimental.service_bindings import ServiceBinding
 ```
 
 ## Copy this API

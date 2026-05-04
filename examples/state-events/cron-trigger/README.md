@@ -9,7 +9,7 @@ A scheduled Worker with a small `ScheduledJob` service object. Test with `/cdn-c
 ## Copy this API
 
 ```python
-from xampler.cron import DemoScheduledJob, ScheduledEventInfo
+from xampler.experimental.cron import DemoScheduledJob, ScheduledEventInfo
 
 result = await DemoScheduledJob().run(ScheduledEventInfo.from_event(event))
 ```

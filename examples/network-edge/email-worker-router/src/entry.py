@@ -5,7 +5,7 @@ from typing import Any
 import js  # type: ignore[import-not-found]
 from workers import Response, WorkerEntrypoint  # type: ignore[import-not-found]
 
-from xampler.email import EmailRouter, IncomingEmail
+from xampler.experimental.email import EmailRouter, IncomingEmail
 
 
 async def route_email(router: EmailRouter, message: Any) -> IncomingEmail:

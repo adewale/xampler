@@ -10,7 +10,7 @@ A Pythonic WebSocket session object that echoes messages.
 ## Copy this API
 
 ```python
-from xampler.websockets import DemoWebSocketSession
+from xampler.experimental.websockets import DemoWebSocketSession
 
 status = await DemoWebSocketSession().status()
 ```

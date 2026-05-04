@@ -7,11 +7,11 @@ import pytest
 
 from xampler.agents import AgentMessage, AgentSession, DemoAgent
 from xampler.ai_gateway import ChatMessage, ChatRequest, DemoAIGateway
-from xampler.cron import DemoScheduledJob, ScheduledEventInfo
 from xampler.durable_objects import DurableObjectNamespace, DurableObjectRef
+from xampler.experimental.cron import DemoScheduledJob, ScheduledEventInfo
+from xampler.experimental.service_bindings import DemoServiceBinding
+from xampler.experimental.websockets import DemoWebSocketSession
 from xampler.response import error_payload, jsonable
-from xampler.service_bindings import DemoServiceBinding
-from xampler.websockets import DemoWebSocketSession
 from xampler.workflows import DemoWorkflowService, parse_workflow_state
 
 

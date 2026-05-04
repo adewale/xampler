@@ -16,9 +16,9 @@ Latest audit focus: wrapper-like code duplicated between examples and `xampler/`
 |---|---|
 | Durable Object namespace/ref | `xampler.durable_objects` |
 | Workflows service/status | `xampler.workflows` |
-| Cron/scheduled event result | `xampler.cron` |
-| Service Binding RPC wrapper | `xampler.service_bindings` |
-| WebSocket status/demo session | `xampler.websockets` |
+| Cron/scheduled event result | `xampler.experimental.cron` |
+| Service Binding RPC wrapper | `xampler.experimental.service_bindings` |
+| WebSocket status/demo session | `xampler.experimental.websockets` |
 | Agents message/run result/demo | `xampler.agents` |
 | AI Gateway chat request/response/demo | `xampler.ai_gateway` |
 

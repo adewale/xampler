@@ -9,7 +9,7 @@ Python RPC service plus TypeScript client shape. Python side exposes a typed `hi
 ## Copy this API
 
 ```python
-from xampler.service_bindings import ServiceBinding
+from xampler.experimental.service_bindings import ServiceBinding
 
 service = ServiceBinding(env.PY_PROVIDER)
 result = await service.call("highlight_code", "print(1)")

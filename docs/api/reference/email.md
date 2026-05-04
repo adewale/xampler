@@ -1,9 +1,11 @@
 # Email Workers
 
+Experimental surface: currently message/decision types plus a policy router, not a full Email Routing binding wrapper.
+
 ## Import
 
 ```python
-from xampler.email import EmailRouter, IncomingEmail
+from xampler.experimental.email import EmailRouter, IncomingEmail
 ```
 
 ## Copy this API

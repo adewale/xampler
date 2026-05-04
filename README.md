@@ -194,14 +194,14 @@ from xampler.r2_sql import R2SqlClient, R2SqlQuery
 from xampler.r2_data_catalog import R2DataCatalog
 from xampler.durable_objects import DurableObjectNamespace, DurableObjectRef
 from xampler.workflows import WorkflowService, WorkflowStatus
-from xampler.cron import ScheduledEventInfo
-from xampler.service_bindings import ServiceBinding
-from xampler.websockets import WebSocketStatus
+from xampler.experimental.cron import ScheduledEventInfo
+from xampler.experimental.service_bindings import ServiceBinding
+from xampler.experimental.websockets import WebSocketStatus
 from xampler.agents import AgentSession, AgentMessage
 from xampler.ai_gateway import AIGateway, ChatRequest
 ```
 
-Examples now import stable product wrappers from `xampler/`; example-local code should be route/UI/fixture/verifier glue or product surfaces that are still deliberately experimental.
+Examples now import canonical product wrappers from `xampler/`. Type/demo-only surfaces live under `xampler.experimental` until they have a real binding/client wrapper. Example-local code should be route/UI/fixture/verifier glue or product surfaces that are still deliberately experimental.
 
 ## CLI and credential DX
 

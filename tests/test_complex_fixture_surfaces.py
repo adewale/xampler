@@ -2,8 +2,8 @@ from __future__ import annotations
 
 import pytest
 
-from xampler.email import EmailRouter, IncomingEmail
-from xampler.htmlrewriter import OpenGraphPage, OpenGraphRewriter
+from xampler.experimental.email import EmailRouter, IncomingEmail
+from xampler.experimental.htmlrewriter import OpenGraphPage, OpenGraphRewriter
 from xampler.hyperdrive import DemoPostgres, HyperdriveConfig, PostgresQuery
 
 

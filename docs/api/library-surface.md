@@ -21,13 +21,13 @@ Xampler is a Python library with examples that prove the APIs run in Python Work
 | `xampler.r2_data_catalog` | Experimental | `R2DataCatalog`, `CatalogNamespace`, `TableRef` |
 | `xampler.durable_objects` | Beta | `DurableObjectNamespace`, `DurableObjectRef` |
 | `xampler.workflows` | Beta | `WorkflowService`, `WorkflowInstance`, `WorkflowStatus`, `DemoWorkflowService` |
-| `xampler.cron` | Beta | `ScheduledEventInfo`, `ScheduledRunResult`, `DemoScheduledJob` |
-| `xampler.service_bindings` | Beta | `ServiceBinding`, `RpcCall`, `RpcResult`, `DemoServiceBinding` |
-| `xampler.websockets` | Beta | `WebSocketStatus`, `DemoWebSocketSession` |
+| `xampler.experimental.cron` | Experimental | `ScheduledEventInfo`, `ScheduledRunResult`, `DemoScheduledJob` |
+| `xampler.experimental.service_bindings` | Experimental | `ServiceBinding`, `RpcCall`, `RpcResult`, `DemoServiceBinding` |
+| `xampler.experimental.websockets` | Experimental | `WebSocketStatus`, `DemoWebSocketSession` |
 | `xampler.agents` | Experimental | `AgentSession`, `AgentMessage`, `ToolCall`, `AgentRunResult`, `DemoAgent` |
 | `xampler.ai_gateway` | Experimental | `AIGateway`, `ChatRequest`, `ChatMessage`, `ChatResponse`, `DemoAIGateway` |
-| `xampler.email` | Experimental | `IncomingEmail`, `EmailDecision`, `EmailRouter` |
-| `xampler.htmlrewriter` | Experimental | `OpenGraphPage`, `OpenGraphRewriter` |
+| `xampler.experimental.email` | Experimental | `IncomingEmail`, `EmailDecision`, `EmailRouter` |
+| `xampler.experimental.htmlrewriter` | Experimental | `OpenGraphPage`, `OpenGraphRewriter` |
 | `xampler.hyperdrive` | Experimental | `HyperdriveConfig`, `PostgresQuery`, `PostgresResult`, `HyperdrivePostgres`, `DemoPostgres` |
 
 ## Base vocabulary: service, ref, REST client
@@ -46,13 +46,13 @@ The split is intentionally visible because it teaches where code runs and what c
 - Use a **ref** when user code needs a stable handle to a named thing such as an R2 key, KV key, Durable Object name, or Workflow instance.
 - Use a **REST client** when Worker code calls an HTTP API with explicit credentials/secrets instead of using a binding.
 
-These bases should stay tiny. Product behavior belongs in product modules; route/UI/demo glue belongs in examples; `.raw` remains the escape hatch for platform features not yet wrapped.
+These bases should stay tiny. Product behavior belongs in product modules; route/UI/demo glue belongs in examples; `.raw` remains the escape hatch for platform features not yet wrapped. Surfaces under `xampler.experimental` are deliberately not canonical imports yet; they stay there until examples prove a real binding/client wrapper shape.
 
 ## Stability meanings
 
 - **Stable**: intended for users to import; covered by strict `pyright`, unit tests, and executable examples.
 - **Beta**: intended for users to try; API may still change as remote verification deepens.
-- **Experimental**: product/auth behavior is still evolving or token-backed verification is not regular yet.
+- **Experimental**: product/auth behavior is still evolving, token-backed verification is not regular yet, or the module contains types/demo helpers before a real binding wrapper exists.
 
 ## Design contract
 

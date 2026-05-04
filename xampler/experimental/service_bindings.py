@@ -3,7 +3,7 @@ from __future__ import annotations
 from dataclasses import dataclass
 from typing import Any
 
-from .cloudflare import CloudflareService
+from xampler.cloudflare import CloudflareService
 
 
 @dataclass(frozen=True)

@@ -4,7 +4,7 @@ from typing import Any
 
 from workers import Response, WorkerEntrypoint
 
-from xampler.htmlrewriter import OpenGraphPage, OpenGraphRewriter
+from xampler.experimental.htmlrewriter import OpenGraphPage, OpenGraphRewriter
 
 
 class Default(WorkerEntrypoint):

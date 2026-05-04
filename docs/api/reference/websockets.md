@@ -1,9 +1,11 @@
 # WebSockets
 
+Experimental surface: currently status/message dataclasses plus a demo session, not a full WebSocket binding/session wrapper.
+
 ## Import
 
 ```python
-from xampler.websockets import DemoWebSocketSession, WebSocketStatus
+from xampler.experimental.websockets import DemoWebSocketSession, WebSocketStatus
 ```
 
 ## Copy this API

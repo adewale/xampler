@@ -1,9 +1,11 @@
 # Cron
 
+Experimental surface: currently event/result types plus a demo scheduled job, not a full binding wrapper.
+
 ## Import
 
 ```python
-from xampler.cron import ScheduledEventInfo, DemoScheduledJob
+from xampler.experimental.cron import ScheduledEventInfo, DemoScheduledJob
 ```
 
 ## Copy this API

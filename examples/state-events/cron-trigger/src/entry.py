@@ -4,7 +4,7 @@ from typing import Any
 
 from workers import Response, WorkerEntrypoint
 
-from xampler.cron import DemoScheduledJob, ScheduledEventInfo
+from xampler.experimental.cron import DemoScheduledJob, ScheduledEventInfo
 
 
 class Default(WorkerEntrypoint):

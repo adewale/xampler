@@ -71,13 +71,13 @@ These clients require Worker runtime secrets/tokens and are currently experiment
 ```python
 from xampler.durable_objects import DurableObjectNamespace, DurableObjectRef
 from xampler.workflows import WorkflowService, WorkflowStatus
-from xampler.cron import ScheduledEventInfo, DemoScheduledJob
-from xampler.service_bindings import ServiceBinding
-from xampler.websockets import DemoWebSocketSession, WebSocketStatus
+from xampler.experimental.cron import ScheduledEventInfo, DemoScheduledJob
+from xampler.experimental.service_bindings import ServiceBinding
+from xampler.experimental.websockets import DemoWebSocketSession, WebSocketStatus
 from xampler.agents import AgentMessage, AgentSession, DemoAgent
 from xampler.ai_gateway import AIGateway, ChatMessage, ChatRequest
-from xampler.email import EmailRouter, IncomingEmail
-from xampler.htmlrewriter import OpenGraphPage, OpenGraphRewriter
+from xampler.experimental.email import EmailRouter, IncomingEmail
+from xampler.experimental.htmlrewriter import OpenGraphPage, OpenGraphRewriter
 from xampler.hyperdrive import HyperdriveConfig, PostgresQuery
 ```
 

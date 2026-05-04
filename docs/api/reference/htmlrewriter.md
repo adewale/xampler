@@ -1,9 +1,11 @@
 # HTMLRewriter
 
+Experimental surface: currently metadata types plus a deterministic transform helper, not a Python-native HTMLRewriter binding wrapper.
+
 ## Import
 
 ```python
-from xampler.htmlrewriter import OpenGraphPage, OpenGraphRewriter
+from xampler.experimental.htmlrewriter import OpenGraphPage, OpenGraphRewriter
 ```
 
 ## Copy this API

@@ -9,8 +9,8 @@ import js  # type: ignore[import-not-found]
 from pyodide.ffi import create_proxy  # type: ignore[import-not-found]
 from workers import DurableObject, Response, WorkerEntrypoint  # type: ignore[import-not-found]
 
+from xampler.experimental.websockets import DemoWebSocketSession
 from xampler.response import jsonable
-from xampler.websockets import DemoWebSocketSession
 
 
 class StreamConsumer(DurableObject):
