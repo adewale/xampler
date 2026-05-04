@@ -3,6 +3,8 @@ from __future__ import annotations
 from dataclasses import dataclass, field
 from typing import Any, Literal
 
+from xampler.cloudflare import CloudflareService
+
 Role = Literal["user", "assistant", "tool", "system"]
 
 
@@ -39,10 +41,7 @@ class DemoAgent:
         )
 
 
-class AgentSession:
-    def __init__(self, raw: Any):
-        self.raw = raw
-
+class AgentSession(CloudflareService[Any]):
     async def run(self, message: str) -> AgentRunResult:
         result = await self.raw.run(message)
         if isinstance(result, AgentRunResult):

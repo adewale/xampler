@@ -3,7 +3,7 @@
 ## Import
 
 ```python
-from xampler.queues import QueueConsumer, QueueJob, QueueSendOptions, QueueService
+from xampler.queues import QueueConsumer, QueueEventRecorder, QueueJob, QueueSendOptions, QueueService
 ```
 
 ## Copy this API
@@ -19,6 +19,7 @@ await queue.send(QueueJob("delayed", {}), QueueSendOptions(delay_seconds=30))
 - `QueueService(raw)` wraps a queue producer binding.
 - `QueueJob(kind, payload)` is the default typed job envelope.
 - `QueueConsumer` handles per-message ack/retry decisions.
+- `QueueEventRecorder` is a Protocol for optional observability sinks; it is not tied to any Queue product API.
 - `QueueBatchResult` reports processed/retried/dead-lettered counts.
 
 ## Consumer pattern

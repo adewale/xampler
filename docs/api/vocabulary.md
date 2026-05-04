@@ -40,7 +40,7 @@ This is the API surface hierarchy. Product modules should use these shapes befor
 | KV | `KVNamespace` | `KVKey` | TTL/cache/list options | value/list result | — | cursor pages |
 | D1 | `D1Database` | `D1Statement` | SQL/params | rows/result metadata | — | batch SQL |
 | Durable Objects | namespace/service | object/room ref | request/path/options | object state/status | `fetch`, alarm, WebSocket handlers | WebSocket/event streams |
-| Queues | `QueueService` | queue/tracker ref | `QueueJob`, delay/retry options | `QueueBatchResult` | `QueueConsumer` | message batches, DLQ |
+| Queues | `QueueService` | queue ref optional | `QueueJob`, delay/retry options | `QueueBatchResult` | `QueueConsumer`; optional `QueueEventRecorder` observability sink | message batches, DLQ |
 | Workflows | `WorkflowService` | workflow instance | start/status request | `WorkflowStatus`, `Progress`, `Checkpoint` | step handler | durable checkpoints |
 | Cron Triggers | scheduled job service | — | `ScheduledEventInfo` | `ScheduledRunResult` | scheduled handler | — |
 | Tail Workers / logs | tail/log service | tail session ref | filter options | log status/result | tail event handler | event stream/batches |

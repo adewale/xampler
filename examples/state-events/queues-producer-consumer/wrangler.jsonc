@@ -21,6 +21,6 @@
       }
     ]
   },
-  "durable_objects": {"bindings": [{"name": "TRACKER", "class_name": "QueueTracker"}]},
-  "migrations": [{"tag": "v1", "new_sqlite_classes": ["QueueTracker"]}]
+  "durable_objects": {"bindings": [{"name": "TRACKER", "class_name": "QueueProcessingTracker"}]},
+  "migrations": [{"tag": "v1", "new_sqlite_classes": ["QueueProcessingTracker"]}]
 }

@@ -3,6 +3,8 @@ from __future__ import annotations
 from dataclasses import dataclass
 from typing import Any
 
+from xampler.cloudflare import CloudflareService
+
 
 @dataclass(frozen=True)
 class HyperdriveConfig:
@@ -41,10 +43,13 @@ class PostgresResult:
     source: str
 
 
-class HyperdrivePostgres:
+class HyperdrivePostgres(CloudflareService[HyperdriveConfig]):
     def __init__(self, config: HyperdriveConfig):
-        self.config = config
-        self.raw = config
+        super().__init__(config)
+
+    @property
+    def config(self) -> HyperdriveConfig:
+        return self.raw
 
     async def query(self, query: PostgresQuery) -> PostgresResult:
         query.validate_read_only()

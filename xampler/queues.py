@@ -1,17 +1,11 @@
 from __future__ import annotations
 
-import json
 from dataclasses import asdict, dataclass
-from typing import Any, cast
+from typing import Any, Protocol, cast
 
 from cfboundary.ffi import to_js, to_py
 
-from xampler.cloudflare import CloudflareService, ResourceRef
-
-try:
-    import js  # type: ignore[import-not-found]
-except ImportError:  # pragma: no cover - only available in Workers runtime.
-    js = None  # type: ignore[assignment]
+from xampler.cloudflare import CloudflareService
 
 
 @dataclass(frozen=True)
@@ -69,38 +63,14 @@ class QueueService(CloudflareService[Any]):
         await self.raw.sendBatch(to_js([{"body": asdict(job)} for job in jobs]))
 
 
-class QueueTrackerRef(ResourceRef[Any]):
-    async def reset(self) -> dict[str, Any]:
-        response = await self.raw.fetch("https://queue-tracker.local/reset")
-        raw_data = to_py(await response.json())
-        return cast(dict[str, Any], raw_data) if isinstance(raw_data, dict) else {}
+class QueueEventRecorder(Protocol):
+    """Capability for queue observability sinks used by consumers.
 
-    async def snapshot(self) -> dict[str, Any]:
-        response = await self.raw.fetch("https://queue-tracker.local/status")
-        raw_data = to_py(await response.json())
-        return cast(dict[str, Any], raw_data) if isinstance(raw_data, dict) else {}
+    The recorder may be backed by a Durable Object, D1, logs, or an in-memory
+    test object. It is not a Queues product API.
+    """
 
-    async def record(self, kind: str, body: Any) -> None:
-        if js is None:
-            raise RuntimeError("QueueTrackerRef.record requires the Workers runtime js module")
-        js_module = cast(Any, js)
-        request = js_module.Request.new(
-            "https://queue-tracker.local/record",
-            to_js({
-                "method": "POST",
-                "headers": {"content-type": "application/json"},
-                "body": json.dumps({"kind": kind, "body": body}),
-            }),
-        )
-        await self.raw.fetch(request)
-
-
-class QueueTrackerNamespace(CloudflareService[Any]):
-    def global_tracker(self) -> QueueTrackerRef:
-        return QueueTrackerRef(
-            name="global",
-            raw=self.raw.get(self.raw.idFromName("global")),
-        )
+    async def record(self, kind: str, body: Any) -> None: ...
 
 
 def _dict_or_none(value: Any) -> dict[str, Any] | None:
@@ -110,8 +80,8 @@ def _dict_or_none(value: Any) -> dict[str, Any] | None:
 class QueueConsumer:
     """Consumes one batch; every message is explicitly acked or retried."""
 
-    def __init__(self, tracker: QueueTrackerRef | None = None, *, is_dead_letter: bool = False):
-        self.tracker = tracker
+    def __init__(self, recorder: QueueEventRecorder | None = None, *, is_dead_letter: bool = False):
+        self.recorder = recorder
         self.is_dead_letter = is_dead_letter
 
     async def process_batch(self, batch: Any) -> QueueBatchResult:
@@ -124,14 +94,14 @@ class QueueConsumer:
                 if self.is_dead_letter:
                     message.ack()
                     dead_lettered += 1
-                    if self.tracker is not None:
-                        await self.tracker.record("dead_lettered", message.body)
+                    if self.recorder is not None:
+                        await self.recorder.record("dead_lettered", message.body)
                     continue
                 await self.handle(message.body)
                 message.ack()
                 processed += 1
-                if self.tracker is not None:
-                    await self.tracker.record("processed", message.body)
+                if self.recorder is not None:
+                    await self.recorder.record("processed", message.body)
             except Exception:  # noqa: BLE001 - queue handlers isolate failures per message.
                 attempts = int(getattr(raw_message, "attempts", 0))
                 body_dict = _dict_or_none(message.body)
@@ -148,8 +118,8 @@ class QueueConsumer:
                 )
                 message.retry(delay_seconds=delay)
                 retried += 1
-                if self.tracker is not None:
-                    await self.tracker.record(
+                if self.recorder is not None:
+                    await self.recorder.record(
                         "retried", {"body": message.body, "attempts": attempts}
                     )
         return QueueBatchResult(processed=processed, retried=retried, dead_lettered=dead_lettered)
@@ -164,10 +134,9 @@ class QueueConsumer:
 __all__ = [
     "QueueBatchResult",
     "QueueConsumer",
+    "QueueEventRecorder",
     "QueueJob",
     "QueueMessage",
     "QueueSendOptions",
     "QueueService",
-    "QueueTrackerNamespace",
-    "QueueTrackerRef",
 ]

@@ -13,7 +13,7 @@ Xampler is a Python library with examples that prove the APIs run in Python Work
 | `xampler.response` | Stable | `jsonable`, `error_payload` |
 | `xampler.status` | Stable | `Progress`, `Checkpoint`, `BatchResult` |
 | `xampler.cloudflare` | Stable base | `CloudflareService`, `ResourceRef`, `RestClient` |
-| `xampler.queues` | Beta | `QueueService`, `QueueJob`, `QueueConsumer`, `QueueBatchResult` |
+| `xampler.queues` | Beta | `QueueService`, `QueueJob`, `QueueConsumer`, `QueueEventRecorder`, `QueueBatchResult` |
 | `xampler.vectorize` | Beta | `VectorIndex`, `Vector`, `VectorQuery`, `DemoVectorIndex` |
 | `xampler.ai` | Beta | `AIService`, `TextGenerationRequest`, `DemoAIService` |
 | `xampler.browser_rendering` | Experimental | `BrowserRendering`, `ScreenshotRequest` |
@@ -37,7 +37,7 @@ Xampler is a Python library with examples that prove the APIs run in Python Work
 | Base | Meaning | Use for | Examples |
 |---|---|---|---|
 | `CloudflareService[T]` | Active wrapper around a Worker binding or runtime facade. | Code that calls binding methods and owns JS/Python boundary conversion. | `R2Bucket`, `D1Database`, `KVNamespace`, `QueueService`, `VectorIndex`, `AIService`, `WorkflowService` |
-| `ResourceRef[T]` | Passive handle to one named resource reached through a service/namespace. | Cheap, passable references with domain verbs. | `KVKey`, `DurableObjectRef`, `WorkflowInstance`, queue tracker refs |
+| `ResourceRef[T]` | Passive handle to one named resource reached through a service/namespace. | Cheap, passable references with domain verbs. | `KVKey`, `DurableObjectRef`, `WorkflowInstance` |
 | `RestClient[T]` | Token/HTTP-backed client for Cloudflare APIs without a Python-usable Worker binding path. | Products that need account IDs, tokens, secrets, base URLs, or deployed REST verification. | `BrowserRendering`, `R2SqlClient`, `R2DataCatalog`, `AIGateway` |
 
 The split is intentionally visible because it teaches where code runs and what credentials it needs:

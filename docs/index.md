@@ -47,6 +47,7 @@ These are mostly maintainer-facing. New users should start with the API/runtime/
 
 These docs explain why the repo looks the way it does, but they are not the main user journey.
 
+- [`project/api-vocabulary-audit.md`](project/api-vocabulary-audit.md)
 - [`project/competitive-positioning.md`](project/competitive-positioning.md)
 - [`project/example-and-api-ideas.md`](project/example-and-api-ideas.md)
 - [`project/complex-example-backlog.md`](project/complex-example-backlog.md)

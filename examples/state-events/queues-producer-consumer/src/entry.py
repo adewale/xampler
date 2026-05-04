@@ -2,16 +2,18 @@ from __future__ import annotations
 
 import json
 from dataclasses import asdict
-from typing import Any
+from typing import Any, cast
 from urllib.parse import urlparse
 
-from cfboundary.ffi import to_py
+import js  # type: ignore[import-not-found]
+from cfboundary.ffi import to_js, to_py
 from workers import DurableObject, Response, WorkerEntrypoint  # type: ignore[import-not-found]
 
-from xampler.queues import QueueConsumer, QueueJob, QueueService, QueueTrackerNamespace
+from xampler.durable_objects import DurableObjectNamespace, DurableObjectRef
+from xampler.queues import QueueConsumer, QueueJob, QueueService
 
 
-class QueueTracker(DurableObject):
+class QueueProcessingTracker(DurableObject):
     async def fetch(self, request: Any) -> Response:
         path = urlparse(str(request.url)).path
         if path.endswith("/reset"):
@@ -38,6 +40,37 @@ class QueueTracker(DurableObject):
             "dead_lettered": int((await self.ctx.storage.get("dead_lettered")) or 0),
             "events": json.loads(str((await self.ctx.storage.get("events")) or "[]")),
         }
+
+
+class QueueProcessingTrackerRef(DurableObjectRef):
+    async def reset(self) -> dict[str, Any]:
+        response = await self.fetch_path("/reset")
+        raw_data = to_py(await response.json())
+        return cast(dict[str, Any], raw_data) if isinstance(raw_data, dict) else {}
+
+    async def snapshot(self) -> dict[str, Any]:
+        response = await self.fetch_path("/status")
+        raw_data = to_py(await response.json())
+        return cast(dict[str, Any], raw_data) if isinstance(raw_data, dict) else {}
+
+    async def record(self, kind: str, body: Any) -> None:
+        request = js.Request.new(
+            "https://queue-processing-tracker.local/record",
+            to_js({
+                "method": "POST",
+                "headers": {"content-type": "application/json"},
+                "body": json.dumps({"kind": kind, "body": body}),
+            }),
+        )
+        await self.fetch(request)
+
+
+class QueueProcessingTrackerNamespace(DurableObjectNamespace[QueueProcessingTrackerRef]):
+    def __init__(self, raw: Any):
+        super().__init__(raw, ref_type=QueueProcessingTrackerRef)
+
+    def global_tracker(self) -> QueueProcessingTrackerRef:
+        return self.named("global")
 
 
 class Default(WorkerEntrypoint):
@@ -70,17 +103,17 @@ class Default(WorkerEntrypoint):
             )
             return Response.json(asdict(result))
         if request.method == "POST" and path == "/dev/remote-reset":
-            tracker = QueueTrackerNamespace(self.env.TRACKER).global_tracker()
+            tracker = QueueProcessingTrackerNamespace(self.env.TRACKER).global_tracker()
             return Response.json(await tracker.reset())
         if path == "/dev/remote-status":
             return Response.json(
-                await QueueTrackerNamespace(self.env.TRACKER).global_tracker().snapshot()
+                await QueueProcessingTrackerNamespace(self.env.TRACKER).global_tracker().snapshot()
             )
         return Response("POST JSON to /jobs to enqueue a message.\n")
 
     async def queue(self, batch: Any, env: Any, ctx: Any) -> None:
         bindings = env or self.env
-        tracker = QueueTrackerNamespace(bindings.TRACKER).global_tracker()
+        tracker = QueueProcessingTrackerNamespace(bindings.TRACKER).global_tracker()
         queue_name = str(getattr(batch, "queue", ""))
         is_dead_letter = queue_name == "xampler-jobs-dlq"
         await QueueConsumer(tracker, is_dead_letter=is_dead_letter).process_batch(batch)
