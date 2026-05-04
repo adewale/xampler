@@ -493,47 +493,73 @@ def index_html() -> str:
   <title>HVSC Catalog Search · Xampler</title>
   <style>
     :root { color-scheme: light; --blue:#2563eb; --border:#d0d7de; --muted:#64748b; }
-    body { font: 16px/1.55 system-ui, sans-serif; max-width: 1120px; margin: 2rem auto; }
+    * { box-sizing: border-box; }
+    body { font: 16px/1.55 system-ui, sans-serif; max-width: 1180px; margin: 1.25rem auto; }
     body { padding: 0 1rem; color: #17202a; background: #fff; }
     header { display: flex; justify-content: space-between; gap: 1rem; align-items: end; }
     header { border-bottom: 1px solid var(--border); padding-bottom: 1rem; margin-bottom: 1rem; }
     h1, h2, h3 { margin: 0 0 .45rem; line-height: 1.2; }
     p { margin: .35rem 0; }
     code { background: #f1f5f9; padding: .1rem .25rem; border-radius: .25rem; }
+    code { overflow-wrap: anywhere; word-break: break-word; }
     button { font: inherit; padding: .65rem .95rem; border: 1px solid var(--blue); }
     button { border-radius: .55rem; background: var(--blue); color: white; cursor: pointer; }
+    button { max-width: 100%; }
     button.secondary { background: white; color: var(--blue); }
     button.done { background: #16a34a; border-color: #16a34a; }
     button.running { background: #ca8a04; border-color: #ca8a04; }
     button.failed { background: #dc2626; border-color: #dc2626; }
     button:disabled { opacity: .7; cursor: wait; }
-    input { box-sizing: border-box; padding: .65rem; border: 1px solid var(--border); }
+    input { padding: .65rem; border: 1px solid var(--border); min-width: 0; }
     input { border-radius: .5rem; font: inherit; }
     .hero { background: linear-gradient(135deg, #eff6ff, #f8fafc); border: 1px solid var(--border); }
-    .hero { border-radius: 1rem; padding: 1rem; margin-bottom: 1rem; }
-    .grid { display: grid; grid-template-columns: 1.1fr .9fr; gap: 1rem; align-items: start; }
-    .steps { display: grid; gap: .75rem; counter-reset: step; }
+    .hero { border-radius: 1rem; padding: 1rem; margin-bottom: 1.25rem; }
+    .grid { display: grid; grid-template-columns: minmax(330px, 400px) minmax(0, 1fr); }
+    .grid { gap: 1.25rem; align-items: start; }
+    .steps { display: grid; gap: 1rem; counter-reset: step; min-width: 0; }
+    .steps { position: sticky; top: 1rem; max-height: calc(100vh - 2rem); overflow: auto; }
+    .steps { padding-right: .15rem; scrollbar-gutter: stable; }
+    aside { display: grid; gap: 1rem; min-width: 0; max-height: calc(100vh - 2rem); }
+    aside { overflow: hidden; grid-template-rows: minmax(0, 1.35fr) minmax(0, .9fr) auto; }
     .step { border: 1px solid var(--border); border-radius: .9rem; padding: 1rem; background: #fff; }
-    .step { display: grid; grid-template-columns: auto 1fr; gap: .8rem; }
+    .step { display: grid; grid-template-columns: auto minmax(0, 1fr); gap: .9rem; }
+    .step > div { min-width: 0; }
     .step::before { counter-increment: step; content: counter(step); width: 2rem; height: 2rem; }
     .step::before { display: grid; place-items: center; border-radius: 999px; background: #dbeafe; }
     .step::before { color: #1e3a8a; font-weight: 700; }
-    .step-actions { margin-top: .7rem; display: flex; gap: .5rem; flex-wrap: wrap; align-items: center; }
+    .step-actions { margin-top: .8rem; display: flex; gap: .6rem; flex-wrap: wrap; align-items: center; }
+    .step-actions input { flex: 1 1 14rem; }
+    .quick-search { display: flex; flex-wrap: wrap; align-items: center; gap: .5rem; margin-top: .75rem; }
+    .quick-search span { flex: 0 0 auto; }
+    .quick-search button { padding: .45rem .7rem; }
     .card { border: 1px solid var(--border); border-radius: .9rem; padding: 1rem; background: #f8fafc; }
+    .card { min-width: 0; overflow: hidden; }
+    .scroll-panel { display: flex; flex-direction: column; min-height: 0; }
     .muted { color: var(--muted); }
     .pill { display: inline-flex; align-items: center; gap: .35rem; border-radius: 999px; }
     .pill { background: #e0f2fe; color: #075985; padding: .18rem .55rem; font-size: .88rem; }
     .progress { background: #e2e8f0; border-radius: 999px; overflow: hidden; height: .9rem; }
     .bar { background: #16a34a; height: 100%; width: 0%; transition: width .2s; }
     #progressText { margin: .5rem 0 0; color: #334155; }
-    #results { margin-top: 1rem; }
+    #results { margin-top: 1rem; min-height: 0; overflow: auto; padding-right: .25rem; }
     .result { border: 1px solid #cbd5e1; border-radius: .7rem; padding: .85rem; background: #fff; }
+    .result { overflow-wrap: anywhere; }
     .result + .result { margin-top: .65rem; }
     .result h3 { font-size: 1rem; }
     .result p { margin: .18rem 0; color: #334155; }
-    pre { background: #0f172a; color: #e2e8f0; padding: 1rem; border-radius: .7rem; overflow: auto; }
-    details { margin-top: 1rem; }
-    @media (max-width: 860px) { .grid, header { display: block; } .card { margin-top: 1rem; } }
+    pre { background: #0f172a; color: #e2e8f0; padding: 1rem; border-radius: .7rem; }
+    pre { overflow: auto; max-width: 100%; min-height: 0; flex: 1; margin-bottom: 0; }
+    details { margin: 0; }
+    @media (max-width: 860px) {
+      body { margin: 1rem auto; }
+      .grid, header { display: block; }
+      .steps { position: static; max-height: none; overflow: visible; padding-right: 0; }
+      aside { margin-top: 1rem; max-height: none; overflow: visible; display: grid; }
+      .scroll-panel { max-height: 28rem; }
+      .step { grid-template-columns: 1fr; }
+      .step::before { margin-bottom: -.25rem; }
+      .pill { margin-top: .75rem; }
+    }
   </style>
 </head>
 <body>
@@ -583,20 +609,20 @@ def index_html() -> str:
             <input id="q" value="hubbard" aria-label="search query" autocomplete="off">
             <button id="step3" type="submit">Search D1 catalog</button>
           </form>
-          <p class="muted">Try <button class="secondary" onclick="search('jeroen')" type="button">jeroen</button> <button class="secondary" onclick="search('galway')" type="button">galway</button> <button class="secondary" onclick="search('maniacs')" type="button">maniacs</button> <button class="secondary" onclick="search('last ninja')" type="button">last ninja</button></p>
+          <div class="muted quick-search"><span>Try</span> <button class="secondary" onclick="search('jeroen')" type="button">jeroen</button> <button class="secondary" onclick="search('galway')" type="button">galway</button> <button class="secondary" onclick="search('maniacs')" type="button">maniacs</button> <button class="secondary" onclick="search('last ninja')" type="button">last ninja</button></div>
         </div>
       </article>
     </section>
 
     <aside>
-      <section class="card">
+      <section class="card scroll-panel">
         <h2>Status</h2>
         <p id="summary" class="muted">Checking local D1 and R2…</p>
         <div id="results" aria-live="polite">
           <p class="muted">Search results will appear here after the catalog is imported.</p>
         </div>
       </section>
-      <section class="card">
+      <section class="card scroll-panel">
         <h2>Latest operation</h2>
         <pre id="output">Open this page, then follow steps 1 → 2 → 3.</pre>
       </section>
