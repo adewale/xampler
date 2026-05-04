@@ -178,7 +178,7 @@ EXAMPLES = {
         [
             Check("/demo/start", contains="demo-instance"),
             Check("/demo/status/demo-instance", contains="complete"),
-            Check("/timeline/demo-instance", contains="fetch input"),
+            Check("/timeline/demo-instance", contains="write D1 batch"),
         ],
         needs_setup="/start uses real Workflows; /demo/* is deterministic for local verification.",
         setup_commands=[
@@ -242,6 +242,7 @@ EXAMPLES = {
                 contains="hello room",
             ),
             Check("/room/demo/dev/history", contains="hello room"),
+            Check("/room/python/dev/seed", contains="own DO"),
             Check("/room/demo/dev/replay", contains="hello room"),
             Check("/room/demo/dev/export", contains="transcript"),
         ],

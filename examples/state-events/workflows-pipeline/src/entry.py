@@ -38,9 +38,48 @@ class Pipeline(WorkflowEntrypoint):
 async def record_timeline(db: D1Database, instance_id: str) -> None:
     now = datetime.now(UTC).isoformat()
     steps = [
-        ("fetch input", "complete", "r2://input", {"records": 3}),
-        ("transform", "complete", "batch:1", {"records": 3}),
-        ("summarize", "complete", "final", {"summary": "INPUT"}),
+        (
+            "discover source objects",
+            "complete",
+            "r2://incoming/manifests/2026-05-01.json",
+            {"objects": 4, "bytes": 18432},
+        ),
+        (
+            "read input shards",
+            "complete",
+            "r2://incoming/shards/0003.jsonl",
+            {"records": 1200, "batches": 4},
+        ),
+        (
+            "validate rows",
+            "complete",
+            "validation:clean",
+            {"accepted": 1188, "rejected": 12, "rules": ["schema", "required_fields"]},
+        ),
+        (
+            "transform",
+            "complete",
+            "batch:4",
+            {"records": 1188, "normalized_fields": ["title", "author", "published_at"]},
+        ),
+        (
+            "write D1 batch",
+            "complete",
+            "d1:gutenberg_items:1188",
+            {"statements": 2376, "rows_written": 1188},
+        ),
+        (
+            "emit downstream event",
+            "complete",
+            "queue:indexing:job-42",
+            {"queue": "indexing", "messages": 1},
+        ),
+        (
+            "summarize",
+            "complete",
+            "final",
+            {"summary": "1188 accepted records across 4 input shards", "duration_ms": 842},
+        ),
     ]
     await db.statement("DELETE FROM workflow_timeline WHERE instance_id = ?").run(instance_id)
     for step, state, checkpoint, details in steps:
@@ -100,7 +139,7 @@ function render(timeline, started){
   const last = timeline.events[timeline.events.length - 1] || {};
   document.querySelector('#state').textContent = last.state || started?.status || 'complete';
   document.querySelector('#checkpoint').textContent = last.checkpoint || '—';
-  document.querySelector('#timeline').innerHTML = timeline.events.map(e => '<div class=event><span class=event-dot></span><div class=event-card><strong>' + esc(e.step) + '</strong><p class=muted>' + esc(e.created_at) + '</p><div class=chips><span class=chip>' + esc(e.state) + '</span><span class=chip>' + esc(e.checkpoint) + '</span></div></div></div>').join('');
+  document.querySelector('#timeline').innerHTML = timeline.events.map(e => '<div class=event><span class=event-dot></span><div class=event-card><strong>' + esc(e.step) + '</strong><p class=muted>' + esc(e.created_at) + '</p><p>' + esc(JSON.stringify(e.details)) + '</p><div class=chips><span class=chip>' + esc(e.state) + '</span><span class=chip>' + esc(e.checkpoint) + '</span></div></div></div>').join('');
   document.querySelector('#out').textContent = JSON.stringify({started, timeline}, null, 2);
 }
 async function loadTimeline(startFirst){

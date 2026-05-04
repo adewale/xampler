@@ -40,8 +40,16 @@ class ChatRoom(DurableObject):
             })
         if path.endswith("/dev/export"):
             return Response.json({
+                "room": self.room_name,
                 "transcript": await self.history(),
                 "presence": list(self.presence.values()),
+            })
+        if path.endswith("/dev/seed"):
+            seeded = await self.seed_room()
+            return Response.json({
+                "room": self.room_name,
+                "seeded": len(seeded),
+                "messages": seeded,
             })
         if path.endswith("/dev/send") and request.method == "POST":
             data = json.loads(await request.text())
@@ -121,6 +129,19 @@ class ChatRoom(DurableObject):
         history = [*await self.history(), event][-self.max_history :]
         self.message_history = history
         ROOM_MEMORY[self.room_name] = history
+
+    async def seed_room(self) -> list[dict[str, str]]:
+        sample_messages = [
+            {"username": "Ada", "text": f"Welcome to #{self.room_name}. This is its own DO."},
+            {"username": "Linus", "text": "Open another tab in this room to see broadcast."},
+            {"username": "Grace", "text": "Switch rooms and the transcript changes."},
+            {"username": "Ken", "text": "The Worker uses ROOMS.idFromName(room)."},
+        ]
+        for message in sample_messages:
+            await self.remember(self.chat_event(message))
+        history = await self.history()
+        self.broadcast(json.dumps({"type": "replay", "room": self.room_name, "messages": history}))
+        return history
 
     def broadcast(self, message: str) -> None:
         for ws in self.ctx.getWebSockets():

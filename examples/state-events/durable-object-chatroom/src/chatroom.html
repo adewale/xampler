@@ -19,7 +19,7 @@
   <main class="layout">
     <aside class="sidebar">
       <section class="room-list"><h2>Rooms</h2><p class="muted">Choose one room. The chat panel only shows that room’s Durable Object.</p><div id="rooms"></div><form id="custom" class="custom-room"><input id="customName" placeholder="custom-room"><button class="secondary">Go</button></form></section>
-      <section class="card"><h2>Try the isolation</h2><p class="muted">Send a message in <strong>lobby</strong>, switch to <strong>python</strong>, and notice the history is different. Open two tabs in the same room to see broadcast.</p><p><a id="export" href="/room/lobby/dev/export">Export this room</a></p><div id="presence" class="presence"></div></section>
+      <section class="card"><h2>Try the isolation</h2><p class="muted">Send a message in <strong>lobby</strong>, switch to <strong>python</strong>, and notice the history is different. Open two tabs in the same room to see broadcast.</p><p><button id="seed" class="secondary">Load sample messages for this room</button></p><p><a id="export" href="/room/lobby/dev/export">Export this room</a></p><div id="presence" class="presence"></div></section>
     </aside>
     <section class="panel">
       <div class="chat-head"><div><div class="room-title"><h2 id="roomTitle">#lobby</h2><span class="badge">focused room only</span></div><p class="muted" id="roomHint">Connected to one Durable Object instance.</p></div><span class="status connecting" id="state"><span class="dot"></span><span>connecting</span></span></div>
@@ -66,6 +66,14 @@
       messages.insertAdjacentHTML('beforeend', `<div class="msg ${klass}"><div class="meta"><strong>${esc(data.username || data.type || 'system')}</strong><span>${esc((data.at || '').slice(11,19))}</span></div><div>${esc(data.text || JSON.stringify(data))}</div></div>`);
       messages.scrollTop = messages.scrollHeight;
     }
+    async function seedRoom(){
+      const data = await (await fetch(`${roomPath(room)}/dev/seed`)).json();
+      count = 0;
+      messages.innerHTML = '';
+      (data.messages || []).forEach(item => { count += 1; addMessage(item, 'replay'); });
+      document.querySelector('#count').textContent = count;
+      log.textContent += JSON.stringify(data, null, 2) + '\n';
+    }
     function connect(){
       if (ws) ws.close();
       resetRoomUi();
@@ -98,6 +106,7 @@
     document.querySelector('#text').addEventListener('keydown', e => { if (e.key === 'Enter') send(); });
     document.querySelector('#name').addEventListener('change', () => { if (ws && ws.readyState === WebSocket.OPEN) ws.send(JSON.stringify({type:'presence', username:document.querySelector('#name').value, avatar:'🙂'})); });
     document.querySelector('#custom').onsubmit = event => { event.preventDefault(); switchRoom(document.querySelector('#customName').value); };
+    document.querySelector('#seed').onclick = seedRoom;
     window.addEventListener('hashchange', () => { const next = location.hash.slice(1) || 'lobby'; if (next !== room) switchRoom(next); });
     connect();
   </script>

@@ -3,7 +3,16 @@ export default {
     // Literate note: the TypeScript Worker does not know how highlighting works.
     // It only knows there is a Python service binding with a typed RPC method.
     const url = new URL(request.url);
-    const code = url.searchParams.get("code") ?? "print('hello from Python RPC')";
+    const code = url.searchParams.get("code") ?? `from dataclasses import dataclass
+
+@dataclass
+class Track:
+    title: str
+    plays: int
+
+tracks = [Track("Monty on the Run", 128), Track("Cybernoid", 64)]
+for track in tracks:
+    print(f"{track.title}: {track.plays} plays")`;
     const highlighted = await env.PYTHON_RPC.highlight_code(code);
     const page = `<!doctype html>
 <meta name="viewport" content="width=device-width, initial-scale=1">
