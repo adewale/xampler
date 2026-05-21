@@ -36,3 +36,11 @@ The executable examples verify Dynamic Python Workers locally. They also include
 - [`examples/experimental/python-by-example-playground/`](../../../examples/experimental/python-by-example-playground)
 
 Remote verification should remain opt-in and beta-gated until Cloudflare makes deployed Worker Loader generally available.
+## Capability table
+
+| Operation | Status | Notes |
+|---|---|---|
+| Build Python child `WorkerCode` | Caveated | Local examples verify shape; product is beta-gated. |
+| Stable worker id and loader cache flow | Caveated | Helper exists for examples, not yet a stable abstraction. |
+| Deployed Worker Loader verification | Remote-only | Keep opt-in until the product is broadly available. |
+

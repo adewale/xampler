@@ -8,6 +8,7 @@ import pytest
 from xampler.agents import AgentMessage, AgentSession, DemoAgent
 from xampler.ai_gateway import ChatMessage, ChatRequest, DemoAIGateway
 from xampler.durable_objects import DurableObjectNamespace, DurableObjectRef
+from xampler.errors import XamplerError
 from xampler.experimental.cron import DemoScheduledJob, ScheduledEventInfo
 from xampler.experimental.service_bindings import DemoServiceBinding
 from xampler.experimental.websockets import DemoWebSocketSession
@@ -96,3 +97,18 @@ async def test_agents_and_ai_gateway_demos() -> None:
 def test_response_jsonable_and_error_payload() -> None:
     assert jsonable(AgentMessage("user", "hello")) == {"role": "user", "content": "hello"}
     assert error_payload("nope", status=422)["error"]["status"] == 422
+
+    error = XamplerError(
+        "unsupported",
+        "signed URLs require HTTP credentials",
+        cause=ValueError("x"),
+    )
+    assert error_payload(error, status=501) == {
+        "error": {
+            "code": "unsupported",
+            "message": "signed URLs require HTTP credentials",
+            "status": 501,
+        }
+    }
+    assert XamplerError.wrap(error) is error
+    assert XamplerError.wrap(ValueError("boom")).code == "provider"

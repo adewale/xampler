@@ -7,11 +7,16 @@ from typing import Any, Literal, cast
 from cfboundary.ffi import to_js, to_py
 
 from .cloudflare import RestClient
+from .errors import unsupported
 
-try:
-    import js  # type: ignore[import-not-found]
-except ImportError:  # pragma: no cover
-    js = None  # type: ignore[assignment]
+
+def _js_module() -> Any:
+    try:
+        import js  # type: ignore[import-not-found]
+    except ImportError as exc:  # pragma: no cover
+        raise unsupported("AIGateway requires the Workers runtime js module", cause=exc) from exc
+    return js
+
 
 ChatRole = Literal["system", "user", "assistant", "tool"]
 
@@ -50,8 +55,7 @@ class AIGateway(RestClient[Any]):
         object.__setattr__(self, "api_key", api_key)
 
     async def chat(self, request: ChatRequest) -> ChatResponse:
-        if js is None:
-            raise RuntimeError("AIGateway requires the Workers runtime js module")
+        js = _js_module()
         response = await js.fetch(
             self.base_url,
             to_js({

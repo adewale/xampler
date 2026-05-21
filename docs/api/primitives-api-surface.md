@@ -1,10 +1,10 @@
 # Cloudflare Primitive API Surface
 
-Last reviewed: 2026-05-02. Scores are out of **10**.
+Last reviewed: 2026-05-09. Scores are out of **10**.
 
 Coverage scores answer: **how much of the Cloudflare primitive's useful API surface does this example demonstrate?**
 
-Pythonic scores answer: **how natural, typed, testable, layered, and honest is our Python-facing API surface?**
+Pythonic scores answer: **how natural, typed, testable, layered, safe, and honest is our Python-facing API surface?** Operation-level capability labels live in [`primitive-test-realism.md`](primitive-test-realism.md): supported, supported with caveat, demo-only, remote-only, unsupported/throws, and not covered.
 
 Sorted by Pythonic score, highest first.
 
@@ -47,8 +47,10 @@ The API design is generally ahead of the feature coverage. That is intentional f
 
 ## API design pattern used across primitives
 
-Each primitive should converge on three layers:
+Each primitive should converge on five visible contracts:
 
 1. **Friendly Python layer** — resource handles and familiar verbs (`read_text`, `write_json`, `exists`, `iter_*`).
 2. **Cloudflare platform layer** — the real product vocabulary (`send`, `query`, `upsert`, `status`, metadata/options).
-3. **Escape hatch** — `.raw` or explicit low-level clients for unwrapped Workers APIs.
+3. **Capability honesty** — docs say supported, caveated, demo-only, remote-only, unsupported/throws, or not covered for important operations.
+4. **Safe failure behavior** — missing values, unsupported options, auth failures, conflicts, and provider errors have predictable Python/route/tool behavior.
+5. **Escape hatch** — `.raw` or explicit low-level clients for unwrapped Workers APIs.

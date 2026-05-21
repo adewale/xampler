@@ -27,6 +27,9 @@ ROOT = Path(__file__).resolve().parents[1]
 STATE_PATH = ROOT / ".xampler-remote-state.json"
 
 
+JsonAssert = Callable[[object], None]
+
+
 @dataclass(frozen=True)
 class RemoteCheck:
     path: str
@@ -37,6 +40,9 @@ class RemoteCheck:
     headers: dict[str, str] = field(default_factory=dict)
     attempts: int = 1
     retry_delay: float = 2.0
+    content_type_contains: str | None = None
+    min_bytes: int | None = None
+    json_assert: JsonAssert | None = None
 
 
 @dataclass(frozen=True)
@@ -265,20 +271,28 @@ def run_http_check(base_url: str, check: RemoteCheck) -> None:
             method=check.method,
             headers=headers,
         )
+        response_headers: Mapping[str, str] = {}
         try:
             with urllib.request.urlopen(request, timeout=90) as response:
                 status = response.status
+                response_headers = dict(response.headers.items())
                 body_bytes = response.read()
                 body = body_bytes.decode("utf-8", errors="replace")
         except urllib.error.HTTPError as error:
             status = error.code
-            body = error.read().decode("utf-8", errors="replace")
-        if status != check.status:
-            last_error = AssertionError(
-                f"{check.path}: expected {check.status}, got {status}: {body}"
+            response_headers = dict(error.headers.items()) if error.headers else {}
+            body_bytes = error.read()
+            body = body_bytes.decode("utf-8", errors="replace")
+        try:
+            assert_remote_response(
+                check,
+                status=status,
+                body=body,
+                body_bytes=body_bytes,
+                headers=response_headers,
             )
-        elif check.contains is not None and check.contains not in body:
-            last_error = AssertionError(f"{check.path}: expected {check.contains!r} in {body!r}")
+        except AssertionError as error:
+            last_error = error
         else:
             print(f"✓ remote {check.method} {check.path}")
             return
@@ -286,6 +300,106 @@ def run_http_check(base_url: str, check: RemoteCheck) -> None:
             time.sleep(check.retry_delay)
     if last_error is not None:
         raise last_error
+
+
+def assert_remote_response(
+    check: RemoteCheck,
+    *,
+    status: int,
+    body: str,
+    body_bytes: bytes,
+    headers: Mapping[str, str],
+) -> None:
+    if status != check.status:
+        raise AssertionError(f"{check.path}: expected {check.status}, got {status}: {body}")
+    if check.contains is not None and check.contains not in body:
+        raise AssertionError(f"{check.path}: expected {check.contains!r} in {body!r}")
+    if check.content_type_contains is not None:
+        content_type = ""
+        for key, value in headers.items():
+            if key.lower() == "content-type":
+                content_type = value
+                break
+        if check.content_type_contains not in content_type:
+            raise AssertionError(
+                f"{check.path}: expected content-type containing "
+                f"{check.content_type_contains!r}, got {content_type!r}"
+            )
+    if check.min_bytes is not None and len(body_bytes) < check.min_bytes:
+        raise AssertionError(
+            f"{check.path}: expected at least {check.min_bytes} bytes, got {len(body_bytes)}"
+        )
+    if check.json_assert is not None:
+        try:
+            data = json.loads(body)
+        except json.JSONDecodeError as error:
+            raise AssertionError(f"{check.path}: expected JSON body: {body!r}") from error
+        check.json_assert(data)
+
+
+def _contains_deep(value: object, needle: str) -> bool:
+    if isinstance(value, str):
+        return needle in value
+    if isinstance(value, Mapping):
+        return any(_contains_deep(k, needle) or _contains_deep(v, needle) for k, v in value.items())
+    if isinstance(value, list | tuple):
+        return any(_contains_deep(item, needle) for item in value)
+    return needle in str(value)
+
+
+def _require_mapping(value: object, label: str) -> Mapping[str, object]:
+    if not isinstance(value, Mapping):
+        raise AssertionError(f"{label}: expected object, got {type(value).__name__}")
+    return value
+
+
+def assert_ai_gateway_response(data: object) -> None:
+    mapping = _require_mapping(data, "ai gateway response")
+    choices = mapping.get("choices")
+    if not isinstance(choices, list) or not choices:
+        raise AssertionError("ai gateway response must include non-empty choices")
+    first = _require_mapping(choices[0], "first choice")
+    message = _require_mapping(first.get("message"), "first choice message")
+    content = message.get("content")
+    if not isinstance(content, str) or not content.strip():
+        raise AssertionError("ai gateway first choice must include non-empty message.content")
+
+
+def assert_r2_sql_show_tables(data: object) -> None:
+    mapping = _require_mapping(data, "r2 sql response")
+    if mapping.get("sql") != "SHOW TABLES IN xampler":
+        raise AssertionError(f"unexpected SQL echo: {mapping.get('sql')!r}")
+    if not _contains_deep(mapping.get("data"), "gutenberg_smoke"):
+        raise AssertionError("R2 SQL SHOW TABLES response did not include gutenberg_smoke")
+
+
+def assert_r2_sql_select(data: object) -> None:
+    mapping = _require_mapping(data, "r2 sql response")
+    if mapping.get("sql") != "SELECT * FROM xampler.gutenberg_smoke LIMIT 1":
+        raise AssertionError(f"unexpected SQL echo: {mapping.get('sql')!r}")
+    if not _contains_deep(mapping.get("data"), "gutenberg_smoke"):
+        raise AssertionError("R2 SQL SELECT response did not reference gutenberg_smoke")
+
+
+def assert_browser_scrape(data: object) -> None:
+    mapping = _require_mapping(data, "browser scrape response")
+    if not _contains_deep(mapping, "Example Domain"):
+        raise AssertionError("Browser scrape response did not include Example Domain")
+
+
+def assert_catalog_tables(data: object) -> None:
+    if not _contains_deep(data, "gutenberg_smoke"):
+        raise AssertionError("R2 Data Catalog table list did not include gutenberg_smoke")
+
+
+def assert_catalog_lifecycle(data: object) -> None:
+    mapping = _require_mapping(data, "catalog lifecycle response")
+    if mapping.get("lifecycle_complete") is not True:
+        raise AssertionError("catalog lifecycle did not complete")
+    if mapping.get("namespace") != "xampler_verify" or mapping.get("table") != "temp_table":
+        raise AssertionError("catalog lifecycle returned unexpected namespace/table")
+    if not _contains_deep(mapping.get("tables_after_create"), "temp_table"):
+        raise AssertionError("catalog lifecycle did not list temp_table after create")
 
 
 def terminate_process_group(proc: subprocess.Popen[bytes]) -> None:
@@ -378,10 +492,29 @@ PROFILES: dict[str, RemoteProfile] = {
     "browser-rendering": deployed_profile(
         "browser-rendering",
         "Calls a deployed Worker that uses the real Browser Rendering REST API.",
-        RemoteCheck("/?url=https%3A%2F%2Fexample.com"),
-        RemoteCheck("/content?url=https%3A%2F%2Fexample.com", contains="Example Domain"),
-        RemoteCheck("/pdf?url=https%3A%2F%2Fexample.com", contains="%PDF"),
-        RemoteCheck("/scrape?url=https%3A%2F%2Fexample.com", contains="Example Domain"),
+        RemoteCheck(
+            "/?url=https%3A%2F%2Fexample.com",
+            content_type_contains="image/png",
+            min_bytes=100,
+        ),
+        RemoteCheck(
+            "/content?url=https%3A%2F%2Fexample.com",
+            contains="Example Domain",
+            content_type_contains="text/html",
+            min_bytes=100,
+        ),
+        RemoteCheck(
+            "/pdf?url=https%3A%2F%2Fexample.com",
+            contains="%PDF",
+            content_type_contains="application/pdf",
+            min_bytes=100,
+        ),
+        RemoteCheck(
+            "/scrape?url=https%3A%2F%2Fexample.com",
+            contains="Example Domain",
+            content_type_contains="application/json",
+            json_assert=assert_browser_scrape,
+        ),
     ),
     "r2-sql": deployed_profile(
         "r2-sql",
@@ -392,6 +525,8 @@ PROFILES: dict[str, RemoteProfile] = {
             body=b'{"sql":"SHOW TABLES IN xampler"}',
             headers=json_headers,
             contains="gutenberg_smoke",
+            content_type_contains="application/json",
+            json_assert=assert_r2_sql_show_tables,
         ),
         RemoteCheck(
             "/",
@@ -399,6 +534,8 @@ PROFILES: dict[str, RemoteProfile] = {
             body=b'{"sql":"SELECT * FROM xampler.gutenberg_smoke LIMIT 1"}',
             headers=json_headers,
             contains="gutenberg_smoke",
+            content_type_contains="application/json",
+            json_assert=assert_r2_sql_select,
         ),
     ),
     "ai-gateway": worker_profile(
@@ -412,7 +549,14 @@ PROFILES: dict[str, RemoteProfile] = {
             "OPENAI_API_KEY",
         ),
         ready_path="/demo",
-        checks=(RemoteCheck("/", contains="choices"),),
+        checks=(
+            RemoteCheck(
+                "/",
+                contains="choices",
+                content_type_contains="application/json",
+                json_assert=assert_ai_gateway_response,
+            ),
+        ),
         dev_vars={
             "ACCOUNT_ID": "CLOUDFLARE_ACCOUNT_ID",
             "GATEWAY_ID": "XAMPLER_AI_GATEWAY_ID",
@@ -423,11 +567,18 @@ PROFILES: dict[str, RemoteProfile] = {
     "r2-data-catalog": deployed_profile(
         "r2-data-catalog",
         "Calls a deployed Worker that uses a real R2 Data Catalog/Iceberg endpoint.",
-        RemoteCheck("/tables/xampler", contains="gutenberg_smoke"),
+        RemoteCheck(
+            "/tables/xampler",
+            contains="gutenberg_smoke",
+            content_type_contains="application/json",
+            json_assert=assert_catalog_tables,
+        ),
         RemoteCheck(
             "/lifecycle/xampler_verify/temp_table",
             method="POST",
             contains="lifecycle_complete",
+            content_type_contains="application/json",
+            json_assert=assert_catalog_lifecycle,
         ),
     ),
     "hyperdrive": deployed_profile(

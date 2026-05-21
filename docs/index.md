@@ -12,6 +12,7 @@ Long-term docs are grouped by purpose. Older planning snapshots live in [`archiv
 ## API design details
 
 - [`api/composition-and-operations.md`](api/composition-and-operations.md) — composition, checkpoint, retry, DLQ, workflow status, observability, and copyable pipeline patterns.
+- [`api/capabilities.md`](api/capabilities.md) — operation-level supported/caveated/demo-only/remote-only/unsupported matrix.
 - [`api/unified-api-surface.md`](api/unified-api-surface.md) — the shared Xampler API shape.
 - [`api/protocols.md`](api/protocols.md) — why real/demo services share capability Protocols instead of inheritance.
 - [`api/primitives-api-surface.md`](api/primitives-api-surface.md) — primitive coverage and Pythonic API matrix.

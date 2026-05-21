@@ -213,18 +213,18 @@ Xampler ships one CLI, `xc`:
 
 ```bash
 xc doctor
-xc verify r2
+xc examples list
+xc examples verify r2
+xc docs path r2
+xc remote plan vectorize --json
 xc remote prepare vectorize
 xc remote verify vectorize
 xc remote cleanup vectorize
 xc dev link
-xc list
-xc docs r2
-xc doctor r2-sql
 xc dev restore
 ```
 
-Remote actions remain opt-in. `xc remote prepare` sets `XAMPLER_RUN_REMOTE=1` and `XAMPLER_PREPARE_REMOTE=1`; cleanup sets `XAMPLER_CLEANUP_REMOTE=1`. See [`docs/runtime/credentials.md`](docs/runtime/credentials.md).
+Remote actions remain opt-in. `xc remote prepare` sets `XAMPLER_RUN_REMOTE=1` and `XAMPLER_PREPARE_REMOTE=1`; cleanup sets `XAMPLER_CLEANUP_REMOTE=1`. Use global `--dry-run` or `xc remote plan <profile> --json` before mutating resources, and use `xc --json list` / `xc --json doctor <profile>` for scripts and agents. Human progress goes to stderr; JSON goes to stdout. CLI parse errors with `--json` return a stable `{ "error": { "code", "message", "status" } }` envelope on stderr and exit code `2`; command exit codes otherwise pass through the underlying verifier/script. See [`docs/runtime/credentials.md`](docs/runtime/credentials.md).
 
 ## Primitive metrics
 

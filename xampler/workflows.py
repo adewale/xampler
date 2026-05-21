@@ -32,7 +32,8 @@ class WorkflowInstance(ResourceRef[Any]):
         object.__setattr__(self, "id", instance_id)
 
     async def status(self) -> WorkflowStatus:
-        raw_status = cast(object, await self.raw.status())
+        raw_status: object = await self.raw.status()
+        raw_value: object = raw_status
         raw_state: object = raw_status
         if isinstance(raw_status, dict):
             raw_status_map = cast(dict[object, object], raw_status)
@@ -40,7 +41,7 @@ class WorkflowInstance(ResourceRef[Any]):
         return WorkflowStatus(
             instance_id=self.name,
             status=parse_workflow_state(raw_state),
-            raw=cast(object, raw_status),
+            raw=raw_value,
         )
 
 

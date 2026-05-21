@@ -33,6 +33,15 @@ await index.delete(["doc-1"])
 await index.describe()
 ```
 
+## Capability table
+
+| Operation | Status | Notes |
+|---|---|---|
+| Upsert/query/query-by-id/get/delete/describe | Supported | Local deterministic search and prepared remote profile cover core behavior. |
+| Dimension validation | Supported | Tests and examples set dimensions explicitly. |
+| Metadata index management and large batches | Not covered | Future wrapper work. |
+
+
 ## Testability
 
 Set `dimensions` in tests to catch vector length mistakes. Use `DemoVectorIndex` for account-free local checks and fake bindings for raw response parsing.

@@ -2,6 +2,24 @@
 
 This page consolidates deferred work that is currently spread across README and project docs.
 
+## Files SDK-inspired DX baseline
+
+The `files-sdk.dev` comparison produced a baseline that is now reflected in code and docs:
+
+- [`../api/capabilities.md`](../api/capabilities.md) labels operations as **supported**, **caveated**, **demo-only**, **remote-only**, **unsupported/throws**, or **not covered**.
+- [`../api/reference/r2.md`](../api/reference/r2.md) documents public URL, signed URL, CORS, content-type, direct-upload, `Content-Disposition`, and streaming/memory caveats.
+- `xampler.errors.XamplerError` provides normalized non-absence failures: `not_found`, `unauthorized`, `conflict`, `bad_request`, `unsupported`, and `provider` while preserving `cause`.
+- Runtime-only `js` imports in REST-backed clients are guarded/lazy instead of imported at module import time.
+- `xampler.agent_tools.create_r2_object_tools()` provides SDK-neutral read/write tools with approval-gated mutations and `read_only=True`.
+- `xc` now has noun/action groups (`examples list`, `examples verify`, `docs path`, `remote plan`) without compatibility aliases.
+- `xc --json list`, `xc --json doctor`, global `--dry-run`, `--quiet`, `--verbose`, and `xc remote plan <profile> --json` provide a machine-readable automation baseline.
+- `xampler.cli.CommandPlan`, `Surface`, and the central `SURFACES` registry keep command implementation composable.
+- Committed CLI fuzz/property tests cover random argv inputs, the exhaustive valid surface matrix, JSON invariants, and removed aliases.
+- Remote verifiers for Browser Rendering, R2 SQL, R2 Data Catalog, and AI Gateway now assert more than substrings: response headers, byte sizes, JSON shape, echoed SQL, and lifecycle/table payloads.
+- The experimental `ty` run has been converted into low-risk cleanups while `pyright` remains the gating checker.
+
+Future polish should extend these patterns to more primitives rather than inventing new conventions.
+
 ## Remote realism and credentials
 
 - Run token-backed prepared profiles with real credentials:

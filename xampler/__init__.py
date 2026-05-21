@@ -1,6 +1,7 @@
 """Shared typed helpers for Xampler examples."""
 
 from . import (
+    agent_tools,
     agents,
     ai,
     ai_gateway,
@@ -8,6 +9,7 @@ from . import (
     cloudflare,
     d1,
     durable_objects,
+    errors,
     experimental,
     hyperdrive,
     kv,
@@ -24,12 +26,14 @@ from . import (
 )
 
 __all__ = [
+    "agent_tools",
     "agents",
     "ai",
     "ai_gateway",
     "browser_rendering",
     "cloudflare",
     "d1",
+    "errors",
     "durable_objects",
     "experimental",
     "hyperdrive",

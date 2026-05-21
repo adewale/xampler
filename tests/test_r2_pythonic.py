@@ -112,6 +112,7 @@ async def test_text_round_trip_and_metadata() -> None:
     text = await bucket.get_text("notes/hello.txt")
 
     assert text == "hello"
+    assert info is not None
     assert info.key == "notes/hello.txt"
     assert info.size == 5
     assert info.content_type == "text/plain; charset=utf-8"

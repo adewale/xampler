@@ -8,7 +8,7 @@ Xampler is designed so reusable Cloudflare API shape can be developed with a nor
 Red      write a failing unit test against xampler/* with a fake binding or Demo* client
 Green    implement the smallest wrapper behavior in xampler/*
 Refactor update an executable example so route code imports the library API
-Verify   run pyright, pytest, and optionally xc verify / xc remote verify
+Verify   run pyright, pytest, and optionally xc examples verify / xc remote verify
 ```
 
 Recommended commands:
@@ -18,7 +18,7 @@ uv run ruff check .
 uv run pyright
 uv run pyright -p pyright.examples.json
 uv run pytest -q
-xc verify r2
+xc examples verify r2
 ```
 
 Remote checks are optional and explicit:

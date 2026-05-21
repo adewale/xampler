@@ -8,6 +8,7 @@ import xampler.r2_data_catalog as catalog_module
 from tests.test_r2_pythonic import FakeR2BucketBinding, FakeR2Object
 from xampler.browser_rendering import ScreenshotRequest
 from xampler.d1 import D1Database
+from xampler.errors import XamplerError
 from xampler.kv import KVNamespace
 from xampler.queues import QueueJob, QueueSendOptions, QueueService
 from xampler.r2 import R2Bucket, R2Range
@@ -204,8 +205,9 @@ def test_r2_sql_guard_matrix_allowed(sql: str, expected: str) -> None:
     "sql", ["INSERT INTO t VALUES (1)", "SELECT * FROM a JOIN b", "ALTER TABLE t"]
 )
 def test_r2_sql_guard_matrix_forbidden(sql: str) -> None:
-    with pytest.raises(ValueError):
+    with pytest.raises(XamplerError) as exc_info:
         R2SqlQuery(sql).safe_sql()
+    assert exc_info.value.code in {"bad_request", "unsupported"}
 
 
 def test_browser_rendering_payload() -> None:

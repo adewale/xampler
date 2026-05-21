@@ -7,11 +7,15 @@ from typing import Any, cast
 from cfboundary.ffi import to_js, to_py
 
 from xampler.cloudflare import RestClient
+from xampler.errors import bad_request, unsupported
 
-try:
-    import js  # type: ignore[import-not-found]
-except ImportError:  # pragma: no cover
-    js = None  # type: ignore[assignment]
+
+def _js_module() -> Any:
+    try:
+        import js  # type: ignore[import-not-found]
+    except ImportError as exc:  # pragma: no cover
+        raise unsupported("R2SqlClient requires the Workers runtime js module", cause=exc) from exc
+    return js
 
 
 @dataclass(frozen=True)
@@ -25,11 +29,11 @@ class R2SqlQuery:
         padded = f" {lowered} "
         allowed = lowered.startswith(("select", "show", "explain"))
         if not allowed:
-            raise ValueError(
+            raise bad_request(
                 "R2 SQL examples only allow read-only SELECT, SHOW, or EXPLAIN statements"
             )
         if any(token in padded for token in forbidden):
-            raise ValueError(
+            raise unsupported(
                 "R2 SQL is read-only and single-table; mutating statements and JOINs are "
                 "unsupported"
             )
@@ -56,8 +60,7 @@ class R2SqlClient(RestClient[Any]):
         object.__setattr__(self, "token", token)
 
     async def query(self, query: R2SqlQuery) -> R2SqlResult:
-        if js is None:
-            raise RuntimeError("R2SqlClient requires the Workers runtime js module")
+        js = _js_module()
         sql = query.safe_sql()
         response = await js.fetch(
             self.base_url,

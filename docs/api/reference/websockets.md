@@ -14,6 +14,15 @@ from xampler.experimental.websockets import DemoWebSocketSession, WebSocketStatu
 status = await DemoWebSocketSession().status()
 ```
 
+## Capability table
+
+| Operation | Status | Notes |
+|---|---|---|
+| Demo WebSocket status | Demo-only | Local tests validate status shape. |
+| Durable Object chatroom broadcast | Remote-only | Prepared `websockets` profile verifies deployed two-client broadcast. |
+| Outbound stream reconnect state | Caveated | Deterministic status seam exists; richer fake stream pending. |
+
+
 ## Testability
 
 Use fake bindings for binding-backed services and explicit `Demo*` clients for account-backed services. See [testability](../testability.md).

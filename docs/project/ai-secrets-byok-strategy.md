@@ -61,8 +61,8 @@ Important limitation: Cloudflare docs say BYOK is **not supported** for third-pa
 Every expensive example should keep a deterministic local route, e.g. `/demo`, that proves app behavior without account credentials.
 
 ```bash
-uv run xc verify agents-sdk-tools
-uv run xc verify hvsc-ai-data-search
+uv run xc examples verify agents
+uv run xc examples verify gutenberg
 ```
 
 This is already the right pattern.

@@ -95,4 +95,6 @@ from xampler.streaming import ByteStream, JsonlReader, aiter_batches
 from xampler.response import json_response, jsonable, text_response
 from xampler.status import BatchResult, Checkpoint, Progress
 from xampler.cloudflare import CloudflareService, ResourceRef, RestClient
+from xampler.errors import XamplerError
+from xampler.agent_tools import create_r2_object_tools
 ```

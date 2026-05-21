@@ -19,9 +19,9 @@ Weak spots remain where realism needs account resources: Hyperdrive, Browser Ren
 ```bash
 xc doctor
 xc doctor r2-sql
-xc list
-xc docs r2
-xc verify r2
+xc examples list
+xc docs path r2
+xc examples verify r2
 xc remote prepare vectorize
 xc remote verify vectorize
 xc remote cleanup vectorize

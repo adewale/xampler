@@ -7,8 +7,8 @@ Xampler uses a predictable credential model:
 Local verification should work without paid/account credentials whenever possible. Examples use deterministic `Demo*` clients for products that cannot run locally.
 
 ```bash
-uv run xc verify r2
-uv run xc verify kv
+uv run xc examples verify r2
+uv run xc examples verify kv
 ```
 
 ## Remote examples

@@ -41,6 +41,15 @@ XAMPLER_AI_GATEWAY_MODEL=openai/gpt-4o-mini
 
 Use a small supported model for routine verification to keep provider cost low.
 
+## Capability table
+
+| Operation | Status | Notes |
+|---|---|---|
+| `DemoAIGateway.chat()` | Demo-only | Deterministic local response for tests and examples. |
+| `AIGateway.chat()` | Remote-only | Requires account, gateway, provider key, and opt-in remote verification. |
+| Gateway observability/cache/rate-limit metadata | Not covered | Response `.raw` is preserved, but helpers are not modeled yet. |
+
+
 ## Testability
 
 Use `DemoAIGateway` for local tests. Assert `ChatResponse.text` for app behavior and inspect `.raw` only when testing provider/gateway metadata.

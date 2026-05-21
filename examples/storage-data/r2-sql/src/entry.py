@@ -5,6 +5,7 @@ from typing import Any
 from cfboundary.ffi import to_py
 from workers import Response, WorkerEntrypoint  # type: ignore[import-not-found]
 
+from xampler.errors import XamplerError
 from xampler.r2_sql import DemoR2SqlClient, R2SqlClient, R2SqlQuery
 
 
@@ -29,6 +30,6 @@ class Default(WorkerEntrypoint):
         )
         try:
             result = await client.query(query)
-        except ValueError as exc:
-            return Response.json({"error": str(exc)}, status=400)
+        except XamplerError as exc:
+            return Response.json(exc.to_payload(status=400), status=400)
         return Response.json(result.__dict__)

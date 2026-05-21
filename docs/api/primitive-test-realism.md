@@ -1,6 +1,6 @@
 # Primitive Test Realism Matrix
 
-Last reviewed: 2026-05-01.
+Last reviewed: 2026-05-09.
 
 This document tracks how realistically each Cloudflare primitive example is tested. It separates three things that are easy to conflate:
 
@@ -20,6 +20,21 @@ Remote checks live in `scripts/verify_remote_examples.py`. They are separate fro
 | 3 | Local runtime exercises the primitive with local Wrangler/Miniflare semantics. |
 | 4 | Local runtime exercises the primitive including realistic data and edge cases. |
 | 5 | Deployed or remote-binding verification against real Cloudflare infrastructure. |
+
+## Capability labels
+
+Realism scores say how deeply an example is verified; capability labels say what the API promises for a specific operation. Use both. A primitive can be level 4 overall while one operation is still demo-only, remote-only, or unsupported.
+
+| Label | Meaning |
+|---|---|
+| Supported | Implemented and verified for the documented runtime path. |
+| Supported with caveat | Works, but only with documented limits such as credentials, public base URLs, buffering, consistency, or local-runtime differences. |
+| Demo-only | Deterministic local shape is verified, but the real product call is not exercised by that path. |
+| Remote-only | Requires deployed Cloudflare resources, credentials, or paid product usage; skipped by default. |
+| Unsupported / throws | Intentionally not supported; callers get an explicit error instead of a silent no-op or ignored option. |
+| Not covered | Not yet implemented or documented. |
+
+Capability tables should call out safety-relevant behavior explicitly: public URLs, signed URLs, direct uploads, write/delete tools, secrets, paid calls, cleanup, and operations that can only be proven remotely.
 
 ## Matrix
 
@@ -97,8 +112,10 @@ Prepared profiles include `workers-ai`, `vectorize`, `queues-dlq`, `service-bind
 
 1. **Promote remaining level-3 local examples to level 4**: add richer deterministic local harnesses, not just single endpoint checks.
 2. **Run prepared remote profiles in CI/secrets** while preserving clean skips when credentials/resources are absent.
-3. **Deepen remote assertions** further with row-content checks for R2 SQL, PyIceberg append/read for Data Catalog, and richer Browser Rendering output validation.
-4. **Keep R2 at level 4+**: the JPEG byte-for-byte upload/download fixture is the current gold standard for realistic local verification.
+3. **Deepen remote assertions beyond smoke checks**: R2 SQL, R2 Data Catalog, Browser Rendering, and AI Gateway now assert response headers, byte sizes, echoed SQL, JSON shape, and lifecycle/table contents; next step is row-content/PyIceberg append-read coverage where the product path can seed real data.
+4. **Keep capability tables current** in [`capabilities.md`](capabilities.md) and per-module reference pages whenever a wrapper adds, caves, or intentionally rejects an operation.
+5. **Keep CLI fuzz/property tests in the committed suite** so composability and JSON/error contracts do not regress.
+6. **Keep R2 at level 4+**: the JPEG byte-for-byte upload/download fixture is the current gold standard for realistic local verification.
 
 ## Verification commands currently known to pass
 

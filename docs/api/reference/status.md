@@ -11,3 +11,11 @@ result = BatchResult(batches=5, records=500, checkpoint=checkpoint)
 ```
 
 Use product-specific statuses when Cloudflare has product-specific state, such as `WorkflowStatus`, `WebSocketStatus`, or `QueueBatchResult`. Use `Progress`, `Checkpoint`, and `BatchResult` as the shared building blocks for imports, pipelines, and route-level status responses.
+
+## Capability table
+
+| Operation | Status | Notes |
+|---|---|---|
+| `Progress`, `Checkpoint`, `BatchResult` dataclasses | Supported | Shared Python data shapes for long-running/batched work. |
+| Product-specific status mapping | Caveated | Use product statuses where they exist; these are building blocks. |
+| Persistence/observability backend | Not covered | Keep backend choices in product/app examples. |

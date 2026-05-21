@@ -7,6 +7,8 @@ JavaScript streams. This module keeps those conversions at the edge.
 
 from __future__ import annotations
 
+from builtins import bytes as BuiltinBytes
+from builtins import list as BuiltinList
 from collections.abc import AsyncIterator
 from dataclasses import dataclass, field
 from types import TracebackType
@@ -172,17 +174,17 @@ class R2Object:
     async def json(self) -> Any:
         return to_py(await self.raw.json())
 
-    async def bytes(self) -> bytes:
+    async def bytes(self) -> BuiltinBytes:
         return await consume_readable_stream(self.raw)
 
-    async def chunks(self) -> AsyncIterator[bytes]:
+    async def chunks(self) -> AsyncIterator[BuiltinBytes]:
         raw_chunks = getattr(self.raw, "chunks", None)
         if callable(raw_chunks):
-            raw_iter = cast(AsyncIterator[bytes], raw_chunks())
+            raw_iter = cast(AsyncIterator[BuiltinBytes], raw_chunks())
             async for chunk in raw_iter:
                 yield bytes(chunk)
             return
-        async for chunk in cast(AsyncIterator[bytes], stream_r2_body(self.raw)):
+        async for chunk in cast(AsyncIterator[BuiltinBytes], stream_r2_body(self.raw)):
             yield chunk
 
 
@@ -266,7 +268,7 @@ class R2MultipartUpload:
             etag=str(data.get("etag", getattr(raw, "etag", ""))),
         )
 
-    async def complete(self, parts: list[R2UploadedPart]) -> R2ObjectInfo:
+    async def complete(self, parts: BuiltinList[R2UploadedPart]) -> R2ObjectInfo:
         raw = await self.raw.complete(to_js([part.to_options() for part in parts]))
         self.completed = True
         return object_info(raw, fallback_key=self.key)
@@ -441,7 +443,7 @@ class R2Bucket(CloudflareService[Any]):
     async def delete(self, key: str) -> None:
         await self.raw.delete(key)
 
-    async def delete_many(self, keys: list[str]) -> None:
+    async def delete_many(self, keys: BuiltinList[str]) -> None:
         await self.raw.delete(to_js(keys))
 
     async def list(
@@ -451,7 +453,7 @@ class R2Bucket(CloudflareService[Any]):
         limit: int | None = None,
         cursor: str | None = None,
         delimiter: str | None = None,
-        include: list[MetadataField] | None = None,
+        include: BuiltinList[MetadataField] | None = None,
     ) -> R2ListResult:
         options: dict[str, Any] = {}
         if prefix is not None:
@@ -483,7 +485,7 @@ class R2Bucket(CloudflareService[Any]):
         *,
         prefix: str | None = None,
         delimiter: str | None = None,
-        include: list[MetadataField] | None = None,
+        include: BuiltinList[MetadataField] | None = None,
         page_size: int = 1000,
     ) -> AsyncIterator[R2ObjectInfo]:
         """Yield matching objects across all list pages."""

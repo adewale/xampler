@@ -7,11 +7,18 @@ from typing import Any, Literal
 from cfboundary.ffi import to_js
 
 from xampler.cloudflare import RestClient
+from xampler.errors import unsupported
 
-try:
-    import js  # type: ignore[import-not-found]
-except ImportError:  # pragma: no cover
-    js = None  # type: ignore[assignment]
+
+def _js_module() -> Any:
+    try:
+        import js  # type: ignore[import-not-found]
+    except ImportError as exc:  # pragma: no cover
+        raise unsupported(
+            "BrowserRendering requires the Workers runtime js module", cause=exc
+        ) from exc
+    return js
+
 
 ImageType = Literal["png", "jpeg"]
 
@@ -48,8 +55,7 @@ class BrowserRendering(RestClient[Any]):
         object.__setattr__(self, "token", token)
 
     async def render(self, endpoint: str, request: ScreenshotRequest) -> Any:
-        if js is None:
-            raise RuntimeError("BrowserRendering requires the Workers runtime js module")
+        js = _js_module()
         return await js.fetch(
             f"{self.base_url}/{endpoint}",
             to_js({

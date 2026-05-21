@@ -1,6 +1,6 @@
 # Pythonic Example Rubric
 
-Last reviewed: 2026-05-01. Python anchor: **Python 3.13**.
+Last reviewed: 2026-05-09. Python anchor: **Python 3.13**.
 
 A Pythonic example is not JavaScript translated into Python syntax. It should feel natural to an experienced Python developer while still being explicit about Cloudflare Workers, Pyodide, and the JavaScript APIs underneath.
 
@@ -29,6 +29,7 @@ This rubric is grounded in widely used Python standards and community tools:
 - s3fs documentation: https://s3fs.readthedocs.io/
 - smart_open documentation: https://github.com/piskvorky/smart_open
 - cloudpathlib documentation: https://cloudpathlib.drivendata.org/
+- Files SDK documentation, as a concise example of capability matrices, normalized storage errors, explicit safety caveats, and raw-client escape hatches: https://files-sdk.dev/
 
 ## Definition
 
@@ -44,6 +45,11 @@ For this project, **Pythonic** means:
 8. **Runtime honesty** — Python Workers run on Pyodide. Good examples do not pretend they are normal server-side CPython.
 9. **Familiar Python metaphors** — where appropriate, examples borrow from `open()`, `pathlib`, iteration, context managers, and file-like naming without lying about object-storage or Workers semantics.
 10. **Layered ergonomics** — provide a friendly path, a platform-aware path, and a documented escape hatch.
+11. **Capability honesty** — examples and docs say whether each operation is supported, caveated, demo-only, remote-only, unsupported/throws, or not covered.
+12. **Security and cost semantics** — public URLs, direct uploads, user-controlled content types, secrets, and paid remote calls are called out where they affect user trust or bills.
+13. **Predictable failure contracts** — missing values, unsupported operations, auth failures, conflicts, and provider errors have documented Python behavior.
+14. **Runtime/dependency footprint discipline** — runtime-only and heavyweight optional imports are guarded, lazy, or isolated so simple examples stay simple.
+15. **Agent safety** — examples that expose tools to models separate reads from writes, support read-only mode, and require approval for mutations by default.
 
 ## Scoring
 
@@ -151,6 +157,42 @@ Look for three explicit layers:
 This is how examples avoid both extremes: raw translated JavaScript on one side, misleading over-abstraction on the other.
 
 Python grounding: PEP 20's balance of simplicity, explicitness, and practicality; common design in boto3/botocore, fsspec/s3fs, smart_open, and cloudpathlib.
+
+### 13. Capability honesty
+
+Look for explicit labels for each important operation: supported, supported with caveat, demo-only, remote-only, unsupported/throws, or not covered. A high-scoring example does not let a local deterministic demo masquerade as a real deployed product verification, and it does not silently omit major limitations such as missing URL signing.
+
+API grounding: Files SDK-style compatibility matrices; Cloudflare product docs; Xampler's local/remote verification split.
+
+### 14. Security and cost semantics
+
+Look for notes and examples that make trust boundaries visible: public buckets, signed URL expiry, direct upload size limits, `Content-Disposition` for user uploads, content-type trust, secrets, paid product calls, and cleanup paths. Unsupported safety options should fail loudly rather than being ignored.
+
+Python grounding: explicit is better than implicit; practical security documentation in storage SDKs.
+
+### 15. Predictable failure contracts
+
+Look for a documented distinction between expected absence (`None`, `False`, or empty pages) and exceptional failures such as unauthorized access, precondition conflicts, unsupported operations, and provider/runtime failures. Exceptions should preserve the original cause when possible and expose stable codes when they cross route/tool/CLI boundaries.
+
+Python grounding: Python exception conventions; API stability practices in storage and cloud SDKs.
+
+### 16. Runtime and dependency footprint discipline
+
+Look for guarded imports of `workers`, `js`, and `pyodide`; lazy imports of heavy optional packages; and no top-level side effects that make a simple example pay for unrelated Cloudflare products. A module should import cheaply unless its whole purpose is the heavy dependency.
+
+Python grounding: import-time side-effect discipline; testability and packaging conventions.
+
+### 17. Agent-tool safety
+
+Look for a separate read/write tool surface, read-only mode, approval required for mutations by default, deterministic tool schemas, and model-visible validation errors that help the model self-correct without granting unnecessary authority.
+
+API grounding: human-in-the-loop agent design and Files SDK's approval-gated file tools.
+
+### 18. Automation ergonomics
+
+Look for commands and verifiers that are scriptable: stable JSON output where useful, clean separation of stdout/stderr, documented exit codes, dry-run for resource mutations, and clear remote-cost/credential gates. This matters because examples are often run by humans, CI, and coding agents.
+
+Python grounding: Unix CLI conventions; pytest/CI ergonomics; Xampler's `xc` workflow.
 
 ## Interpreting scores
 

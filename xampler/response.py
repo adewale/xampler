@@ -5,6 +5,8 @@ from collections.abc import Mapping
 from dataclasses import asdict, is_dataclass
 from typing import Any, cast
 
+from xampler.errors import XamplerError
+
 
 def jsonable(value: object) -> object:
     if is_dataclass(value) and not isinstance(value, type):
@@ -19,7 +21,14 @@ def jsonable(value: object) -> object:
     return value
 
 
-def error_payload(message: str, *, status: int = 400, code: str = "bad_request") -> dict[str, Any]:
+def error_payload(
+    message: str | XamplerError,
+    *,
+    status: int = 400,
+    code: str = "bad_request",
+) -> dict[str, Any]:
+    if isinstance(message, XamplerError):
+        return cast(dict[str, Any], message.to_payload(status=status))
     return {"error": {"code": code, "message": message, "status": status}}
 
 

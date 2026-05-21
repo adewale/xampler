@@ -30,6 +30,16 @@ async def queue(batch, env, ctx):
     print(result)
 ```
 
+## Capability table
+
+| Operation | Status | Notes |
+|---|---|---|
+| Producer `send`, `send_json`, `send_many` | Supported | Local verifier covers producer shape. |
+| Consumer ack/retry/backoff decisions | Supported | Deterministic harness verifies per-message behavior. |
+| Real Queue delivery and DLQ | Remote-only | Prepared `queues-dlq` profile observes real DLQ delivery. |
+| Multiple queues and cleanup of messages | Not covered | Future remote work. |
+
+
 ## Testability
 
 Use fake bindings with `send()` and `sendBatch()`. For consumers, fake messages with `body`, `attempts`, `ack()`, and `retry(options)`. Assert retry delay and ack behavior directly.

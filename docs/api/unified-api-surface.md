@@ -1,6 +1,6 @@
 # Unified Pythonic API Surface
 
-Last reviewed: 2026-05-02.
+Last reviewed: 2026-05-09.
 
 The examples converge on the vocabulary in [`vocabulary.md`](vocabulary.md): Cloudflare bindings become small services, named resources become refs, inputs/results are dataclasses, events go to handlers, streams/pages/batches use Python iteration, long-running work exposes status, and every wrapper keeps `.raw` for platform escape hatches.
 
@@ -152,5 +152,7 @@ Every primitive should expose:
 1. **Friendly Python surface** — handles, dataclasses, normal verbs.
 2. **Cloudflare vocabulary** — bindings, queues, workflows, vectors, namespaces, tables.
 3. **Status/progress** — for setup-dependent or long-running work.
-4. **Deterministic demo transport** — local verification for account-backed APIs.
-5. **`.raw` escape hatch** — direct access to the platform object/client.
+4. **Deterministic demo transport** — local verification for account-backed APIs, clearly labeled as demo-only when it is not the real product.
+5. **Capability and safety notes** — supported/caveated/remote-only/unsupported operations, public URL risks, paid calls, secrets, and unsupported options that throw.
+6. **Predictable failure contract** — expected absence is separate from auth/conflict/unsupported/provider failures.
+7. **`.raw` escape hatch** — direct access to the platform object/client.

@@ -7,6 +7,7 @@ import pytest
 from xampler.ai import DemoAIService, TextGenerationRequest, TextGenerationResponse
 from xampler.browser_rendering import DemoBrowserRendering, ScreenshotRequest
 from xampler.d1 import D1Database
+from xampler.errors import XamplerError
 from xampler.kv import KVNamespace
 from xampler.queues import QueueConsumer, QueueJob, QueueService
 from xampler.r2_data_catalog import DemoR2DataCatalog
@@ -144,8 +145,9 @@ async def test_vectorize_demo_and_validation() -> None:
 
     index = VectorIndex(raw=object(), dimensions=32)
     index.validate(unit_vector(0))
-    with pytest.raises(ValueError):
+    with pytest.raises(XamplerError) as exc_info:
         index.validate([1.0, 2.0])
+    assert exc_info.value.code == "bad_request"
 
 
 @pytest.mark.asyncio
@@ -161,8 +163,9 @@ async def test_ai_demo_and_response_parsing() -> None:
 async def test_r2_sql_guard_and_demo() -> None:
     assert R2SqlQuery("select * from table").safe_sql().endswith("LIMIT 100")
     assert R2SqlQuery("SHOW TABLES IN xampler").safe_sql() == "SHOW TABLES IN xampler"
-    with pytest.raises(ValueError):
+    with pytest.raises(XamplerError) as exc_info:
         R2SqlQuery("DROP TABLE x").safe_sql()
+    assert exc_info.value.code == "bad_request"
     result = await DemoR2SqlClient().query(R2SqlQuery("SHOW DATABASES"))
     assert result.data["rows"][0]["bucket"] == "demo"
 

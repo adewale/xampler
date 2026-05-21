@@ -70,7 +70,7 @@ class KVKey(ResourceRef[Any]):
 
     def __init__(self, namespace: KVNamespace, name: str):
         super().__init__(name=name, raw=namespace.raw)
-        self.namespace = namespace
+        object.__setattr__(self, "namespace", namespace)
 
     async def read_text(self) -> str | None:
         value = await self.namespace.raw.get(self.name)

@@ -2,6 +2,7 @@ from __future__ import annotations
 
 import pytest
 
+from xampler.errors import XamplerError
 from xampler.experimental.email import EmailRouter, IncomingEmail
 from xampler.experimental.htmlrewriter import OpenGraphPage, OpenGraphRewriter
 from xampler.hyperdrive import DemoPostgres, HyperdriveConfig, PostgresQuery
@@ -36,5 +37,6 @@ async def test_hyperdrive_fixture_read_only_guard() -> None:
     assert config.host == "db"
     result = await DemoPostgres().query(PostgresQuery("SELECT * FROM notes"))
     assert result.row_count == 2
-    with pytest.raises(ValueError):
+    with pytest.raises(XamplerError) as exc_info:
         PostgresQuery("DELETE FROM notes").validate_read_only()
+    assert exc_info.value.code == "bad_request"

@@ -7,11 +7,21 @@ from typing import Any
 from cfboundary.ffi import to_js, to_py
 
 from xampler.cloudflare import RestClient
+from xampler.errors import unsupported
 
-try:
-    import js  # type: ignore[import-not-found]
-except ImportError:  # pragma: no cover
-    js = None  # type: ignore[assignment]
+js: Any | None = None
+
+
+def _js_module() -> Any:
+    if js is not None:
+        return js
+    try:
+        import js as runtime_js  # type: ignore[import-not-found]
+    except ImportError as exc:  # pragma: no cover
+        raise unsupported(
+            "R2DataCatalog requires the Workers runtime js module", cause=exc
+        ) from exc
+    return runtime_js
 
 
 @dataclass(frozen=True)
@@ -36,8 +46,7 @@ class R2DataCatalog(RestClient[Any]):
     async def request_json(
         self, path: str, *, method: str = "GET", payload: dict[str, Any] | None = None
     ) -> Any:
-        if js is None:
-            raise RuntimeError("R2DataCatalog requires the Workers runtime js module")
+        js = _js_module()
         response = await js.fetch(
             f"{self.base_url}{path}",
             to_js({

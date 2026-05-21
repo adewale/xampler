@@ -6,6 +6,7 @@ from typing import Any, Literal, cast
 from cfboundary.ffi import to_js, to_py
 
 from xampler.cloudflare import CloudflareService
+from xampler.errors import bad_request
 
 ReturnMetadata = Literal["none", "indexed", "all"]
 VECTOR_DIMENSIONS = 32
@@ -66,7 +67,7 @@ class VectorIndex(CloudflareService[Any]):
 
     def validate(self, values: list[float]) -> None:
         if self.dimensions is not None and len(values) != self.dimensions:
-            raise ValueError(f"expected {self.dimensions} dimensions, got {len(values)}")
+            raise bad_request(f"expected {self.dimensions} dimensions, got {len(values)}")
 
     async def upsert(self, vectors: list[Vector]) -> Any:
         for vector in vectors:

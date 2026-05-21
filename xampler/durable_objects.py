@@ -34,7 +34,7 @@ class DurableObjectNamespace[RefT: DurableObjectRef](CloudflareService[Any]):
 
     def __init__(self, raw: Any, *, ref_type: type[RefT] | None = None):
         super().__init__(raw)
-        self.ref_type = ref_type or DurableObjectRef  # type: ignore[assignment]
+        object.__setattr__(self, "ref_type", ref_type or DurableObjectRef)
 
     def named(self, name: str) -> RefT:
         return self.ref_type(name, self.raw.get(self.raw.idFromName(name)))

@@ -4,6 +4,7 @@ from dataclasses import dataclass
 from typing import Any
 
 from xampler.cloudflare import CloudflareService
+from xampler.errors import bad_request, unsupported
 
 
 @dataclass(frozen=True)
@@ -33,7 +34,7 @@ class PostgresQuery:
     def validate_read_only(self) -> None:
         normalized = self.sql.strip().lower()
         if not normalized.startswith("select"):
-            raise ValueError("demo route only accepts read-only SELECT queries")
+            raise bad_request("demo route only accepts read-only SELECT queries")
 
 
 @dataclass(frozen=True)
@@ -53,7 +54,7 @@ class HyperdrivePostgres(CloudflareService[HyperdriveConfig]):
 
     async def query(self, query: PostgresQuery) -> PostgresResult:
         query.validate_read_only()
-        raise RuntimeError("configure a Postgres client for deployed Hyperdrive queries")
+        raise unsupported("configure a Postgres client for deployed Hyperdrive queries")
 
 
 class DemoPostgres:
