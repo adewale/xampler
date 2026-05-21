@@ -10,6 +10,7 @@ from collections.abc import Sequence
 import pytest
 
 import xampler.cli as cli
+import xampler.cli_runtime as cli_runtime
 
 
 def run_cli(argv: Sequence[str]) -> tuple[str, int, str, str]:
@@ -36,8 +37,10 @@ def no_side_effects(monkeypatch: pytest.MonkeyPatch) -> None:
     ) -> int:
         return 0
 
-    monkeypatch.setattr(cli, "run", fake_run)
-    monkeypatch.setattr(cli, "_which_version", lambda tool: f"/fake/{tool} {tool} 0.0")
+    monkeypatch.setattr(cli_runtime, "run", fake_run)
+    monkeypatch.setattr(
+        cli_runtime, "which_version", lambda tool: f"/fake/{tool} {tool} 0.0"
+    )
 
 
 def assert_cli_invariants(argv: list[str], *, expect_success: bool | None = None) -> None:

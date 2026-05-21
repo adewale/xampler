@@ -64,7 +64,7 @@ def test_cli_remote_plan_and_dry_run_are_json_and_do_not_run(monkeypatch, capsys
         calls.append((args, kwargs))
         return 0
 
-    monkeypatch.setattr("xampler.cli.run", fake_run)
+    monkeypatch.setattr("xampler.cli_runtime.run", fake_run)
     assert main(["--json", "remote", "plan", "r2-sql"]) == EXIT_OK
     plan = json.loads(capsys.readouterr().out)
     assert plan["action"] == "prepare"
@@ -89,7 +89,7 @@ def test_cli_verify_dry_run_uses_command_plan(monkeypatch, capsys) -> None:  # t
         calls.append((args, kwargs))
         return 0
 
-    monkeypatch.setattr("xampler.cli.run", fake_run)
+    monkeypatch.setattr("xampler.cli_runtime.run", fake_run)
     assert main(["--json", "--dry-run", "examples", "verify", "r2"]) == EXIT_OK
     payload = json.loads(capsys.readouterr().out)
     assert payload["action"] == "verify"

@@ -13,7 +13,8 @@ The `files-sdk.dev` comparison produced a baseline that is now reflected in code
 - `xampler.agent_tools.create_r2_object_tools()` provides SDK-neutral read/write tools with approval-gated mutations and `read_only=True`.
 - `xc` now has noun/action groups (`examples list`, `examples verify`, `docs path`, `remote plan`) without compatibility aliases.
 - `xc --json list`, `xc --json doctor`, global `--dry-run`, `--quiet`, `--verbose`, and `xc remote plan <profile> --json` provide a machine-readable automation baseline.
-- `xampler.cli.CommandPlan`, `Surface`, and the central `SURFACES` registry keep command implementation composable.
+- `xampler.cli_models.CommandPlan`, `Surface`, and the central `SURFACES` registry keep command implementation composable; parser, registry, planning/execution, and models are split across focused CLI modules.
+- GitHub Actions runs ruff, pyright, selected-example pyright, pytest, and the experimental ty check.
 - Committed CLI fuzz/property tests cover random argv inputs, the exhaustive valid surface matrix, JSON invariants, and removed aliases.
 - Remote verifiers for Browser Rendering, R2 SQL, R2 Data Catalog, and AI Gateway now assert more than substrings: response headers, byte sizes, JSON shape, echoed SQL, and lifecycle/table payloads.
 - The experimental `ty` run has been converted into low-risk cleanups while `pyright` remains the gating checker.

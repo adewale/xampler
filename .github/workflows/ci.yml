@@ -1,0 +1,44 @@
+name: CI
+
+on:
+  push:
+    branches: [main]
+  pull_request:
+
+jobs:
+  checks:
+    runs-on: ubuntu-latest
+    steps:
+      - name: Check out repository
+        uses: actions/checkout@v4
+
+      - name: Set up uv
+        uses: astral-sh/setup-uv@v5
+        with:
+          enable-cache: true
+
+      - name: Set up Python
+        run: uv python install 3.13
+
+      - name: Set up Node.js
+        uses: actions/setup-node@v4
+        with:
+          node-version: "22"
+
+      - name: Install dependencies
+        run: uv sync --all-groups
+
+      - name: Ruff
+        run: uv run ruff check .
+
+      - name: Pyright library
+        run: uv run pyright
+
+      - name: Pyright selected examples
+        run: uv run pyright -p pyright.examples.json
+
+      - name: Tests
+        run: uv run pytest -q
+
+      - name: ty experimental check
+        run: uvx ty check xampler tests --extra-search-path typings --python-version 3.13 --output-format concise
