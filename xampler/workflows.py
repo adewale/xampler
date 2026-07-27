@@ -21,9 +21,11 @@ class WorkflowStatus:
 
 def parse_workflow_state(value: object) -> OperationState:
     state = str(value)
-    if state in {"not_started", "running", "complete", "failed"}:
-        return cast(OperationState, state)
-    return "running"
+    match state:
+        case "not_started" | "running" | "complete" | "failed":
+            return state
+        case _:
+            return "running"
 
 
 class WorkflowInstance(ResourceRef[Any]):
