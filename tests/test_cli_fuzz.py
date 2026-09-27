@@ -3,11 +3,11 @@ from __future__ import annotations
 import contextlib
 import io
 import json
-import random
-from collections import Counter
 from collections.abc import Sequence
 
 import pytest
+from hypothesis import example, given, settings
+from hypothesis import strategies as st
 
 import xampler.cli as cli
 import xampler.cli_runtime as cli_runtime
@@ -92,45 +92,47 @@ def test_cli_exhaustive_valid_surface_matrix() -> None:
         assert_cli_invariants(argv, expect_success=True)
 
 
-def test_cli_random_argument_fuzz() -> None:
-    random.seed(20260509)
-    atoms = [
-        "doctor",
-        "docs",
-        "list",
-        "path",
-        "examples",
-        "verify",
-        "remote",
-        "plan",
-        "prepare",
-        "cleanup",
-        "dev",
-        "link",
-        "restore",
-        "--json",
-        "--dry-run",
-        "--quiet",
-        "-q",
-        "-v",
-        "--verbose",
-        *cli.SURFACES,
-        "",
-        "--wat",
-        "---",
-        "missing",
-        "../../x",
-        "💥",
-        "LIST",
-        "Verify",
-    ]
-    outcomes: Counter[tuple[str, int]] = Counter()
-    for _ in range(1000):
-        argv = [random.choice(atoms) for _ in range(random.randint(0, 8))]
-        kind, code, _out, _err = run_cli(argv)
-        outcomes[(kind, code)] += 1
-        assert_cli_invariants(argv)
-    assert outcomes
+FUZZ_ATOMS = [
+    "doctor",
+    "docs",
+    "list",
+    "path",
+    "examples",
+    "verify",
+    "remote",
+    "plan",
+    "prepare",
+    "cleanup",
+    "dev",
+    "link",
+    "restore",
+    "--json",
+    "--dry-run",
+    "--quiet",
+    "-q",
+    "-v",
+    "--verbose",
+    *cli.SURFACES,
+    "",
+    "--wat",
+    "---",
+    "missing",
+    "../../x",
+    "💥",
+    "LIST",
+    "Verify",
+]
+
+
+# Hypothesis shrinks a failing argv to a minimal one and replays it from its example
+# database, which the old fixed-seed random loop could not do.
+@settings(max_examples=500, deadline=None)
+@given(argv=st.lists(st.sampled_from(FUZZ_ATOMS), max_size=8))
+@example(argv=[])
+@example(argv=["--json", "--wat"])
+@example(argv=["--json", "examples", "verify", "missing"])
+def test_cli_random_argument_fuzz(argv: list[str]) -> None:
+    assert_cli_invariants(argv)
 
 
 @pytest.mark.parametrize("argv", [["list"], ["verify", "r2"], ["docs", "r2"]])

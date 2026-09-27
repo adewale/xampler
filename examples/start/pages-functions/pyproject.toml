@@ -11,3 +11,8 @@ dev = [
     "workers-py",
     "workers-runtime-sdk",
 ]
+
+[tool.pywrangler]
+# cfboundary and xampler are git dependencies with no prebuilt wheel. Current
+# pywrangler installs with --no-build unless this is set, and then fails.
+allow-build = true

@@ -8,6 +8,12 @@ This document tracks how realistically each Cloudflare primitive example is test
 2. **Local runtime verification** — `uv run pywrangler dev` is started and HTTP/WebSocket/email/queue behavior is exercised. Pages is the exception because Pages Functions are not Python Workers.
 3. **Cloudflare resource realism** — the example uses the real primitive semantics, not just an in-memory stand-in.
 
+## Continuously verified examples
+
+The `local-runtime` job in `.github/workflows/ci.yml` runs `scripts/verify_examples.py` on every push and pull request for `examples/start/hello-worker`, `examples/storage-data/r2-object-storage`, `examples/storage-data/kv-namespace`, `examples/storage-data/d1-database` and `examples/state-events/durable-object-counter`, against this checkout's `xampler` (via `scripts/use_local_xampler.py`). The realism levels for those rows are checked continuously; the other rows were last checked by hand on the review date above.
+
+Known gap (2026-09-27): current `workers-py` installs Python Worker packages with `--no-build`, so git dependencies (`cfboundary`, `xampler`) need `[tool.pywrangler] allow-build = true`, which the examples now set. `examples/start/fastapi-worker` and `examples/ai-agents/langchain-style-chain` cannot use that setting: with builds allowed, `pydantic-core` resolves to a PyPI sdist that cannot build for Pyodide. Both examples declare `cfboundary` without importing it, and do not install under current `workers-py` until that is resolved.
+
 Remote checks live in `scripts/verify_remote_examples.py`. They are separate from local checks, are skipped unless explicitly enabled, and may consume real Cloudflare resources or paid product usage.
 
 ## Realism levels
