@@ -1,6 +1,7 @@
 from __future__ import annotations
 
 import json
+import re
 from dataclasses import dataclass
 from typing import Any, cast
 
@@ -26,8 +27,8 @@ class R2SqlQuery:
         statement = self.sql.strip().rstrip(";")
         lowered = statement.lower()
         forbidden = (" insert ", " update ", " delete ", " create ", " drop ", " alter ", " join ")
-        # Collapse newlines and tabs so keyword checks see every token boundary.
-        padded = f" {' '.join(lowered.split())} "
+        # Treat newlines, tabs, semicolons and parentheses as token boundaries.
+        padded = f" {' '.join(re.sub(r'[;()]', ' ', lowered).split())} "
         allowed = lowered.startswith(("select", "show", "explain"))
         if not allowed:
             raise bad_request(

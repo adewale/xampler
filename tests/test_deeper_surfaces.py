@@ -152,6 +152,9 @@ def test_r2_sql_guard_matrix_allowed(sql: str, expected: str) -> None:
         ("SELECT *\nFROM a\nJOIN b ON a.id = b.id", "unsupported"),
         ("SELECT * FROM a\tJOIN b", "unsupported"),
         ("EXPLAIN\nDELETE FROM t", "unsupported"),
+        # So do semicolons and parentheses.
+        ("SELECT 1;DROP TABLE t", "unsupported"),
+        ("SELECT * FROM a JOIN(b)", "unsupported"),
     ],
 )
 def test_r2_sql_guard_matrix_forbidden(sql: str, code: str) -> None:
