@@ -50,7 +50,7 @@ async def test_d1_bound_parameters_select_rows() -> None:
         "quote": "Flat is better than nested"
     }
     assert await db.query_one("SELECT quote FROM quotes WHERE author = ?", "nobody") is None
-    first_pep = await db.statement("SELECT quote FROM quotes WHERE author = ? ORDER BY id").one(
+    first_pep = await db.statement("SELECT quote FROM quotes WHERE author = ? ORDER BY id").first(
         "PEP 20"
     )
     assert first_pep == {"quote": "Beautiful is better than ugly"}
@@ -100,6 +100,7 @@ async def test_kv_json_round_trip_ttl_and_delete() -> None:
     await key.write_json({"name": "Ada", "langs": ["py"]}, expiration_ttl=60)
 
     assert await key.read_json() == {"name": "Ada", "langs": ["py"]}
+    assert await key.exists() is True
     assert binding.put_options["profile:ada"] == {"expirationTtl": 60}
     await key.delete()
     assert await key.exists() is False
@@ -117,6 +118,7 @@ async def test_kv_list_pages_with_prefix_limit_and_cursor() -> None:
 
     assert (first.keys, first.complete) == (["notes/a", "notes/b"], False)
     assert (second.keys, second.complete, second.cursor) == (["notes/c"], True, None)
+    assert (await kv.list()).keys == ["images/x", "notes/a", "notes/b", "notes/c"]
 
 
 @pytest.mark.asyncio

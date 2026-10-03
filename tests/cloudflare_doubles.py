@@ -6,8 +6,8 @@ Behaviour was checked once against Miniflare 4 (the local D1/KV runtime used by
 - D1 runs SQLite. ``all()``/``run()`` resolve to ``{"success", "meta", "results"}``;
   rows are column-name dicts; a bound ``None`` is SQL NULL; a Python int reaches
   D1 as a JS number and binds as REAL (ints beyond 2**53 become BigInt, which D1
-  rejects); ``batch()`` is atomic, DDL included, and an empty ``batch([])`` raises
-  "No SQL statements detected".
+  rejects); empty or blank SQL raises "No SQL statements detected", and so does
+  an empty ``batch([])``; ``batch()`` is atomic, DDL included.
 - KV ``list()`` returns keys in byte order filtered by ``prefix``, at most
   ``limit`` (default and maximum 1000) per page, with ``list_complete`` and an
   opaque ``cursor`` that resumes after the last key returned, even if earlier keys
@@ -38,6 +38,8 @@ class SqliteD1Statement:
         return SqliteD1Statement(self.db, self.sql, tuple(_js_number(param) for param in params))
 
     def _execute(self) -> dict[str, Any]:
+        if not self.sql.strip():
+            raise RuntimeError("D1_ERROR: No SQL statements detected.")
         cursor = self.db.connection.execute(self.sql, self.params)
         columns = [column[0] for column in cursor.description or ()]
         rows = [dict(zip(columns, row, strict=True)) for row in cursor.fetchall()]
