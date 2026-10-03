@@ -26,7 +26,8 @@ class R2SqlQuery:
         statement = self.sql.strip().rstrip(";")
         lowered = statement.lower()
         forbidden = (" insert ", " update ", " delete ", " create ", " drop ", " alter ", " join ")
-        padded = f" {lowered} "
+        # Collapse newlines and tabs so keyword checks see every token boundary.
+        padded = f" {' '.join(lowered.split())} "
         allowed = lowered.startswith(("select", "show", "explain"))
         if not allowed:
             raise bad_request(

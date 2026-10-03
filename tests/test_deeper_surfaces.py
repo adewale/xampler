@@ -202,12 +202,25 @@ def test_r2_sql_guard_matrix_allowed(sql: str, expected: str) -> None:
 
 
 @pytest.mark.parametrize(
-    "sql", ["INSERT INTO t VALUES (1)", "SELECT * FROM a JOIN b", "ALTER TABLE t"]
+    ("sql", "code"),
+    [
+        ("INSERT INTO t VALUES (1)", "bad_request"),
+        ("ALTER TABLE t", "bad_request"),
+        ("SELECT * FROM a JOIN b", "unsupported"),
+        # Newlines and tabs separate keywords as well as spaces do.
+        ("SELECT *\nFROM a\nJOIN b ON a.id = b.id", "unsupported"),
+        ("SELECT * FROM a\tJOIN b", "unsupported"),
+        ("EXPLAIN\nDELETE FROM t", "unsupported"),
+    ],
 )
-def test_r2_sql_guard_matrix_forbidden(sql: str) -> None:
+def test_r2_sql_guard_matrix_forbidden(sql: str, code: str) -> None:
     with pytest.raises(XamplerError) as exc_info:
         R2SqlQuery(sql).safe_sql()
-    assert exc_info.value.code in {"bad_request", "unsupported"}
+    assert exc_info.value.code == code
+
+
+def test_r2_sql_guard_respects_a_limit_on_its_own_line() -> None:
+    assert R2SqlQuery("SELECT *\nFROM t\nLIMIT 5").safe_sql() == "SELECT *\nFROM t\nLIMIT 5"
 
 
 def test_browser_rendering_payload() -> None:
