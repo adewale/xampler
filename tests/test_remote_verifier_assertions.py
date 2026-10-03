@@ -62,6 +62,11 @@ def test_remote_profile_json_assertions() -> None:
         (assert_ai_gateway_response, {"choices": []}),
         (assert_browser_scrape, {"title": "Other"}),
         (assert_r2_sql_show_tables, {"sql": "SHOW TABLES IN xampler", "data": []}),
+        (assert_r2_sql_select, {"sql": "SELECT 1", "data": {"table": "gutenberg_smoke"}}),
+        (
+            assert_r2_sql_select,
+            {"sql": "SELECT * FROM xampler.gutenberg_smoke LIMIT 1", "data": {}},
+        ),
         (assert_catalog_tables, {"tables": []}),
         (assert_catalog_lifecycle, {"lifecycle_complete": False}),
     ],
