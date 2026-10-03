@@ -50,6 +50,10 @@ async def test_d1_bound_parameters_select_rows() -> None:
         "quote": "Flat is better than nested"
     }
     assert await db.query_one("SELECT quote FROM quotes WHERE author = ?", "nobody") is None
+    first_pep = await db.statement("SELECT quote FROM quotes WHERE author = ? ORDER BY id").one(
+        "PEP 20"
+    )
+    assert first_pep == {"quote": "Beautiful is better than ugly"}
 
 
 @pytest.mark.asyncio
