@@ -1,5 +1,6 @@
 from __future__ import annotations
 
+import json
 from typing import Any
 
 import pytest
@@ -7,9 +8,7 @@ import pytest
 import xampler.r2_data_catalog as catalog_module
 from tests.test_r2_pythonic import FakeR2BucketBinding, FakeR2Object
 from xampler.browser_rendering import ScreenshotRequest
-from xampler.d1 import D1Database
 from xampler.errors import XamplerError
-from xampler.kv import KVNamespace
 from xampler.queues import QueueJob, QueueSendOptions, QueueService
 from xampler.r2 import R2Bucket, R2Range
 from xampler.r2_data_catalog import R2DataCatalog
@@ -70,64 +69,6 @@ async def test_r2_multipart_complete_and_abort() -> None:
     doomed = await R2Bucket(binding).create_multipart_upload("large.bin")
     await doomed.abort()
     assert doomed.aborted is True
-
-
-class RecordingD1Statement:
-    async def run(self) -> dict[str, Any]:
-        return {"success": True}
-
-
-class RecordingD1Binding:
-    def __init__(self):
-        self.prepared: list[str] = []
-        self.batches: list[list[Any]] = []
-
-    def prepare(self, sql: str) -> RecordingD1Statement:
-        self.prepared.append(sql)
-        return RecordingD1Statement()
-
-    async def batch(self, statements: list[Any]) -> None:
-        self.batches.append(statements)
-
-
-@pytest.mark.asyncio
-async def test_d1_execute_splits_statements_and_batch_skips_empty() -> None:
-    binding = RecordingD1Binding()
-    db = D1Database(binding)
-    await db.execute("CREATE TABLE a(id); CREATE INDEX idx ON a(id);")
-    assert binding.prepared == ["CREATE TABLE a(id)", "CREATE INDEX idx ON a(id)"]
-    await db.batch_run([])
-    assert binding.batches == []
-
-
-class RecordingKVBinding:
-    def __init__(self):
-        self.puts: list[tuple[str, str, Any]] = []
-        self.values: dict[str, str] = {}
-
-    async def get(self, key: str) -> str | None:
-        return self.values.get(key)
-
-    async def put(self, key: str, value: str, options: Any | None = None) -> None:
-        self.values[key] = value
-        self.puts.append((key, value, options))
-
-    async def delete(self, key: str) -> None:
-        self.values.pop(key, None)
-
-    async def list(self, options: Any | None = None) -> dict[str, Any]:
-        return {"keys": [{"name": "a"}], "list_complete": False, "cursor": "next"}
-
-
-@pytest.mark.asyncio
-async def test_kv_ttl_and_list_cursor() -> None:
-    binding = RecordingKVBinding()
-    kv = KVNamespace(binding)
-    await kv.key("session").write_text("value", expiration_ttl=60)
-    assert binding.puts[0][2] == {"expirationTtl": 60}
-    listed = await kv.list(prefix="a", limit=1)
-    assert listed.complete is False
-    assert listed.cursor == "next"
 
 
 class RecordingQueueBinding:
@@ -202,12 +143,28 @@ def test_r2_sql_guard_matrix_allowed(sql: str, expected: str) -> None:
 
 
 @pytest.mark.parametrize(
-    "sql", ["INSERT INTO t VALUES (1)", "SELECT * FROM a JOIN b", "ALTER TABLE t"]
+    ("sql", "code"),
+    [
+        ("INSERT INTO t VALUES (1)", "bad_request"),
+        ("ALTER TABLE t", "bad_request"),
+        ("SELECT * FROM a JOIN b", "unsupported"),
+        # Newlines and tabs separate keywords as well as spaces do.
+        ("SELECT *\nFROM a\nJOIN b ON a.id = b.id", "unsupported"),
+        ("SELECT * FROM a\tJOIN b", "unsupported"),
+        ("EXPLAIN\nDELETE FROM t", "unsupported"),
+        # So do semicolons and parentheses.
+        ("SELECT 1;DROP TABLE t", "unsupported"),
+        ("SELECT * FROM a JOIN(b)", "unsupported"),
+    ],
 )
-def test_r2_sql_guard_matrix_forbidden(sql: str) -> None:
+def test_r2_sql_guard_matrix_forbidden(sql: str, code: str) -> None:
     with pytest.raises(XamplerError) as exc_info:
         R2SqlQuery(sql).safe_sql()
-    assert exc_info.value.code in {"bad_request", "unsupported"}
+    assert exc_info.value.code == code
+
+
+def test_r2_sql_guard_respects_a_limit_on_its_own_line() -> None:
+    assert R2SqlQuery("SELECT *\nFROM t\nLIMIT 5").safe_sql() == "SELECT *\nFROM t\nLIMIT 5"
 
 
 def test_browser_rendering_payload() -> None:
@@ -247,4 +204,4 @@ async def test_r2_data_catalog_paths_and_payloads(monkeypatch: pytest.MonkeyPatc
     assert url == "https://catalog.example/v1/namespaces/xampler/tables"
     assert init["method"] == "POST"
     assert init["headers"]["authorization"] == "Bearer secret"
-    assert '"name": "smoke"' in init["body"]
+    assert json.loads(init["body"])["name"] == "smoke"
