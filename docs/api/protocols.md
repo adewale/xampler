@@ -159,10 +159,10 @@ Problems this creates:
 
 ## Fake bindings vs Demo services
 
-Use fake bindings when testing wrapper behavior:
+Use fake bindings when testing wrapper behavior. Back them with a real engine where one runs locally; D1 is SQLite (see `tests/cloudflare_doubles.py`):
 
 ```python
-db = D1Database(FakeD1Binding())
+db = D1Database(SqliteD1Binding())
 ```
 
 Use Demo services when testing application flow without credentials:

@@ -542,7 +542,7 @@ def verify(example: Example, port: int, timeout: float) -> int:
         command.append("--local")
     proc = subprocess.Popen(command, cwd=cwd, start_new_session=True)
     try:
-        wait_until_ready(port, timeout, example.ready_path)
+        wait_until_ready(port, timeout, example.ready_path, proc=proc)
         for check in example.checks:
             run_check(port, check)
             print(f"✓ {check.method} {check.path}")
@@ -705,9 +705,19 @@ def terminate_process_group(proc: subprocess.Popen[bytes]) -> None:
             return
 
 
-def wait_until_ready(port: int, timeout: float, path: str = "/") -> None:
+def wait_until_ready(
+    port: int,
+    timeout: float,
+    path: str = "/",
+    *,
+    proc: subprocess.Popen[bytes] | None = None,
+) -> None:
     deadline = time.time() + timeout
     while time.time() < deadline:
+        if proc is not None and proc.poll() is not None:
+            raise RuntimeError(
+                f"wrangler dev exited with code {proc.returncode} before it was ready"
+            )
         try:
             urllib.request.urlopen(f"http://127.0.0.1:{port}{path}", timeout=1).read()
             return

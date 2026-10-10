@@ -56,7 +56,9 @@ def json_response(data: object, *, status: int = 200) -> Any:
     cls = _response_class()
     payload = jsonable(data)
     if hasattr(cls, "json"):
-        return cls.json(payload, {"status": status})
+        # workers.Response.json(data, status=..., ...) takes keyword arguments; a
+        # positional init dict lands in `status` and the runtime rejects it.
+        return cls.json(payload, status=status)
     return cls(
         json.dumps(payload),
         status=status,

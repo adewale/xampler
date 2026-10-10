@@ -208,11 +208,11 @@ Candidate helpers:
 ```python
 FakeResponse
 FakeQueueMessage
-FakeD1Statement
-FakeKVBinding
+SqliteD1Binding
+PagingKVBinding
 ```
 
-Why: docs and tests already repeat small fakes. Keep these explicitly test-only so runtime code stays lean.
+Why: docs and tests already repeat small fakes (`tests/cloudflare_doubles.py` holds the D1 and KV ones). Keep these explicitly test-only so runtime code stays lean.
 
 ## Rules for adding API
 

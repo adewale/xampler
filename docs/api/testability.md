@@ -71,6 +71,8 @@ async def test_kv_read_write_json():
     assert await key.read_json() == {"name": "Ada"}
 ```
 
+A fake that returns fixed values whatever it is asked cannot catch a wrapper that drops arguments. When the platform has a local engine, use it: `tests/cloudflare_doubles.py` runs D1 statements on in-memory SQLite and pages KV lists by prefix, limit and cursor, with behaviour checked against Miniflare.
+
 ## Pattern: use a Demo transport
 
 ```python
