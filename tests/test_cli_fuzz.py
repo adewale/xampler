@@ -6,7 +6,7 @@ import json
 from collections.abc import Sequence
 
 import pytest
-from hypothesis import example, given, settings
+from hypothesis import example, given
 from hypothesis import strategies as st
 
 import xampler.cli as cli
@@ -124,9 +124,9 @@ FUZZ_ATOMS = [
 ]
 
 
-# Hypothesis shrinks a failing argv to a minimal one and replays it from its example
-# database, which the old fixed-seed random loop could not do.
-@settings(max_examples=500, deadline=None)
+# Hypothesis shrinks a failing argv to a minimal one, which the old fixed-seed random loop
+# could not do. The budget comes from the "xampler" profile in tests/conftest.py: 100
+# derandomized examples plus the explicit ones below, the same on every run.
 @given(argv=st.lists(st.sampled_from(FUZZ_ATOMS), max_size=8))
 @example(argv=[])
 @example(argv=["--json", "--wat"])
