@@ -253,6 +253,8 @@ uv run pytest -q
 
 `uv run pyright` checks the shared `xampler/` package. `uv run pyright -p pyright.examples.json` checks a small allowlist of stable example files. The tiny stubs in `typings/` only teach pyright the minimum shape of runtime modules such as `workers.Response`, `WorkerEntrypoint`, and `js.fetch`; they are not a replacement for Cloudflare runtime types and should stay small.
 
+CI runs these checks and nothing that starts a Worker. The representative local runtime check, which starts five examples under `pywrangler dev`, is run by hand: see [`docs/api/primitive-test-realism.md`](docs/api/primitive-test-realism.md#representative-local-runtime-check-manual).
+
 ## Known remote-cost profile
 
 Remote checks are opt-in because they can create Cloudflare resources, deploy Workers, and call paid products. Typical maintainer smoke runs are intentionally tiny, but exact pricing depends on your account plan and Cloudflare's current product pricing.
