@@ -38,5 +38,16 @@ def test_python_fetch_worker_and_stable_id() -> None:
         "python_workers",
         "disable_python_external_sdk",
     ]
-    assert stable_worker_id("demo", code) == stable_worker_id("demo", code)
-    assert stable_worker_id("demo", code).startswith("demo:")
+
+
+def test_stable_worker_id_follows_code_content() -> None:
+    def worker(source: str) -> DynamicWorkerCode:
+        return python_fetch_worker(source, compatibility_date="2026-05-01")
+
+    worker_id = stable_worker_id("demo", worker("print('hello')"))
+
+    assert worker_id.startswith("demo:")
+    assert stable_worker_id("demo", worker("print('hello')")) == worker_id
+    assert stable_worker_id("demo", worker("print('bye')")) != worker_id
+    assert stable_worker_id("other", worker("print('hello')")).startswith("other:")
+    assert stable_worker_id("demo", "a") != stable_worker_id("demo", "b")

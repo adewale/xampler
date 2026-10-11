@@ -15,3 +15,4 @@ python_modules/
 .data/
 .xampler-remote-state.json
 *.7z
+.hypothesis/

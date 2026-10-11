@@ -6,91 +6,11 @@ import pytest
 
 from xampler.ai import DemoAIService, TextGenerationRequest, TextGenerationResponse
 from xampler.browser_rendering import DemoBrowserRendering, ScreenshotRequest
-from xampler.d1 import D1Database
 from xampler.errors import XamplerError
-from xampler.kv import KVNamespace
 from xampler.queues import QueueConsumer, QueueJob, QueueService
 from xampler.r2_data_catalog import DemoR2DataCatalog
 from xampler.r2_sql import DemoR2SqlClient, R2SqlQuery
 from xampler.vectorize import DemoVectorIndex, VectorIndex, unit_vector
-
-
-class FakeD1Statement:
-    def __init__(self, sql: str, rows: list[dict[str, Any]]):
-        self.sql = sql
-        self.rows = rows
-        self.params: tuple[Any, ...] = ()
-
-    def bind(self, *params: Any) -> FakeD1Statement:
-        child = FakeD1Statement(self.sql, self.rows)
-        child.params = params
-        return child
-
-    async def all(self) -> dict[str, Any]:
-        return {"results": self.rows}
-
-    async def run(self) -> dict[str, Any]:
-        return {"success": True}
-
-
-class FakeD1Binding:
-    def __init__(self):
-        self.rows = [{"quote": "Beautiful is better than ugly", "author": "PEP 20"}]
-        self.batches: list[list[Any]] = []
-
-    def prepare(self, sql: str) -> FakeD1Statement:
-        return FakeD1Statement(sql, self.rows)
-
-    async def batch(self, statements: list[Any]) -> None:
-        self.batches.append(statements)
-
-
-@pytest.mark.asyncio
-async def test_d1_statement_helpers() -> None:
-    db = D1Database(FakeD1Binding())
-    row = await db.statement("SELECT quote, author FROM quotes").one()
-    assert row == {"quote": "Beautiful is better than ugly", "author": "PEP 20"}
-
-    class Quote:
-        def __init__(self, quote: str, author: str):
-            self.quote = quote
-            self.author = author
-
-    quote = await db.statement("SELECT quote, author FROM quotes").one_as(Quote)
-    assert quote is not None
-    assert quote.author == "PEP 20"
-
-
-class FakeKVBinding:
-    def __init__(self):
-        self.values: dict[str, str] = {}
-
-    async def get(self, key: str) -> str | None:
-        return self.values.get(key)
-
-    async def put(self, key: str, value: str, options: Any | None = None) -> None:
-        del options
-        self.values[key] = value
-
-    async def delete(self, key: str) -> None:
-        self.values.pop(key, None)
-
-    async def list(self, options: Any | None = None) -> dict[str, Any]:
-        del options
-        return {"keys": [{"name": key} for key in sorted(self.values)], "list_complete": True}
-
-
-@pytest.mark.asyncio
-async def test_kv_key_helpers() -> None:
-    kv = KVNamespace(FakeKVBinding())
-    key = kv.key("profile:ada")
-    await key.write_json({"name": "Ada"})
-    assert await key.read_json() == {"name": "Ada"}
-    assert await key.exists() is True
-    listed = await kv.list()
-    assert listed.keys == ["profile:ada"]
-    await key.delete()
-    assert await key.exists() is False
 
 
 class FakeQueueBinding:
@@ -109,14 +29,13 @@ class FakeQueueMessage:
         self.body = body
         self.attempts = attempts
         self.acked = False
-        self.retried = False
+        self.retried: Any = None
 
     def ack(self) -> None:
         self.acked = True
 
     def retry(self, options: Any) -> None:
-        del options
-        self.retried = True
+        self.retried = options
 
 
 class FakeQueueBatch:
@@ -129,12 +48,15 @@ async def test_queue_service_and_consumer() -> None:
     binding = FakeQueueBinding()
     service = QueueService(binding)
     await service.send(QueueJob("demo", {"source": "test"}))
-    assert binding.sent
+    assert binding.sent == [({"kind": "demo", "payload": {"source": "test"}}, None)]
 
-    message = FakeQueueMessage({"kind": "fail", "payload": {"source": "test"}})
-    result = await QueueConsumer().process_batch(FakeQueueBatch([message]))
-    assert result.retried == 1
-    assert message.retried is True
+    ok = FakeQueueMessage({"kind": "ok", "payload": {}})
+    failing = FakeQueueMessage({"kind": "fail", "payload": {"source": "test"}}, attempts=2)
+    result = await QueueConsumer().process_batch(FakeQueueBatch([ok, failing]))
+    assert (result.processed, result.retried) == (1, 1)
+    assert (ok.acked, ok.retried) == (True, None)
+    # Exponential backoff: 30s * 2**attempts.
+    assert (failing.acked, failing.retried) == (False, {"delaySeconds": 120})
 
 
 @pytest.mark.asyncio

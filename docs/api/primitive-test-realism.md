@@ -8,6 +8,27 @@ This document tracks how realistically each Cloudflare primitive example is test
 2. **Local runtime verification** — `uv run pywrangler dev` is started and HTTP/WebSocket/email/queue behavior is exercised. Pages is the exception because Pages Functions are not Python Workers.
 3. **Cloudflare resource realism** — the example uses the real primitive semantics, not just an in-memory stand-in.
 
+## Representative local runtime check (manual)
+
+CI does not start Workers. Run this by hand before merging changes to `xampler/` or to the example `pyproject.toml` files. It checks `examples/start/hello-worker`, `examples/storage-data/r2-object-storage`, `examples/storage-data/kv-namespace`, `examples/storage-data/d1-database` and `examples/state-events/durable-object-counter` against this checkout's `xampler`:
+
+```bash
+uv run python scripts/use_local_xampler.py
+bash -ec 'for example in examples/start/hello-worker examples/storage-data/r2-object-storage \
+    examples/storage-data/kv-namespace examples/storage-data/d1-database \
+    examples/state-events/durable-object-counter; do
+  (cd "$example" && uv run pywrangler dev --help > /dev/null)  # install before the timed wait
+  uv run python scripts/verify_examples.py "$example"
+done'; echo "exit $?"
+uv run python scripts/use_local_xampler.py --restore
+```
+
+It needs uv 0.12.3 or newer (for `workers-py`), Node.js, and network access for package installs (`npx wrangler`, `workers-py`). It sends HTTP requests only to localhost. It took about 75 seconds in GitHub Actions. The other rows were last checked by hand on the review date above.
+
+CI covers the two breakages this check has found, without starting a Worker: `tests/test_response.py` (`json_response` passes `status` the way `workers.Response.json` expects) and `tests/test_example_pyprojects.py` (examples with git dependencies set `allow-build`).
+
+Known gap (2026-09-27): current `workers-py` installs Python Worker packages with `--no-build`, so git dependencies (`cfboundary`, `xampler`) need `[tool.pywrangler] allow-build = true`, which the examples now set. `examples/start/fastapi-worker` and `examples/ai-agents/langchain-style-chain` cannot use that setting: with builds allowed, `pydantic-core` resolves to a PyPI sdist that cannot build for Pyodide. Both examples declare `cfboundary` without importing it, and do not install under current `workers-py` until that is resolved.
+
 Remote checks live in `scripts/verify_remote_examples.py`. They are separate from local checks, are skipped unless explicitly enabled, and may consume real Cloudflare resources or paid product usage.
 
 ## Realism levels
